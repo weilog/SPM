@@ -1,0 +1,110 @@
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+
+Found 71 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: messages, staticfiles
+  Apply all migrations: accounts, admin, auth, contenttypes, projects, sessions, tasks
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0001_initial... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying accounts.0001_project_manager_group... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying projects.0001_initial... OK
+  Applying sessions.0001_initial... OK
+test_admin_link_visible_only_to_system_admin (accounts.tests.AuthenticationTests.test_admin_link_visible_only_to_system_admin) ... ok
+test_anonymous_home_requires_login (accounts.tests.AuthenticationTests.test_anonymous_home_requires_login) ... ok
+test_deactivated_user_session_loses_access (accounts.tests.AuthenticationTests.test_deactivated_user_session_loses_access) ... ok
+test_external_next_cannot_redirect_off_site (accounts.tests.AuthenticationTests.test_external_next_cannot_redirect_off_site) ... ok
+test_get_logout_is_disallowed_and_preserves_session (accounts.tests.AuthenticationTests.test_get_logout_is_disallowed_and_preserves_session) ... ok
+test_local_next_is_respected (accounts.tests.AuthenticationTests.test_local_next_is_respected) ... ok
+test_login_and_logout_enforce_csrf (accounts.tests.AuthenticationTests.test_login_and_logout_enforce_csrf) ... ok
+test_post_logout_ends_session_and_protects_home (accounts.tests.AuthenticationTests.test_post_logout_ends_session_and_protects_home) ... ok
+test_valid_login_creates_session_and_renders_home (accounts.tests.AuthenticationTests.test_valid_login_creates_session_and_renders_home) ... ok
+test_wrong_unknown_or_inactive_login_is_rejected (accounts.tests.AuthenticationTests.test_wrong_unknown_or_inactive_login_is_rejected) ... ok
+test_admin_can_create_user_with_hashed_password (accounts.tests.GlobalAdministrationTests.test_admin_can_create_user_with_hashed_password) ... ok
+test_admin_can_disable_and_delete_user (accounts.tests.GlobalAdministrationTests.test_admin_can_disable_and_delete_user) ... ok
+test_admin_can_edit_profile_and_grant_group_permission (accounts.tests.GlobalAdministrationTests.test_admin_can_edit_profile_and_grant_group_permission) ... ok
+test_admin_can_grant_and_revoke_system_administrator (accounts.tests.GlobalAdministrationTests.test_admin_can_grant_and_revoke_system_administrator) ... ok
+test_admin_can_manage_group_permissions (accounts.tests.GlobalAdministrationTests.test_admin_can_manage_group_permissions) ... ok
+test_admin_can_open_users_and_groups (accounts.tests.GlobalAdministrationTests.test_admin_can_open_users_and_groups) ... ok
+test_admin_can_reset_password (accounts.tests.GlobalAdministrationTests.test_admin_can_reset_password) ... ok
+test_admin_can_revoke_global_grants (accounts.tests.GlobalAdministrationTests.test_admin_can_revoke_global_grants) ... ok
+test_admin_mutation_requires_csrf (accounts.tests.GlobalAdministrationTests.test_admin_mutation_requires_csrf) ... ok
+test_admin_rejects_duplicate_and_weak_password (accounts.tests.GlobalAdministrationTests.test_admin_rejects_duplicate_and_weak_password) ... ok
+test_inactive_or_non_staff_superuser_cannot_access_admin (accounts.tests.GlobalAdministrationTests.test_inactive_or_non_staff_superuser_cannot_access_admin) ... ok
+test_manager_group_has_no_business_or_admin_permissions (accounts.tests.GlobalAdministrationTests.test_manager_group_has_no_business_or_admin_permissions) ... ok
+test_non_admin_direct_reads_and_writes_cannot_manage_users (accounts.tests.GlobalAdministrationTests.test_non_admin_direct_reads_and_writes_cannot_manage_users) ... ok
+test_staff_login_does_not_bypass_admin_site_policy (accounts.tests.GlobalAdministrationTests.test_staff_login_does_not_bypass_admin_site_policy) ... ok
+test_system_admin_can_log_in_through_admin_form (accounts.tests.GlobalAdministrationTests.test_system_admin_can_log_in_through_admin_form) ... ok
+test_admin_can_manage_members (projects.tests.MembershipTests.test_admin_can_manage_members) ... ok
+test_cross_project_membership_id_cannot_be_removed (projects.tests.MembershipTests.test_cross_project_membership_id_cannot_be_removed) ... ok
+test_database_prevents_duplicate_membership (projects.tests.MembershipTests.test_database_prevents_duplicate_membership) ... ok
+test_duplicate_and_inactive_users_rejected (projects.tests.MembershipTests.test_duplicate_and_inactive_users_rejected) ... ok
+test_manager_adds_and_removes_active_member (projects.tests.MembershipTests.test_manager_adds_and_removes_active_member) ... ok
+test_manager_cannot_be_removed_and_get_does_not_mutate (projects.tests.MembershipTests.test_manager_cannot_be_removed_and_get_does_not_mutate) ... ok
+test_member_cannot_manage_members_get_or_post (projects.tests.MembershipTests.test_member_cannot_manage_members_get_or_post) ... ok
+test_member_management_requires_csrf (projects.tests.MembershipTests.test_member_management_requires_csrf) ... ok
+test_other_manager_cannot_manage_even_if_project_member (projects.tests.MembershipTests.test_other_manager_cannot_manage_even_if_project_member) ... ok
+test_revoked_global_manager_group_removes_management_rights (projects.tests.MembershipTests.test_revoked_global_manager_group_removes_management_rights) ... ok
+test_services_independently_reject_cross_project_or_unprivileged_mutations (projects.tests.MembershipTests.test_services_independently_reject_cross_project_or_unprivileged_mutations) ... ok
+test_admin_must_choose_active_global_project_manager (projects.tests.ProjectCreationTests.test_admin_must_choose_active_global_project_manager) ... ok
+test_empty_post_renders_required_field_errors (projects.tests.ProjectCreationTests.test_empty_post_renders_required_field_errors) ... ok
+test_manager_creates_persistent_project_and_own_membership (projects.tests.ProjectCreationTests.test_manager_creates_persistent_project_and_own_membership) ... ok
+test_ordinary_user_cannot_create_project_get_or_post (projects.tests.ProjectCreationTests.test_ordinary_user_cannot_create_project_get_or_post) ... ok
+test_project_creation_requires_csrf (projects.tests.ProjectCreationTests.test_project_creation_requires_csrf) ... ok
+test_project_name_required_and_length_validated (projects.tests.ProjectCreationTests.test_project_name_required_and_length_validated) ... ok
+test_service_rejects_unprivileged_actor_and_invalid_admin_manager (projects.tests.ProjectCreationTests.test_service_rejects_unprivileged_actor_and_invalid_admin_manager) ... ok
+test_admin_can_view_all_projects (projects.tests.ProjectVisibilityTests.test_admin_can_view_all_projects) ... ok
+test_anonymous_routes_redirect_to_login (projects.tests.ProjectVisibilityTests.test_anonymous_routes_redirect_to_login) ... ok
+test_member_list_contains_only_authorized_projects (projects.tests.ProjectVisibilityTests.test_member_list_contains_only_authorized_projects) ... ok
+test_multi_project_member_can_switch_using_explicit_context (projects.tests.ProjectVisibilityTests.test_multi_project_member_can_switch_using_explicit_context) ... ok
+test_names_and_descriptions_are_html_escaped (projects.tests.ProjectVisibilityTests.test_names_and_descriptions_are_html_escaped) ... ok
+test_removed_membership_immediately_revokes_read_access (projects.tests.ProjectVisibilityTests.test_removed_membership_immediately_revokes_read_access) ... ok
+test_unauthorized_project_direct_url_is_not_found (projects.tests.ProjectVisibilityTests.test_unauthorized_project_direct_url_is_not_found) ... ok
+test_admin_can_create_and_assign_task_without_membership (tasks.tests.TaskTests.test_admin_can_create_and_assign_task_without_membership) ... ok
+test_anonymous_task_routes_redirect (tasks.tests.TaskTests.test_anonymous_task_routes_redirect) ... ok
+test_assign_reassign_and_clear_within_current_project (tasks.tests.TaskTests.test_assign_reassign_and_clear_within_current_project) ... ok
+test_assign_rejects_nonmember_and_inactive_without_modifying_task (tasks.tests.TaskTests.test_assign_rejects_nonmember_and_inactive_without_modifying_task) ... ok
+test_blank_or_oversized_title_is_rejected (tasks.tests.TaskTests.test_blank_or_oversized_title_is_rejected) ... ok
+test_creation_rejects_nonmember_and_inactive_assignees (tasks.tests.TaskTests.test_creation_rejects_nonmember_and_inactive_assignees) ... ok
+test_cross_project_task_id_and_project_url_cannot_be_used (tasks.tests.TaskTests.test_cross_project_task_id_and_project_url_cannot_be_used) ... ok
+test_database_prevents_sprint2_status (tasks.tests.TaskTests.test_database_prevents_sprint2_status) ... ok
+test_empty_post_clears_assignment_but_empty_creation_has_errors (tasks.tests.TaskTests.test_empty_post_clears_assignment_but_empty_creation_has_errors) ... ok
+test_forms_only_offer_active_current_members (tasks.tests.TaskTests.test_forms_only_offer_active_current_members) ... ok
+test_get_requests_do_not_mutate_and_csrf_protects_writes (tasks.tests.TaskTests.test_get_requests_do_not_mutate_and_csrf_protects_writes) ... ok
+test_global_user_deactivation_clears_assignments_and_rejects_login (tasks.tests.TaskTests.test_global_user_deactivation_clears_assignments_and_rejects_login) ... ok
+test_global_user_deletion_clears_assignee (tasks.tests.TaskTests.test_global_user_deletion_clears_assignee) ... ok
+test_manager_creates_task_with_project_and_todo_default (tasks.tests.TaskTests.test_manager_creates_task_with_project_and_todo_default) ... ok
+test_member_and_outsider_cannot_create_or_assign_tasks (tasks.tests.TaskTests.test_member_and_outsider_cannot_create_or_assign_tasks) ... ok
+test_member_removal_clears_only_that_project_assignments (tasks.tests.TaskTests.test_member_removal_clears_only_that_project_assignments) ... ok
+test_ordinary_member_detail_does_not_expose_task_assignment_controls (tasks.tests.TaskTests.test_ordinary_member_detail_does_not_expose_task_assignment_controls) ... ok
+test_other_manager_even_as_member_cannot_manage_task (tasks.tests.TaskTests.test_other_manager_even_as_member_cannot_manage_task) ... ok
+test_revoked_manager_cannot_create_or_assign (tasks.tests.TaskTests.test_revoked_manager_cannot_create_or_assign) ... ok
+test_services_and_model_reject_cross_project_assignee_or_actor (tasks.tests.TaskTests.test_services_and_model_reject_cross_project_assignee_or_actor) ... ok
+test_task_can_be_created_unassigned (tasks.tests.TaskTests.test_task_can_be_created_unassigned) ... ok
+
+----------------------------------------------------------------------
+Ran 71 tests in 14.994s
+
+OK
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+
+  Applying tasks.0001_initial... OK
+System check identified no issues (0 silenced).

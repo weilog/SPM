@@ -1,0 +1,5 @@
+Operations to perform:
+  Apply all migrations: accounts, admin, auth, contenttypes, projects, sessions, tasks
+Running migrations:
+  Applying projects.0001_initial... OK
+  Applying tasks.0001_initial... OK

@@ -1,0 +1,15 @@
+body { margin: 0; background: #f4f6f8; font-family: system-ui, sans-serif; color: #263b3a; }
+.app-shell { min-height: 100vh; }
+.header { height: auto; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; background: white; flex-wrap: wrap; border-bottom: 1px solid #e5eceb; }
+.header h3 { margin: 0; }
+.content { max-width: 1200px; width: 100%; box-sizing: border-box; padding: 28px; margin: 0 auto; }
+.content > .ant-alert { margin-bottom: 18px; }
+.section-heading { display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 20px; }
+.section-heading h2, .section-heading h3 { margin: 0; }
+.project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.project-detail { margin: 20px 0; }
+.member-form { margin: 18px 0; gap: 12px; }
+.login { display: grid; min-height: 100vh; place-items: center; padding: 20px; box-sizing: border-box; background: #edf3f1; }
+.login > .ant-card { width: 100%; max-width: 420px; }
+.loading { min-height: 100vh; display: grid; place-items: center; }
+@media (max-width: 600px) { .content { padding: 16px; } .header { padding: 16px; } }

@@ -7,7 +7,9 @@ import { PrismaClient, Prisma } from '../generated/prisma/client';
 export class DbService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
     if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required');
-    super({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
+    const schema = new URL(process.env.DATABASE_URL).searchParams.get('schema') || 'public';
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schema)) throw new Error('Invalid PostgreSQL schema name');
+    super({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL, options: `-c search_path=${schema}` }, { schema }) });
   }
   async onModuleInit() { await this.$connect(); }
   async onModuleDestroy() { await this.$disconnect(); }

@@ -6,7 +6,8 @@ import { Public, SecurityGuard } from './common/security';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ProjectsModule } from './projects/projects.module';
+import { TasksModule } from './tasks/tasks.module';
 @Controller('health')
 class HealthController { @Public() @Get() health() { return { ok: true }; } }
-@Module({ imports: [DbModule, AuthModule, UsersModule, ProjectsModule], controllers: [HealthController], providers: [{ provide: APP_GUARD, useClass: SecurityGuard }] })
+@Module({ imports: [DbModule, AuthModule, UsersModule, ProjectsModule, TasksModule], controllers: [HealthController], providers: [{ provide: APP_GUARD, useClass: SecurityGuard }] })
 export class AppModule {}

@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, Injectable, Module, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
-import { IsBoolean, IsIn, IsOptional, IsString, Length, Matches } from 'class-validator';
+import { IsBoolean, IsIn, IsString, Length, Matches, ValidateIf } from 'class-validator';
 import type { User, Role } from '@spm/shared';
 import { DbService } from '../db/db.module';
 import { Actor, Roles, userSelect } from '../common/security';
@@ -11,10 +11,10 @@ class CreateUserDto {
   @IsIn(['ADMIN', 'MANAGER', 'MEMBER']) role!: Role;
 }
 class UpdateUserDto {
-  @IsOptional() @IsString() @Length(1, 80) @Matches(/^[a-zA-Z0-9_.-]+$/) username?: string;
-  @IsOptional() @IsString() @Length(12, 128) password?: string;
-  @IsOptional() @IsIn(['ADMIN', 'MANAGER', 'MEMBER']) role?: Role;
-  @IsOptional() @IsBoolean() active?: boolean;
+  @ValidateIf((_object, value) => value !== undefined) @IsString() @Length(1, 80) @Matches(/^[a-zA-Z0-9_.-]+$/) username?: string;
+  @ValidateIf((_object, value) => value !== undefined) @IsString() @Length(12, 128) password?: string;
+  @ValidateIf((_object, value) => value !== undefined) @IsIn(['ADMIN', 'MANAGER', 'MEMBER']) role?: Role;
+  @ValidateIf((_object, value) => value !== undefined) @IsBoolean() active?: boolean;
 }
 @Injectable()
 export class UsersService {

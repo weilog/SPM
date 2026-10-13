@@ -1,0 +1,27 @@
+GET /health: 200
+GET /projects: 401
+POST /auth/login: 401
+POST /auth/login: 201
+POST /auth/login: 201
+POST /auth/login: 201
+POST /auth/login: 201
+GET /users: 200
+POST /projects: 201
+POST /projects: 201
+POST /projects/3/members: 201
+POST /projects/3/tasks: 201
+PATCH /projects/3/tasks/2/assignee: 200
+PATCH /projects/3/tasks/2/assignee: 400
+PATCH /projects/4/tasks/2/assignee: 404
+GET /projects: 200
+GET /projects/4: 404
+GET /projects/3/members: 403
+GET /users: 403
+DELETE /projects/3/members/4: 200
+GET /projects/3: 404
+GET /projects/3/tasks: 200
+POST /projects/3/members: 201
+PATCH /projects/3/tasks/2/assignee: 200
+POST /auth/logout: 201
+GET /auth/me: 401
+Live HTTP via Vite proxy: PASS. Demo projects 3/4.

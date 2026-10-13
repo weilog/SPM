@@ -1,0 +1,9 @@
+$ jest --runInBand
+PASS test/integration.spec.ts (6.739 s)
+PASS test/password.spec.ts
+
+Test Suites: 2 passed, 2 total
+Tests:       25 passed, 25 total
+Snapshots:   0 total
+Time:        7.105 s
+Ran all test suites.

@@ -1,0 +1,20 @@
+$ jest --runInBand
+FAIL test/integration.spec.ts
+  ● Test suite failed to run
+
+    test/integration.spec.ts:27:46 - error TS2345: Argument of type '{} | null' is not assignable to parameter of type 'string | object | undefined'.
+      Type 'null' is not assignable to type 'string | object | undefined'.
+
+    27     if (data !== undefined) test = test.send(data);
+                                                    ~~~~
+
+PASS test/password.spec.ts
+
+Test Suites: 1 failed, 1 passed, 2 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        1.91 s, estimated 2 s
+Ran all test suites.
+D:\Work\shiyan\SPM-typescript\apps\api:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @spm/api@1.0.0 test: `jest --runInBand`
+Exit status 1

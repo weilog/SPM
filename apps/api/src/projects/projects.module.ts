@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Injectable, Module, NotFoundException, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { Transform } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Length, MaxLength, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Length, MaxLength, Min, ValidateIf } from 'class-validator';
 import type { User } from '@spm/shared';
 import { Prisma } from '../generated/prisma/client';
 import { Actor, userSelect } from '../common/security';
@@ -8,7 +8,7 @@ import { DbService } from '../db/db.module';
 
 export class CreateProjectDto {
   @Transform(({ value }) => typeof value === 'string' ? value.trim() : value) @IsString() @Length(1, 200) name!: string;
-  @IsOptional() @IsString() @MaxLength(10000) description?: string;
+  @ValidateIf((_object, value) => value !== undefined) @IsString() @MaxLength(10000) description?: string;
   @IsOptional() @IsInt() @Min(1) managerId?: number;
 }
 class AddMemberDto { @IsInt() @Min(1) userId!: number; }

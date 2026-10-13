@@ -8,7 +8,7 @@ import { Database, ProjectsModule, ProjectsService } from '../projects/projects.
 
 class CreateTaskDto {
   @Transform(({ value }) => typeof value === 'string' ? value.trim() : value) @IsString() @Length(1, 200) title!: string;
-  @IsOptional() @IsString() @MaxLength(10000) description?: string;
+  @ValidateIf((_object, value) => value !== undefined) @IsString() @MaxLength(10000) description?: string;
   @IsOptional() @IsInt() @Min(1) assigneeUserId?: number | null;
 }
 class AssignTaskDto {

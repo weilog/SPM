@@ -1,0 +1,93 @@
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+
+Found 24 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: messages, staticfiles
+  Apply all migrations: accounts, admin, auth, contenttypes, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0001_initial... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying accounts.0001_project_manager_group... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+test_admin_link_visible_only_to_system_admin (accounts.tests.AuthenticationTests.test_admin_link_visible_only_to_system_admin) ... ok
+test_anonymous_home_requires_login (accounts.tests.AuthenticationTests.test_anonymous_home_requires_login) ... ok
+test_deactivated_user_session_loses_access (accounts.tests.AuthenticationTests.test_deactivated_user_session_loses_access) ... ok
+test_external_next_cannot_redirect_off_site (accounts.tests.AuthenticationTests.test_external_next_cannot_redirect_off_site) ... ok
+test_get_logout_is_disallowed_and_preserves_session (accounts.tests.AuthenticationTests.test_get_logout_is_disallowed_and_preserves_session) ... ok
+test_local_next_is_respected (accounts.tests.AuthenticationTests.test_local_next_is_respected) ... ok
+test_login_and_logout_enforce_csrf (accounts.tests.AuthenticationTests.test_login_and_logout_enforce_csrf) ... ok
+test_post_logout_ends_session_and_protects_home (accounts.tests.AuthenticationTests.test_post_logout_ends_session_and_protects_home) ... ok
+test_valid_login_creates_session_and_renders_home (accounts.tests.AuthenticationTests.test_valid_login_creates_session_and_renders_home) ... ok
+test_wrong_unknown_or_inactive_login_is_rejected (accounts.tests.AuthenticationTests.test_wrong_unknown_or_inactive_login_is_rejected) ... ok
+test_admin_can_create_user_with_hashed_password (accounts.tests.GlobalAdministrationTests.test_admin_can_create_user_with_hashed_password) ... ok
+test_admin_can_disable_and_delete_user (accounts.tests.GlobalAdministrationTests.test_admin_can_disable_and_delete_user) ... FAIL
+test_admin_can_edit_profile_and_grant_group_permission (accounts.tests.GlobalAdministrationTests.test_admin_can_edit_profile_and_grant_group_permission) ... FAIL
+test_admin_can_grant_and_revoke_system_administrator (accounts.tests.GlobalAdministrationTests.test_admin_can_grant_and_revoke_system_administrator) ... FAIL
+test_admin_can_manage_group_permissions (accounts.tests.GlobalAdministrationTests.test_admin_can_manage_group_permissions) ... ok
+test_admin_can_open_users_and_groups (accounts.tests.GlobalAdministrationTests.test_admin_can_open_users_and_groups) ... ok
+test_admin_can_reset_password (accounts.tests.GlobalAdministrationTests.test_admin_can_reset_password) ... ok
+test_admin_can_revoke_global_grants (accounts.tests.GlobalAdministrationTests.test_admin_can_revoke_global_grants) ... FAIL
+test_admin_mutation_requires_csrf (accounts.tests.GlobalAdministrationTests.test_admin_mutation_requires_csrf) ... ok
+test_admin_rejects_duplicate_and_weak_password (accounts.tests.GlobalAdministrationTests.test_admin_rejects_duplicate_and_weak_password) ... ok
+test_inactive_or_non_staff_superuser_cannot_access_admin (accounts.tests.GlobalAdministrationTests.test_inactive_or_non_staff_superuser_cannot_access_admin) ... ok
+test_manager_group_has_no_business_or_admin_permissions (accounts.tests.GlobalAdministrationTests.test_manager_group_has_no_business_or_admin_permissions) ... ok
+test_non_admin_direct_reads_and_writes_cannot_manage_users (accounts.tests.GlobalAdministrationTests.test_non_admin_direct_reads_and_writes_cannot_manage_users) ... ok
+test_staff_login_does_not_bypass_admin_site_policy (accounts.tests.GlobalAdministrationTests.test_staff_login_does_not_bypass_admin_site_policy) ... ok
+
+======================================================================
+FAIL: test_admin_can_disable_and_delete_user (accounts.tests.GlobalAdministrationTests.test_admin_can_disable_and_delete_user)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\Work\shiyan\SPM\accounts\tests.py", line 157, in test_admin_can_disable_and_delete_user
+    self.assertEqual(response.status_code, 302)
+AssertionError: 200 != 302
+
+======================================================================
+FAIL: test_admin_can_edit_profile_and_grant_group_permission (accounts.tests.GlobalAdministrationTests.test_admin_can_edit_profile_and_grant_group_permission)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\Work\shiyan\SPM\accounts\tests.py", line 130, in test_admin_can_edit_profile_and_grant_group_permission
+    self.assertEqual(response.status_code, 302)
+AssertionError: 200 != 302
+
+======================================================================
+FAIL: test_admin_can_grant_and_revoke_system_administrator (accounts.tests.GlobalAdministrationTests.test_admin_can_grant_and_revoke_system_administrator)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\Work\shiyan\SPM\accounts\tests.py", line 147, in test_admin_can_grant_and_revoke_system_administrator
+    self.assertEqual(response.status_code, 302)
+AssertionError: 200 != 302
+
+======================================================================
+FAIL: test_admin_can_revoke_global_grants (accounts.tests.GlobalAdministrationTests.test_admin_can_revoke_global_grants)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\Work\shiyan\SPM\accounts\tests.py", line 140, in test_admin_can_revoke_global_grants
+    self.assertEqual(response.status_code, 302)
+AssertionError: 200 != 302
+
+----------------------------------------------------------------------
+Ran 24 tests in 7.507s
+
+FAILED (failures=4)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+
+  Applying sessions.0001_initial... OK
+System check identified no issues (0 silenced).

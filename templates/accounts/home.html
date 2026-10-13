@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>欢迎，{{ user.username }}</h1>
+<p>你已登录爱管理。</p>
+{% if user.is_active and user.is_staff and user.is_superuser %}
+<p><a href="{% url 'admin:index' %}">管理全局用户与权限</a></p>
+{% endif %}
+{% endblock %}

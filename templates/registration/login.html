@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}登录 · 爱管理{% endblock %}
+{% block content %}
+<h1>登录爱管理</h1>
+<p>请使用系统管理员为你创建的账户。</p>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="hidden" name="next" value="{{ next }}">
+  <button type="submit">登录</button>
+</form>
+{% endblock %}

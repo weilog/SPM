@@ -1,0 +1,19 @@
+GET /: 302 (expected 302)
+GET /login/: 200 (expected 200)
+GET /admin/: 302 (expected 302)
+GET /static/css/site.css: 200 (expected 200)
+GET /logout/: 405 (expected 405)
+Real runserver HTTP smoke: PASS
+[13/Oct/2026 20:30:37] "GET /login/ HTTP/1.1" 200 1046
+
+[13/Oct/2026 20:30:37] "GET / HTTP/1.1" 302 0
+
+[13/Oct/2026 20:30:37] "GET /login/ HTTP/1.1" 200 1046
+
+[13/Oct/2026 20:30:37] "GET /admin/ HTTP/1.1" 302 0
+
+[13/Oct/2026 20:30:37] "GET /static/css/site.css HTTP/1.1" 200 588
+
+Method Not Allowed (GET): /logout/
+
+[13/Oct/2026 20:30:37] "GET /logout/ HTTP/1.1" 405 0

@@ -1,0 +1,9 @@
+body { margin: 0; color: #243247; background: #f5f7fa; font: 1rem/1.6 system-ui, sans-serif; }
+header { padding: 1rem 2rem; background: #fff; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+header form { margin-left: auto; }
+main { max-width: 42rem; margin: 2rem auto; padding: 1.5rem; background: #fff; }
+a { color: #155b99; }
+label { display: block; }
+input { max-width: 100%; box-sizing: border-box; padding: .5rem; }
+button { padding: .5rem 1rem; background: #155b99; color: white; border: 0; border-radius: .25rem; cursor: pointer; }
+.errorlist { color: #a51b1b; }

@@ -1,0 +1,7 @@
+Requirement already satisfied: Django==5.2.18 in d:\work\shiyan\spm\.venv\lib\site-packages (from -r requirements.txt (line 1)) (5.2.18)
+Requirement already satisfied: asgiref==3.12.1 in d:\work\shiyan\spm\.venv\lib\site-packages (from -r requirements.txt (line 2)) (3.12.1)
+Requirement already satisfied: sqlparse==0.6.0 in d:\work\shiyan\spm\.venv\lib\site-packages (from -r requirements.txt (line 3)) (0.6.0)
+Requirement already satisfied: tzdata==2026.5 in d:\work\shiyan\spm\.venv\lib\site-packages (from -r requirements.txt (line 4)) (2026.5)
+
+[notice] A new release of pip is available: 24.0 -> 26.2.1
+[notice] To update, run: D:\Work\shiyan\SPM\.venv\Scripts\python.exe -m pip install --upgrade pip

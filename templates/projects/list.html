@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}我的项目 · 爱管理{% endblock %}
+{% block content %}
+<h1>我的项目</h1>
+{% if can_create %}<p><a href="{% url 'projects:create' %}">创建项目</a></p>{% endif %}
+<ul>{% for project in projects %}
+<li><a href="{% url 'projects:detail' project.pk %}">{{ project.name }}</a> · 项目经理：{{ project.manager.username }}</li>
+{% empty %}<li>暂无有权访问的项目。</li>{% endfor %}</ul>
+{% endblock %}

@@ -11,9 +11,13 @@
   <header><a href="{% url 'home' %}">爱管理</a>
     {% if user.is_authenticated %}
       <span>{{ user.username }}</span>
+      <a href="{% url 'projects:list' %}">切换项目</a>
       <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">退出</button></form>
     {% endif %}
   </header>
-  <main>{% block content %}{% endblock %}</main>
+  <main>
+    {% for message in messages %}<p role="alert">{{ message }}</p>{% endfor %}
+    {% block content %}{% endblock %}
+  </main>
 </body>
 </html>

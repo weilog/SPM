@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}{{ project.name }} · 爱管理{% endblock %}
+{% block content %}
+<h1>{{ project.name }}</h1>
+<p>{{ project.description|linebreaksbr }}</p>
+<p>项目经理：{{ project.manager.username }}</p>
+{% if can_manage %}
+<p><a href="{% url 'projects:members' project.pk %}">管理成员</a> · <a href="{% url 'tasks:create' project.pk %}">创建任务</a></p>
+<h2>指定任务负责人</h2>
+<ul>{% for task in assignable_tasks %}
+<li><a href="{% url 'tasks:assign' project.pk task.pk %}">{{ task.title }}</a> · {{ task.assignee.username|default:'未指派' }}</li>
+{% empty %}<li>暂无可指派任务。</li>{% endfor %}</ul>
+{% endif %}
+{% endblock %}

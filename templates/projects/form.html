@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>创建项目</h1>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">创建</button></form>
+{% endblock %}

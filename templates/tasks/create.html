@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{{ project.name }} · 创建任务</h1>
+<p><a href="{% url 'projects:detail' project.pk %}">返回项目</a></p>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">创建任务</button></form>
+{% endblock %}

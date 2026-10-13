@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{{ project.name }} · 指定负责人</h1>
+<p>任务：{{ task.title }}</p><p>{{ task.description|linebreaksbr }}</p>
+<p><a href="{% url 'projects:detail' project.pk %}">返回项目</a></p>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">保存负责人</button></form>
+{% endblock %}

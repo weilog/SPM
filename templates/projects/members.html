@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{{ project.name }} · 管理成员</h1>
+<p><a href="{% url 'projects:detail' project.pk %}">返回项目</a></p>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">添加成员</button></form>
+<ul>{% for membership in memberships %}<li>
+{{ membership.user.username }}{% if not membership.user.is_active %}（已停用）{% endif %}
+{% if membership.user_id == project.manager_id %}（项目经理）{% else %}
+<form method="post" action="{% url 'projects:member_remove' project.pk membership.pk %}">{% csrf_token %}<button type="submit">移除成员</button></form>
+{% endif %}</li>{% endfor %}</ul>
+{% endblock %}

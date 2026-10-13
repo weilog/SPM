@@ -2,6 +2,7 @@ import '../environment';
 import { Global, Injectable, Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, Prisma } from '../generated/prisma/client';
+import { isTransactionConflict } from './errors';
 
 @Injectable()
 export class DbService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
@@ -18,7 +19,7 @@ export class DbService extends PrismaClient implements OnModuleInit, OnModuleDes
     for (let attempt = 0; ; attempt++) {
       try { return await this.$transaction(action, { isolationLevel: 'Serializable' }); }
       catch (error) {
-        if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2034' || attempt >= 2) throw error;
+        if (!isTransactionConflict(error) || attempt >= 2) throw error;
       }
     }
   }

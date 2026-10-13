@@ -11,6 +11,11 @@ enum Role {
   MANAGER
   MEMBER
 }
+enum ProjectRole {
+  MANAGER
+  DEVELOPER
+  TESTER
+}
 model User {
   id Int @id @default(autoincrement())
   username String @unique @db.VarChar(80)
@@ -36,12 +41,14 @@ model Project {
   manager User @relation(fields: [managerId], references: [id], onDelete: Restrict)
   members ProjectMember[]
   tasks Task[]
+  requirements Requirement[]
   createdAt DateTime @default(now())
 }
 model ProjectMember {
   id Int @id @default(autoincrement())
   projectId Int
   userId Int
+  role ProjectRole @default(DEVELOPER)
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   assignedTasks Task[]
@@ -57,4 +64,14 @@ model Task {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   assigneeMember ProjectMember? @relation(fields: [projectId, assigneeUserId], references: [projectId, userId], onDelete: NoAction, onUpdate: NoAction)
   createdAt DateTime @default(now())
+}
+model Requirement {
+  id Int @id @default(autoincrement())
+  projectId Int
+  title String @db.VarChar(200)
+  description String @default("") @db.VarChar(10000)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([projectId])
 }

@@ -1,11 +1,13 @@
 import { Alert, Button, Card, Layout, Space, Spin, Tabs, Tag, Typography } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { roleLabels, type Project, type User } from '@spm/shared';
+import { projectRoleLabels, roleLabels, type Project, type User } from '@spm/shared';
 import { api, RequestError } from './api';
 import { Login } from './Login';
 import { Users } from './Users';
 import { Members, ProjectList } from './Projects';
 import { Tasks } from './Tasks';
+import { Requirements } from './Requirements';
+import { MyTasks } from './MyTasks';
 
 export function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -36,6 +38,13 @@ export function App() {
     try { const selected = await api<Project>(`/projects/${id}`); if (version === requestVersion.current) setProject(selected); }
     catch (error) { if (version === requestVersion.current) onError(error); }
   }
+  async function refreshProject(id: number) {
+    const version = ++requestVersion.current;
+    try {
+      const selected = await api<Project>(`/projects/${id}`);
+      if (version === requestVersion.current) setProject(selected);
+    } catch (error) { if (version === requestVersion.current) onError(error); }
+  }
   async function logout() {
     try { await api('/auth/logout', 'POST'); setUser(null); setError(''); resetContext(); }
     catch (error) { onError(error); }
@@ -49,11 +58,15 @@ export function App() {
   </Space></Layout.Header><Layout.Content className="content">
     {error && <Alert type="error" title={error} closable onClose={() => setError('')} />}
     {view === 'users' ? <Users onError={onError} onChanged={refreshUser} /> : project ? <>
-      <Button onClick={resetContext}>返回项目列表</Button><Card className="project-detail"><Typography.Title level={2}>{project.name}</Typography.Title><p>{project.description || '暂无说明'}</p><p>项目经理：{project.manager.username}</p></Card>
-      {project.canManage && <Tabs items={[
-        { key: 'members', label: '成员管理', children: <Members project={project} onError={onError} onChanged={() => setRevision(value => value + 1)} /> },
+      <Button onClick={resetContext}>返回项目列表</Button><Card className="project-detail"><Typography.Title level={2}>{project.name}</Typography.Title><p>{project.description || '暂无说明'}</p><p>项目经理：{project.manager.username} · 我的项目角色：{projectRoleLabels[project.projectRole]}</p></Card>
+      <Tabs items={[
+        { key: 'requirements', label: '正式需求', children: <Requirements project={project} onError={onError} /> },
+        ...(project.canViewOwnTasks ? [{ key: 'mine', label: '我的任务', children: <MyTasks project={project} onError={onError} /> }] : []),
+        ...(project.canManage ? [
+        { key: 'members', label: '成员与项目角色', children: <Members project={project} onError={onError} onChanged={() => { setRevision(value => value + 1); void refreshProject(project.id); }} /> },
         { key: 'tasks', label: '任务创建与指派', children: <Tasks project={project} revision={revision} onError={onError} /> },
-      ]} />}
+        ] : []),
+      ]} />
     </> : <ProjectList key={user.role} user={user} onSelect={id => void selectProject(id)} onError={onError} />}
   </Layout.Content></Layout>;
 }

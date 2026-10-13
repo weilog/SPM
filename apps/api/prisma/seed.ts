@@ -9,11 +9,11 @@ async function main() {
     await db.$connect();
     const passwordHash = await hashPassword(password);
     await db.atomic(async tx => {
-      for (const [username, role] of [['admin', 'ADMIN'], ['manager', 'MANAGER'], ['manager_b', 'MANAGER'], ['member', 'MEMBER']] as const) {
+      for (const [username, role] of [['admin', 'ADMIN'], ['manager', 'MANAGER'], ['manager_b', 'MANAGER'], ['member', 'MEMBER'], ['tester', 'MEMBER']] as const) {
         await tx.user.upsert({ where: { username }, update: {}, create: { username, role, passwordHash } });
       }
     });
-    console.log('Seed complete: admin, manager, manager_b, member. Existing accounts unchanged. Password is the private SEED_PASSWORD.');
+    console.log('Seed complete: admin, manager, manager_b, member, tester. Project roles are assigned per membership. Existing accounts unchanged. Password is the private SEED_PASSWORD.');
   } finally { await db.$disconnect(); }
 }
 void main();

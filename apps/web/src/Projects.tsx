@@ -1,33 +1,42 @@
-import { Button, Card, Empty, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography } from 'antd';
+import { Alert, Button, Card, Empty, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography } from 'antd';
 import { useEffect, useState } from 'react';
-import type { Project, ProjectMember, User } from '@spm/shared';
+import { projectRoleLabels, type CreationOptions, type Project, type ProjectMember, type ProjectRole, type User } from '@spm/shared';
 import { api } from './api';
 
 export function ProjectList({ user, onSelect, onError }: { user: User; onSelect: (id: number) => void; onError: (error: unknown) => void }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [managers, setManagers] = useState<User[]>([]);
+  const [canCreate, setCanCreate] = useState(false);
+  const [notice, setNotice] = useState('');
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
   const reload = () => api<Project[]>('/projects').then(setProjects).catch(onError);
-  useEffect(() => { void reload(); }, []);
+  useEffect(() => { void reload(); void api<CreationOptions>('/projects/creation-options').then(options => { setCanCreate(options.canCreate); setManagers(options.managers); }).catch(onError); }, []);
   async function create() {
     let values: { name: string; description?: string; managerId?: number };
     try { values = await form.validateFields(); } catch { return; }
     setSaving(true);
-    try { const project = await api<Project>('/projects', 'POST', values); setOpen(false); onSelect(project.id); }
+    try {
+      const created = await api<{ id: number; canManage: boolean }>('/projects', 'POST', values);
+      setOpen(false);
+      if (created.canManage) onSelect(created.id);
+      else { setNotice('项目已创建，已授权给指定经理；创建操作不会自动授予项目访问权。'); await reload(); }
+    }
     catch (error) { onError(error); } finally { setSaving(false); }
   }
   async function showCreate() {
     try {
-      if (user.role === 'ADMIN') setManagers(await api<User[]>('/projects/managers'));
+      const options = await api<CreationOptions>('/projects/creation-options');
+      setCanCreate(options.canCreate); setManagers(options.managers);
       form.resetFields(); setOpen(true);
     } catch (error) { onError(error); }
   }
   return <><Space className="section-heading"><Typography.Title level={2}>我的项目</Typography.Title>
-    {user.role !== 'MEMBER' && <Button type="primary" onClick={() => void showCreate()}>创建项目</Button>}
+    {canCreate && <Button type="primary" onClick={() => void showCreate()}>创建项目</Button>}
     <Button onClick={() => void reload()}>刷新项目</Button></Space>
-    {projects.length ? <div className="project-grid">{projects.map(project => <Card key={project.id} title={project.name} extra={<Tag>{project.canManage ? '可管理' : '可查看'}</Tag>}>
+    {notice && <Alert type="success" title={notice} />}
+    {projects.length ? <div className="project-grid">{projects.map(project => <Card key={project.id} title={project.name} extra={<Tag>{projectRoleLabels[project.projectRole]}</Tag>}>
       <Typography.Paragraph ellipsis={{ rows: 2 }}>{project.description || '暂无说明'}</Typography.Paragraph>
       <p>项目经理：{project.manager.username}</p><Button onClick={() => onSelect(project.id)}>进入项目</Button>
     </Card>)}</div> : <Empty description="暂无有权访问的项目" />}
@@ -53,7 +62,7 @@ export function Members({ project, onError, onChanged }: { project: Project; onE
     } catch (error) { onError(error); }
   }
   useEffect(() => { void reload(); }, [project.id]);
-  async function add(values: { userId: number }) {
+  async function add(values: { userId: number; role: ProjectRole }) {
     setBusy(true);
     try { await api(path + '/members', 'POST', values); form.resetFields(); await reload(); onChanged(); }
     catch (error) { onError(error); } finally { setBusy(false); }
@@ -61,15 +70,21 @@ export function Members({ project, onError, onChanged }: { project: Project; onE
   async function remove(userId: number) {
     try { await api(path + `/members/${userId}`, 'DELETE'); await reload(); onChanged(); } catch (error) { onError(error); }
   }
+  async function changeRole(userId: number, role: ProjectRole) {
+    try { await api(path + `/members/${userId}/role`, 'PATCH', { role }); await reload(); onChanged(); }
+    catch (error) { onError(error); }
+  }
   return <><Typography.Title level={3}>项目成员</Typography.Title>
-    <Form form={form} layout="inline" onFinish={add} className="member-form">
+    <Form form={form} layout="inline" onFinish={add} initialValues={{ role: 'DEVELOPER' }} className="member-form">
       <Form.Item name="userId" label="添加成员" rules={[{ required: true }]}><Select style={{ width: 220 }} showSearch optionFilterProp="label" options={candidates.map(user => ({ value: user.id, label: user.username }))} /></Form.Item>
+      <Form.Item name="role" label="项目角色" rules={[{ required: true }]}><Select style={{ width: 160 }} options={Object.entries(projectRoleLabels).map(([value, label]) => ({ value, label }))} /></Form.Item>
       <Button htmlType="submit" type="primary" loading={busy}>添加</Button>
     </Form>
     <Table rowKey="id" dataSource={members} columns={[
       { title: '用户名', render: (_, member) => member.user.username },
       { title: '状态', render: (_, member) => member.user.active ? '有效' : '已停用' },
-      { title: '操作', render: (_, member) => member.userId === project.managerId ? <Tag>项目经理</Tag> : <Popconfirm title="移除成员将清空其本项目任务指派，确认？" onConfirm={() => remove(member.userId)}><Button danger>移除</Button></Popconfirm> },
+      { title: '预设项目角色', render: (_, member) => <Select aria-label={`${member.user.username}的项目角色`} value={member.role} style={{ width: 160 }} options={Object.entries(projectRoleLabels).map(([value, label]) => ({ value, label }))} onChange={role => void changeRole(member.userId, role)} /> },
+      { title: '操作', render: (_, member) => <Popconfirm title="移除成员将清空其本项目任务指派；项目须保留有效经理，确认？" onConfirm={() => remove(member.userId)}><Button danger>移除</Button></Popconfirm> },
     ]} />
   </>;
 }

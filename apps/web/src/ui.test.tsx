@@ -11,7 +11,7 @@ vi.mock('./api', async importOriginal => ({ ...await importOriginal<typeof impor
 const mocked = vi.mocked(api);
 const member: User = { id: 3, username: 'member', role: 'MEMBER', active: true };
 const manager: User = { id: 2, username: 'manager', role: 'MANAGER', active: true };
-const project: Project = { id: 1, name: 'Alpha', description: 'Notes', managerId: 2, manager, canManage: true };
+const project: Project = { id: 1, name: 'Alpha', description: 'Notes', managerId: 2, manager, canManage: true, projectRole: 'MANAGER', canViewOwnTasks: false };
 beforeEach(() => { mocked.mockReset(); });
 afterEach(cleanup);
 
@@ -45,7 +45,7 @@ describe('US01 login and session UI', () => {
     expect(screen.queryByRole('button', { name: '用户管理' })).not.toBeInTheDocument();
   });
   it('calls server logout then discards the user context', async () => {
-    mocked.mockImplementation(async path => path === '/auth/me' ? member : path === '/projects' ? [] : { ok: true });
+    mocked.mockImplementation(async path => path === '/auth/me' ? member : path === '/projects' ? [] : path === '/projects/creation-options' ? { canCreate: false, managers: [] } : { ok: true });
     render(<App />);
     await userEvent.click(await screen.findByRole('button', { name: /退\s*出/ }));
     expect(await screen.findByRole('button', { name: /登\s*录/ })).toBeInTheDocument();
@@ -54,24 +54,24 @@ describe('US01 login and session UI', () => {
 });
 describe('US02/03/06 project role boundaries', () => {
   it('ordinary users cannot see global management or creation controls', async () => {
-    mocked.mockImplementation(async path => path === '/auth/me' ? member : [project]);
+    mocked.mockImplementation(async path => path === '/auth/me' ? member : path === '/projects/creation-options' ? { canCreate: false, managers: [] } : [project]);
     render(<App />);
     await screen.findByText('Alpha');
     expect(screen.queryByRole('button', { name: '用户管理' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '创建项目' })).not.toBeInTheDocument();
   });
   it('switches project by the selected id rather than a stale global project', async () => {
-    mocked.mockResolvedValue([project, { ...project, id: 7, name: 'Beta' }]);
+    mocked.mockImplementation(async path => path === '/projects/creation-options' ? { canCreate: false, managers: [] } : [project, { ...project, id: 7, name: 'Beta' }]);
     const select = vi.fn(); render(<ProjectList user={member} onSelect={select} onError={vi.fn()} />);
     const buttons = await screen.findAllByRole('button', { name: '进入项目' });
     await userEvent.click(buttons[1]); expect(select).toHaveBeenCalledWith(7);
   });
   it('view-only project members do not see member/task management tabs', async () => {
-    mocked.mockImplementation(async path => path === '/auth/me' ? member : path === '/projects' ? [{ ...project, canManage: false }] : { ...project, canManage: false });
+    mocked.mockImplementation(async path => path === '/auth/me' ? member : path === '/projects/creation-options' ? { canCreate: false, managers: [] } : path === '/projects' ? [{ ...project, canManage: false }] : path.endsWith('/requirements') ? [] : { ...project, canManage: false, projectRole: 'DEVELOPER', canViewOwnTasks: true });
     render(<App />);
     await userEvent.click(await screen.findByRole('button', { name: '进入项目' }));
     await screen.findByText('返回项目列表');
-    expect(screen.queryByRole('tab', { name: '成员管理' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: '成员与项目角色' })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: '任务创建与指派' })).not.toBeInTheDocument();
   });
 });

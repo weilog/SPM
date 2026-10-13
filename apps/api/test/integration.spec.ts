@@ -15,7 +15,7 @@ import type { Role } from '@spm/shared';
 
 describe('Sprint 1 PostgreSQL REST integration', () => {
   let app: INestApplication, db: DbService, pool: Pool;
-  let admin: number, manager: number, managerB: number, member: number, outsider: number;
+  let admin: number, manager: number, managerB: number, member: number, outsider: number, tester: number;
   let project: number, otherProject: number;
   const password = randomBytes(24).toString('hex');
   const schema = 'spm_test_' + randomBytes(8).toString('hex');
@@ -44,7 +44,7 @@ describe('Sprint 1 PostgreSQL REST integration', () => {
     const module = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = configure(module.createNestApplication()); await app.init(); db = app.get(DbService);
     const hash = await hashPassword(password);
-    for (const [name, role] of [['admin', 'ADMIN'], ['manager', 'MANAGER'], ['manager_b', 'MANAGER'], ['member', 'MEMBER'], ['outsider', 'MEMBER']] as [string, Role][]) {
+    for (const [name, role] of [['admin', 'ADMIN'], ['manager', 'MANAGER'], ['manager_b', 'MANAGER'], ['member', 'MEMBER'], ['outsider', 'MEMBER'], ['tester', 'MEMBER']] as [string, Role][]) {
       await db.user.create({ data: { username: name, role, passwordHash: hash } });
       await login(name);
     }
@@ -54,9 +54,11 @@ describe('Sprint 1 PostgreSQL REST integration', () => {
     managerB = users.find(user => user.username === 'manager_b')!.id;
     member = users.find(user => user.username === 'member')!.id;
     outsider = users.find(user => user.username === 'outsider')!.id;
+    tester = users.find(user => user.username === 'tester')!.id;
     project = (await call('post', '/projects', 'manager', { name: 'Alpha', description: 'Alpha-only-data' }).expect(201)).body.id;
     otherProject = (await call('post', '/projects', 'manager_b', { name: 'Beta' }).expect(201)).body.id;
     await call('post', `/projects/${project}/members`, 'manager', { userId: member }).expect(201);
+    await call('post', `/projects/${project}/members`, 'manager', { userId: tester, role: 'TESTER' }).expect(201);
   }, 60000);
   afterAll(async () => {
     if (app) await app.close();
@@ -90,13 +92,14 @@ describe('Sprint 1 PostgreSQL REST integration', () => {
     await request(app.getHttpServer()).post('/api/projects').set('Cookie', cookies.manager).send({ name: 'CSRF' }).expect(403);
     await request(app.getHttpServer()).post('/api/projects').set('Cookie', cookies.manager).set('X-SPM-Request', '1').set('Origin', 'https://attacker.example').send({ name: 'CSRF' }).expect(403);
   });
-  it('US02 permits admin CRUD/global grants and denies every other role', async () => {
-    const created = (await call('post', '/users', 'admin', { username: 'created', password, role: 'MEMBER' }).expect(201)).body;
+  it('US02 permits admin account CRUD but excludes US16 global grants', async () => {
+    const created = (await call('post', '/users', 'admin', { username: 'created', password }).expect(201)).body;
     expect(created).not.toHaveProperty('passwordHash');
-    await call('patch', `/users/${created.id}`, 'admin', { role: 'MANAGER', username: 'renamed' }).expect(200);
-    expect((await db.user.findUniqueOrThrow({ where: { id: created.id } })).role).toBe('MANAGER');
-    await call('patch', `/users/${created.id}`, 'admin', { role: 'MEMBER' }).expect(200);
-    for (const who of ['member', 'manager', 'manager_b']) {
+    await call('patch', `/users/${created.id}`, 'admin', { username: 'renamed' }).expect(200);
+    expect((await db.user.findUniqueOrThrow({ where: { id: created.id } })).role).toBe('MEMBER');
+    await call('patch', `/users/${created.id}`, 'admin', { role: 'MANAGER' }).expect(400);
+    await call('post', '/users', 'admin', { username: 'global-grant', password, role: 'ADMIN' }).expect(400);
+    for (const who of ['member', 'manager', 'manager_b', 'tester']) {
       await call('get', '/users', who).expect(403);
       await call('patch', `/users/${created.id}`, who, { role: 'ADMIN' }).expect(403);
       await call('delete', `/users/${created.id}`, who).expect(403);
@@ -106,8 +109,8 @@ describe('Sprint 1 PostgreSQL REST integration', () => {
     expect(await db.user.findUnique({ where: { id: created.id } })).toBeNull();
   });
   it('US02 validates passwords/usernames/roles and duplicate usernames', async () => {
-    for (const data of [{ username: 'weak', password: '123', role: 'MEMBER' }, { username: 'invalid space', password, role: 'MEMBER' }, { username: 'role', password, role: 'OWNER' }]) await call('post', '/users', 'admin', data).expect(400);
-    await call('post', '/users', 'admin', { username: 'member', password, role: 'MEMBER' }).expect(409);
+    for (const data of [{ username: 'weak', password: '123' }, { username: 'invalid space', password }, { username: 'role', password, role: 'OWNER' }]) await call('post', '/users', 'admin', data).expect(400);
+    await call('post', '/users', 'admin', { username: 'member', password }).expect(409);
   });
   it('US02 preserves the last administrator and protects assigned managers from deletion', async () => {
     await call('patch', `/users/${admin}`, 'admin', { active: false }).expect(400);
@@ -124,7 +127,7 @@ describe('Sprint 1 PostgreSQL REST integration', () => {
   });
   it('US03 requires admins to select an active manager and validates required name', async () => {
     await call('post', '/projects', 'admin', { name: 'Admin project', managerId: managerB }).expect(201);
-    for (const managerId of [undefined, member]) await call('post', '/projects', 'admin', { name: 'Rejected', managerId }).expect(400);
+    for (const managerId of [undefined, -1, 999999]) await call('post', '/projects', 'admin', { name: 'Rejected', managerId }).expect(400);
     for (const name of ['', ' ', 'x'.repeat(201)]) await call('post', '/projects', 'manager', { name }).expect(400);
     await call('post', '/projects', 'manager', { name: 'Extra', projectId: otherProject }).expect(400);
   });
@@ -148,7 +151,8 @@ describe('Sprint 1 PostgreSQL REST integration', () => {
     expect(list.map((item: { id: number }) => item.id)).toEqual([project]);
     await call('get', `/projects/${otherProject}`, 'member').expect(404);
     await call('get', `/projects/${project}`, 'outsider').expect(404);
-    expect((await call('get', '/projects', 'admin').expect(200)).body.length).toBeGreaterThan(1);
+    expect((await call('get', '/projects', 'admin').expect(200)).body).toEqual([]);
+    await call('get', `/projects/${project}`, 'admin').expect(404);
   });
   it('US06 supports membership in multiple projects and revokes access on removal', async () => {
     await call('post', `/projects/${otherProject}/members`, 'manager_b', { userId: member }).expect(201);
@@ -198,13 +202,15 @@ describe('Sprint 1 PostgreSQL REST integration', () => {
     await call('patch', `/users/${member}`, 'admin', { active: true }).expect(200);
     await login('member');
   });
-  it('US02/03/04/07 global manager revocation takes effect on existing sessions', async () => {
-    await call('patch', `/users/${manager}`, 'admin', { role: 'MEMBER' }).expect(200);
+  it('US05 project manager revocation takes effect on existing sessions', async () => {
+    await call('post', `/projects/${project}/members`, 'manager', { userId: managerB, role: 'MANAGER' }).expect(201);
+    await call('patch', `/projects/${project}/members/${manager}/role`, 'manager_b', { role: 'DEVELOPER' }).expect(200);
     await call('get', `/projects/${project}`, 'manager').expect(200);
-    await call('post', '/projects', 'manager', { name: 'Revoked' }).expect(403);
+    await call('post', '/projects', 'manager', { name: 'Creation identity retained' }).expect(201);
     await call('post', `/projects/${project}/tasks`, 'manager', { title: 'Denied' }).expect(403);
     await call('post', `/projects/${project}/members`, 'manager', { userId: outsider }).expect(403);
-    await call('patch', `/users/${manager}`, 'admin', { role: 'MANAGER' }).expect(200);
+    await call('patch', `/projects/${project}/members/${manager}/role`, 'manager_b', { role: 'MANAGER' }).expect(200);
+    await call('delete', `/projects/${project}/members/${managerB}`, 'manager').expect(200);
   });
   it('US02 password changes invalidate old sessions and passwords', async () => {
     await call('patch', `/users/${outsider}`, 'admin', { password: password + 'new' }).expect(200);
@@ -236,5 +242,140 @@ describe('Sprint 1 PostgreSQL REST integration', () => {
     expect([200, 400, 409]).toContain(results[0].status);
     expect((await db.task.findUniqueOrThrow({ where: { id: task.id } })).assigneeUserId).toBeNull();
     await call('patch', `/users/${member}`, 'admin', { active: true }).expect(200);
+    await login('member');
+  });
+  it('US05 only project managers can change preset project roles', async () => {
+    const path = `/projects/${project}/members/${member}/role`;
+    await call('patch', path, 'member', { role: 'MANAGER' }).expect(403);
+    await call('patch', path, 'tester', { role: 'MANAGER' }).expect(403);
+    await call('patch', path, 'manager_b', { role: 'TESTER' }).expect(404);
+    await call('patch', path, 'admin', { role: 'TESTER' }).expect(404);
+    await call('patch', path, 'manager', { role: 'CUSTOM' }).expect(400);
+    await call('patch', path, 'manager', { role: 'TESTER' }).expect(200);
+    expect((await call('get', `/projects/${project}`, 'member').expect(200)).body.projectRole).toBe('TESTER');
+    await call('patch', path, 'manager', { role: 'DEVELOPER' }).expect(200);
+  });
+  it('US05 role changes are project scoped and preserve a valid manager', async () => {
+    await call('patch', `/projects/${project}/members/${manager}/role`, 'manager', { role: 'DEVELOPER' }).expect(400);
+    await call('patch', `/projects/${project}/members/${managerB}/role`, 'manager', { role: 'MANAGER' }).expect(404);
+    await call('patch', `/projects/${otherProject}/members/${managerB}/role`, 'manager', { role: 'DEVELOPER' }).expect(404);
+    expect((await db.projectMember.findUniqueOrThrow({ where: { projectId_userId: { projectId: project, userId: manager } } })).role).toBe('MANAGER');
+  });
+  it('US05 a promoted project manager gains management without a global role change', async () => {
+    await call('patch', `/projects/${project}/members/${member}/role`, 'manager', { role: 'MANAGER' }).expect(200);
+    expect((await db.user.findUniqueOrThrow({ where: { id: member } })).role).toBe('MEMBER');
+    await call('post', `/projects/${project}/tasks`, 'member', { title: 'Project manager task' }).expect(201);
+    expect((await call('get', '/projects/creation-options', 'member').expect(200)).body.canCreate).toBe(true);
+    await call('patch', `/projects/${project}/members/${member}/role`, 'manager', { role: 'DEVELOPER' }).expect(200);
+    await call('post', `/projects/${project}/tasks`, 'member', { title: 'Revoked project role' }).expect(403);
+  });
+  it('US03 administrator creation grants only the designated project manager membership', async () => {
+    const account = (await call('post', '/users', 'admin', { username: 'new-project-owner', password }).expect(201)).body;
+    const created = (await call('post', '/projects', 'admin', { name: 'New owner project', managerId: account.id }).expect(201)).body;
+    expect(await db.projectMember.findUnique({ where: { projectId_userId: { projectId: created.id, userId: admin } } })).toBeNull();
+    expect((await db.projectMember.findUniqueOrThrow({ where: { projectId_userId: { projectId: created.id, userId: account.id } } })).role).toBe('MANAGER');
+    await call('get', `/projects/${created.id}`, 'admin').expect(404);
+  });
+  it('US10 developers and testers see only their own assigned tasks and details', async () => {
+    const first = (await call('post', `/projects/${project}/tasks`, 'manager', { title: 'Developer private', assigneeUserId: member }).expect(201)).body;
+    const second = (await call('post', `/projects/${project}/tasks`, 'manager', { title: 'Tester private', assigneeUserId: tester }).expect(201)).body;
+    for (const [who, id, otherId, userId] of [['member', first.id, second.id, member], ['tester', second.id, first.id, tester]] as const) {
+      const list = (await call('get', `/projects/${project}/tasks/mine?userId=${tester}`, who).expect(200)).body;
+      expect(list.length).toBeGreaterThan(0);
+      expect(list.every((task: { assigneeUserId: number }) => task.assigneeUserId === userId)).toBe(true);
+      expect((await call('get', `/projects/${project}/tasks/mine/${id}`, who).expect(200)).body.id).toBe(id);
+      await call('get', `/projects/${project}/tasks/mine/${otherId}`, who).expect(404);
+      await call('get', `/projects/${otherProject}/tasks/mine`, who).expect(404);
+      await call('get', `/projects/${project}/tasks`, who).expect(403);
+    }
+    await call('get', `/projects/${project}/tasks/mine`, 'manager').expect(403);
+    await call('get', `/projects/${project}/tasks/mine`, 'admin').expect(404);
+  });
+  it('US10 role revocation and reassignment immediately revoke personal task access', async () => {
+    const task = (await call('post', `/projects/${project}/tasks`, 'manager', { title: 'Own detail', assigneeUserId: tester }).expect(201)).body;
+    await call('get', `/projects/${project}/tasks/mine/${task.id}`, 'tester').expect(200);
+    await call('patch', `/projects/${project}/tasks/${task.id}/assignee`, 'manager', { assigneeUserId: member }).expect(200);
+    await call('get', `/projects/${project}/tasks/mine/${task.id}`, 'tester').expect(404);
+    await call('patch', `/projects/${project}/members/${member}/role`, 'manager', { role: 'MANAGER' }).expect(200);
+    await call('get', `/projects/${project}/tasks/mine`, 'member').expect(403);
+    await call('patch', `/projects/${project}/members/${member}/role`, 'manager', { role: 'DEVELOPER' }).expect(200);
+  });
+  it('US20/21 manager creates formal requirements and authorized roles view list/detail', async () => {
+    const created = (await call('post', `/projects/${project}/requirements`, 'manager', { title: '  正式需求  ', description: '业务目标' }).expect(201)).body;
+    expect(created).toMatchObject({ title: '正式需求', projectId: project, description: '业务目标' });
+    for (const who of ['manager', 'member', 'tester']) {
+      const list = (await call('get', `/projects/${project}/requirements`, who).expect(200)).body;
+      expect(list.some((requirement: { id: number }) => requirement.id === created.id)).toBe(true);
+      expect((await call('get', `/projects/${project}/requirements/${created.id}`, who).expect(200)).body.description).toBe('业务目标');
+    }
+    await call('get', `/projects/${project}/requirements`, 'admin').expect(404);
+    await call('get', `/projects/${project}/requirements/${created.id}`, 'manager_b').expect(404);
+  });
+  it('US21 only project managers create/edit formal requirements, even for global admins', async () => {
+    const requirement = (await call('post', `/projects/${project}/requirements`, 'manager', { title: 'Editable', description: 'Before' }).expect(201)).body;
+    const path = `/projects/${project}/requirements/${requirement.id}`;
+    expect((await call('patch', path, 'manager', { title: '  Updated  ', description: 'After' }).expect(200)).body).toMatchObject({ title: 'Updated', description: 'After' });
+    for (const [who, code] of [['member', 403], ['tester', 403], ['admin', 404], ['manager_b', 404]] as const) {
+      await call('post', `/projects/${project}/requirements`, who, { title: 'Denied' }).expect(code);
+      await call('patch', path, who, { title: 'Denied' }).expect(code);
+    }
+    expect((await db.requirement.findUniqueOrThrow({ where: { id: requirement.id } })).title).toBe('Updated');
+  });
+  it('US20/21 cross-project requirement IDs never permit reads or edits', async () => {
+    const requirement = (await call('post', `/projects/${project}/requirements`, 'manager', { title: 'Alpha only' }).expect(201)).body;
+    await call('get', `/projects/${otherProject}/requirements/${requirement.id}`, 'manager_b').expect(404);
+    await call('patch', `/projects/${otherProject}/requirements/${requirement.id}`, 'manager_b', { title: 'Forged' }).expect(404);
+    const otherList = (await call('get', `/projects/${otherProject}/requirements`, 'manager_b').expect(200)).body;
+    expect(otherList.some((item: { id: number }) => item.id === requirement.id)).toBe(false);
+  });
+  it('US21 validates required/oversized/null fields and excludes future associations', async () => {
+    for (const data of [{ title: '' }, { title: ' ' }, { title: 'x'.repeat(201) }, { title: 'Long', description: 'x'.repeat(10001) }, { title: 'Null', description: null }, { title: 'Project', projectId: otherProject }, { title: 'Tasks', taskIds: [1] }, { title: 'State', status: 'IMPLEMENTED' }]) {
+      await call('post', `/projects/${project}/requirements`, 'manager', data).expect(400);
+    }
+    const requirement = (await call('post', `/projects/${project}/requirements`, 'manager', { title: 'Validate edits' }).expect(201)).body;
+    for (const data of [{}, { title: '' }, { title: null }, { description: null }, { projectId: otherProject }, { taskIds: [1] }]) await call('patch', `/projects/${project}/requirements/${requirement.id}`, 'manager', data).expect(400);
+    await call('patch', `/projects/${project}/requirements/${requirement.id}`, 'manager', { description: '' }).expect(200);
+  });
+  it('project authorization applies to administrators exactly like other project members', async () => {
+    await call('post', `/projects/${project}/members`, 'manager', { userId: admin, role: 'DEVELOPER' }).expect(201);
+    await call('get', `/projects/${project}`, 'admin').expect(200);
+    await call('get', `/projects/${project}/requirements`, 'admin').expect(200);
+    await call('post', `/projects/${project}/tasks`, 'admin', { title: 'No global bypass' }).expect(403);
+    await call('post', `/projects/${project}/requirements`, 'admin', { title: 'No global bypass' }).expect(403);
+    await call('patch', `/projects/${project}/members/${member}/role`, 'admin', { role: 'MANAGER' }).expect(403);
+    await call('get', '/users', 'admin').expect(200);
+    const task = (await call('post', `/projects/${project}/tasks`, 'manager', { title: 'Authorized admin own task', assigneeUserId: admin }).expect(201)).body;
+    await call('get', `/projects/${project}/tasks/mine/${task.id}`, 'admin').expect(200);
+    await call('patch', `/projects/${project}/members/${admin}/role`, 'manager', { role: 'MANAGER' }).expect(200);
+    await call('post', `/projects/${project}/requirements`, 'admin', { title: 'Explicit project permission' }).expect(201);
+    await call('delete', `/projects/${project}/members/${admin}`, 'manager').expect(200);
+    await call('get', `/projects/${project}`, 'admin').expect(404);
+  });
+  it('membership removal revokes US10/20 access and retains task/requirement records', async () => {
+    const count = await db.requirement.count({ where: { projectId: project } });
+    await call('delete', `/projects/${project}/members/${tester}`, 'manager').expect(200);
+    await call('get', `/projects/${project}/requirements`, 'tester').expect(404);
+    await call('get', `/projects/${project}/tasks/mine`, 'tester').expect(404);
+    expect(await db.requirement.count({ where: { projectId: project } })).toBe(count);
+    expect(await db.task.count({ where: { assigneeUserId: tester } })).toBe(0);
+  });
+  it('new project routes reject anonymous callers and forged write origins', async () => {
+    for (const path of [`/projects/${project}/requirements`, `/projects/${project}/tasks/mine`]) await call('get', path).expect(401);
+    await request(app.getHttpServer()).post(`/api/projects/${project}/requirements`).set('Cookie', cookies.manager).send({ title: 'CSRF' }).expect(403);
+    await request(app.getHttpServer()).patch(`/api/projects/${project}/members/${member}/role`).set('Cookie', cookies.manager).send({ role: 'MANAGER' }).expect(403);
+  });
+  it('US05 concurrent role demotions cannot remove every project manager', async () => {
+    await call('patch', `/projects/${project}/members/${member}/role`, 'manager', { role: 'MANAGER' }).expect(200);
+    const results = await Promise.all([
+      call('patch', `/projects/${project}/members/${manager}/role`, 'manager', { role: 'DEVELOPER' }),
+      call('patch', `/projects/${project}/members/${member}/role`, 'member', { role: 'DEVELOPER' }),
+    ]);
+    expect(results.map(result => result.status).sort()).toEqual([200, 400]);
+    const remaining = await db.projectMember.findMany({ where: { projectId: project, role: 'MANAGER', user: { active: true } } });
+    expect(remaining).toHaveLength(1);
+    const who = remaining[0].userId === manager ? 'manager' : 'member';
+    const revoked = remaining[0].userId === manager ? member : manager;
+    await call('patch', `/projects/${project}/members/${revoked}/role`, who, { role: 'MANAGER' }).expect(200);
+    await call('patch', `/projects/${project}/members/${member}/role`, 'manager', { role: 'DEVELOPER' }).expect(200);
   });
 });

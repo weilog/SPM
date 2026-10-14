@@ -51,15 +51,15 @@ export function App() {
   }
   if (loading) return <div className="loading"><Spin description="正在连接爱管理" /></div>;
   if (!user) return <><Login onLogin={next => { setUser(next); setError(''); resetContext(); }} />{error && <Alert type="error" title={error} />}</>;
-  return <Layout className="app-shell"><Layout.Header className="header"><Typography.Title level={3}>爱管理</Typography.Title><Space wrap>
-    <span>{user.username}</span><Tag>{roleLabels[user.role]}</Tag><Button onClick={() => { resetContext(); setError(''); }}>我的项目 / 切换项目</Button>
-    {user.role === 'ADMIN' && <Button onClick={() => { resetContext(); setView('users'); setError(''); }}>用户管理</Button>}
-    <Button onClick={() => void logout()}>退出</Button>
-  </Space></Layout.Header><Layout.Content className="content">
+  return <Layout className="app-shell"><Layout.Header className="header"><div className="brand"><span className="brand-mark" aria-hidden="true">爱</span><span>爱管理<small>项目协作工作台</small></span></div>
+    <nav className="main-nav" aria-label="主导航"><Button type="text" className={view === 'projects' ? 'nav-active' : ''} onClick={() => { resetContext(); setError(''); }}>我的项目 / 切换项目</Button>
+    {user.role === 'ADMIN' && <Button type="text" className={view === 'users' ? 'nav-active' : ''} onClick={() => { resetContext(); setView('users'); setError(''); }}>用户管理</Button>}</nav>
+    <Space className="account-menu" wrap><span className="user-avatar" aria-hidden="true">{user.username.slice(0, 1).toUpperCase()}</span><div className="account-info"><strong>{user.username}</strong><span>{roleLabels[user.role]}</span></div><Button type="text" onClick={() => void logout()}>退出</Button></Space>
+  </Layout.Header><Layout.Content className="content">
     {error && <Alert type="error" title={error} closable onClose={() => setError('')} />}
-    {view === 'users' ? <Users onError={onError} onChanged={refreshUser} /> : project ? <>
-      <Button onClick={resetContext}>返回项目列表</Button><Card className="project-detail"><Typography.Title level={2}>{project.name}</Typography.Title><p>{project.description || '暂无说明'}</p><p>项目经理：{project.manager.username} · 我的项目角色：{projectRoleLabels[project.projectRole]}</p></Card>
-      <Tabs items={[
+    {view === 'users' ? <div className="workspace-panel"><Users onError={onError} onChanged={refreshUser} /></div> : project ? <>
+      <Button className="back-button" type="text" onClick={resetContext}>返回项目列表</Button><Card className="project-detail"><span className="eyebrow">项目空间</span><Typography.Title level={2}>{project.name}</Typography.Title><p className="project-description">{project.description || '暂无说明'}</p><Space wrap><span className="project-manager">项目经理：{project.manager.username}</span><Tag color="cyan">{projectRoleLabels[project.projectRole]}</Tag></Space></Card>
+      <Tabs className="workspace-panel project-tabs" items={[
         { key: 'requirements', label: '正式需求', children: <Requirements project={project} onError={onError} /> },
         ...(project.canViewOwnTasks ? [{ key: 'mine', label: '我的任务', children: <MyTasks project={project} onError={onError} /> }] : []),
         ...(project.canManage ? [

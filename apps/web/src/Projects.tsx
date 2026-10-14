@@ -32,13 +32,14 @@ export function ProjectList({ user, onSelect, onError }: { user: User; onSelect:
       form.resetFields(); setOpen(true);
     } catch (error) { onError(error); }
   }
-  return <><Space className="section-heading"><Typography.Title level={2}>我的项目</Typography.Title>
+  return <><div className="workspace-intro"><div><span className="eyebrow">项目工作台</span><Typography.Title level={2}>让协作，从这里开始。</Typography.Title><p>进入你的项目，查看需求、组织成员与安排任务。</p></div><div className="workspace-symbol" aria-hidden="true"><span /> <span /> <span /></div></div><div className="section-heading"><div><Typography.Title level={2}>我的项目</Typography.Title><p className="section-subtitle">你参与的项目，集中在这里。</p></div><Space wrap>
     {canCreate && <Button type="primary" onClick={() => void showCreate()}>创建项目</Button>}
-    <Button onClick={() => void reload()}>刷新项目</Button></Space>
+    <Button onClick={() => void reload()}>刷新项目</Button></Space></div>
     {notice && <Alert type="success" title={notice} />}
-    {projects.length ? <div className="project-grid">{projects.map(project => <Card key={project.id} title={project.name} extra={<Tag>{projectRoleLabels[project.projectRole]}</Tag>}>
-      <Typography.Paragraph ellipsis={{ rows: 2 }}>{project.description || '暂无说明'}</Typography.Paragraph>
-      <p>项目经理：{project.manager.username}</p><Button onClick={() => onSelect(project.id)}>进入项目</Button>
+    {projects.length ? <div className="project-grid">{projects.map(project => <Card className="project-card" key={project.id}>
+      <div className="project-card-top"><span className="project-monogram" aria-hidden="true">{project.name.slice(0, 1)}</span><Tag color={project.canManage ? 'cyan' : 'default'}>{projectRoleLabels[project.projectRole]}</Tag></div>
+      <Typography.Title level={3}>{project.name}</Typography.Title><Typography.Paragraph className="project-card-description" ellipsis={{ rows: 2 }}>{project.description || '暂无说明'}</Typography.Paragraph>
+      <div className="project-card-footer"><span className="project-manager">项目经理：{project.manager.username}</span><Button type="text" onClick={() => onSelect(project.id)}>进入项目<span aria-hidden="true"> →</span></Button></div>
     </Card>)}</div> : <Empty description="暂无有权访问的项目" />}
     <Modal title="创建项目" open={open} onCancel={() => setOpen(false)} onOk={() => void create()} confirmLoading={saving} destroyOnHidden>
       <Form form={form} layout="vertical">

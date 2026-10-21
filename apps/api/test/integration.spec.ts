@@ -378,4 +378,115 @@ describe('Sprint 1 PostgreSQL REST integration', () => {
     await call('patch', `/projects/${project}/members/${revoked}/role`, who, { role: 'MANAGER' }).expect(200);
     await call('patch', `/projects/${project}/members/${member}/role`, 'manager', { role: 'DEVELOPER' }).expect(200);
   });
+
+  describe('Sprint 2 phase 1 stories', () => {
+    let goal: number, goal2: number, epicA: number, epicB: number, storyA: number, storyB: number, req: number;
+    const base = () => `/projects/${project}`;
+    it('creates a persistent goal/epic/story hierarchy with independent status and requirement links', async () => {
+      goal = (await call('post', base() + '/goals', 'manager', { title: 'Product outcome' }).expect(201)).body.id;
+      goal2 = (await call('post', base() + '/goals', 'manager', { title: 'Second outcome' }).expect(201)).body.id;
+      epicA = (await call('post', base() + '/epics', 'manager', { title: 'First epic', goalId: goal }).expect(201)).body.id;
+      epicB = (await call('post', base() + '/epics', 'manager', { title: 'Empty epic', goalId: goal2 }).expect(201)).body.id;
+      req = (await call('post', base() + '/requirements', 'manager', { title: 'Formal requirement' }).expect(201)).body.id;
+      storyA = (await call('post', base() + '/stories', 'manager', { title: '  Story one  ', epicId: epicA, description: 'As a user', acceptanceCriteria: 'Observable result', requirementIds: [req] }).expect(201)).body.id;
+      storyB = (await call('post', base() + '/stories', 'manager', { title: 'Story two', epicId: epicA }).expect(201)).body.id;
+      const detail = (await call('get', base() + `/stories/${storyA}`, 'member').expect(200)).body;
+      expect(detail).toMatchObject({ title: 'Story one', status: 'TODO', epicId: epicA, sortOrder: 0, revision: 0, requirementIds: [req] });
+      expect((await call('get', base() + `/requirements/${req}`, 'member').expect(200)).body.storyIds).toEqual([storyA]);
+      expect((await call('get', base() + '/story-map', 'member').expect(200)).body.stories).toHaveLength(2);
+    });
+    it('persists goal and epic edits and sibling ordering with revision conflicts', async () => {
+      await call('patch', base() + `/goals/${goal2}`, 'manager', { title: 'Renamed outcome', sortOrder: 0, revision: 0 }).expect(200);
+      const goals = (await call('get', base() + '/goals', 'member').expect(200)).body;
+      expect(goals.map((g: { id: number }) => g.id)).toEqual([goal2, goal]);
+      await call('patch', base() + `/goals/${goal2}`, 'manager', { title: 'Stale', revision: 0 }).expect(409);
+      await call('patch', base() + `/epics/${epicA}`, 'manager', { title: 'Renamed epic', revision: 0 }).expect(200);
+      expect((await call('get', base() + '/epics', 'member').expect(200)).body.find((e: { id: number }) => e.id === epicA).title).toBe('Renamed epic');
+      const extra = (await call('post', base() + '/epics', 'manager', { title: 'Another epic', goalId: goal }).expect(201)).body;
+      await call('patch', base() + `/epics/${extra.id}`, 'manager', { sortOrder: 0, revision: 0 }).expect(200);
+      expect((await call('get', base() + '/epics', 'member').expect(200)).body.filter((e: { goalId: number }) => e.goalId === goal).map((e: { id: number }) => e.id)).toEqual([extra.id, epicA]);
+    });
+    it('supports same-epic reorder and cross-epic move with contiguous persisted positions', async () => {
+      await call('patch', base() + `/stories/${storyB}/move`, 'manager', { epicId: epicA, position: 0, revision: 0 }).expect(200);
+      expect((await db.userStory.findMany({ where: { epicId: epicA }, orderBy: { sortOrder: 'asc' } })).map(s => s.id)).toEqual([storyB, storyA]);
+      const current = await db.userStory.findUniqueOrThrow({ where: { id: storyA } });
+      await call('patch', base() + `/stories/${storyA}/move`, 'manager', { epicId: epicB, position: 0, revision: current.revision }).expect(200);
+      const map = (await call('get', base() + '/story-map', 'member').expect(200)).body;
+      expect(map.stories.find((s: { id: number }) => s.id === storyA)).toMatchObject({ epicId: epicB, sortOrder: 0 });
+      expect(map.stories.find((s: { id: number }) => s.id === storyB)).toMatchObject({ epicId: epicA, sortOrder: 0 });
+    });
+    it('changes only story status and rejects concurrent stale writes', async () => {
+      const task = await db.task.create({ data: { projectId: project, title: 'Unchanged task' } });
+      await db.storyTask.create({ data: { projectId: project, storyId: storyA, taskId: task.id } });
+      const current = await db.userStory.findUniqueOrThrow({ where: { id: storyA } });
+      const results = await Promise.all(['IN_PROGRESS', 'DONE'].map(status => call('patch', base() + `/stories/${storyA}/status`, 'manager', { status, revision: current.revision })));
+      expect(results.map(r => r.status).sort()).toEqual([200, 409]);
+      const persisted = await db.userStory.findUniqueOrThrow({ where: { id: storyA } });
+      expect(['IN_PROGRESS', 'DONE']).toContain(persisted.status);
+      expect((await db.task.findUniqueOrThrow({ where: { id: task.id } })).status).toBe('TODO');
+      expect((await call('get', base() + '/stories', 'member').expect(200)).body.find((s: { id: number }) => s.id === storyA).status).toBe(persisted.status);
+    });
+    it('edits content and replaces requirement links from both sides atomically', async () => {
+      let current = await db.userStory.findUniqueOrThrow({ where: { id: storyA } });
+      await call('patch', base() + `/stories/${storyA}`, 'manager', { revision: current.revision, title: 'Edited story', acceptanceCriteria: 'Updated criteria', requirementIds: [] }).expect(200);
+      expect((await call('get', base() + `/requirements/${req}`, 'member').expect(200)).body.storyIds).toEqual([]);
+      current = await db.userStory.findUniqueOrThrow({ where: { id: storyA } });
+      await call('patch', base() + `/requirements/${req}`, 'manager', { storyIds: [storyA, storyB] }).expect(200);
+      const detail = (await call('get', base() + `/stories/${storyA}`, 'member').expect(200)).body;
+      expect(detail).toMatchObject({ title: 'Edited story', acceptanceCriteria: 'Updated criteria', requirementIds: [req] });
+      expect(detail.revision).toBe(current.revision + 1);
+      await call('patch', base() + `/stories/${storyA}`, 'manager', { revision: current.revision, title: 'Stale link editor' }).expect(409);
+    });
+    it('enforces read-only developer/tester roles for every phase-one mutation', async () => {
+      await call('post', base() + '/members', 'manager', { userId: tester, role: 'TESTER' }).expect(201);
+      for (const who of ['member', 'tester']) {
+        for (const resource of ['story-map', 'goals', 'epics', 'stories', `stories/${storyA}`]) await call('get', base() + '/' + resource, who).expect(200);
+        await call('post', base() + '/goals', who, { title: 'Denied' }).expect(403);
+        await call('post', base() + '/epics', who, { title: 'Denied', goalId: goal }).expect(403);
+        await call('post', base() + '/stories', who, { title: 'Denied', epicId: epicA }).expect(403);
+        await call('patch', base() + `/goals/${goal}`, who, { title: 'Denied', revision: 0 }).expect(403);
+        await call('patch', base() + `/epics/${epicA}`, who, { title: 'Denied', revision: 0 }).expect(403);
+        await call('patch', base() + `/stories/${storyA}`, who, { title: 'Denied', revision: 0 }).expect(403);
+        await call('patch', base() + `/stories/${storyA}/status`, who, { status: 'DONE', revision: 0 }).expect(403);
+        await call('patch', base() + `/stories/${storyA}/move`, who, { epicId: epicB, position: 0, revision: 0 }).expect(403);
+        await call('patch', base() + `/requirements/${req}`, who, { storyIds: [] }).expect(403);
+      }
+      await call('get', base() + '/story-map', 'admin').expect(404);
+      await call('get', base() + '/story-map').expect(401);
+      await call('delete', base() + `/members/${tester}`, 'manager').expect(200);
+      await call('get', base() + '/stories', 'tester').expect(404);
+    });
+    it('rejects cross-project parents/links in APIs and composite database foreign keys', async () => {
+      const foreignGoal = (await call('post', `/projects/${otherProject}/goals`, 'manager_b', { title: 'Foreign' }).expect(201)).body.id;
+      const foreignEpic = (await call('post', `/projects/${otherProject}/epics`, 'manager_b', { title: 'Foreign', goalId: foreignGoal }).expect(201)).body.id;
+      const foreignStory = (await call('post', `/projects/${otherProject}/stories`, 'manager_b', { title: 'Foreign', epicId: foreignEpic }).expect(201)).body.id;
+      const foreignReq = (await call('post', `/projects/${otherProject}/requirements`, 'manager_b', { title: 'Foreign' }).expect(201)).body.id;
+      await call('post', base() + '/epics', 'manager', { title: 'Forged', goalId: foreignGoal }).expect(404);
+      await call('post', base() + '/stories', 'manager', { title: 'Forged', epicId: foreignEpic }).expect(404);
+      await call('post', base() + '/stories', 'manager', { title: 'Forged', epicId: epicA, requirementIds: [foreignReq] }).expect(400);
+      const current = await db.userStory.findUniqueOrThrow({ where: { id: storyA } });
+      await call('patch', base() + `/stories/${storyA}/move`, 'manager', { epicId: foreignEpic, position: 0, revision: current.revision }).expect(404);
+      await call('patch', base() + `/requirements/${req}`, 'manager', { title: 'Must rollback', storyIds: [foreignStory] }).expect(400);
+      expect((await db.requirement.findUniqueOrThrow({ where: { id: req } })).title).toBe('Formal requirement');
+      await call('get', `/projects/${otherProject}/stories/${storyA}`, 'manager_b').expect(404);
+      await expect(db.epic.create({ data: { projectId: project, goalId: foreignGoal, title: 'DB forged' } })).rejects.toThrow();
+      await expect(db.userStory.create({ data: { projectId: project, epicId: foreignEpic, title: 'DB forged' } })).rejects.toThrow();
+      await expect(db.storyRequirement.create({ data: { projectId: project, storyId: storyA, requirementId: foreignReq } })).rejects.toThrow();
+      const task = await db.task.create({ data: { projectId: otherProject, title: 'Foreign task' } });
+      await expect(db.storyTask.create({ data: { projectId: project, storyId: storyA, taskId: task.id } })).rejects.toThrow();
+      // Real many-to-many storage is available for phase 2 without exposing task data in story reads.
+      const tasks = await Promise.all([1, 2].map(n => db.task.create({ data: { projectId: project, title: `Linked ${n}` } })));
+      for (const storyId of [storyA, storyB]) for (const t of tasks) await db.storyTask.create({ data: { projectId: project, storyId, taskId: t.id } });
+      expect(await db.storyTask.count({ where: { projectId: project, taskId: { in: tasks.map(t => t.id) } } })).toBe(4);
+      expect((await call('get', base() + `/stories/${storyA}`, 'member').expect(200)).body).not.toHaveProperty('taskLinks');
+    });
+    it('validates nulls, blanks, duplicates, forged status/project and move parameters', async () => {
+      for (const data of [{ title: ' ' }, { title: 'x'.repeat(201) }, { title: null }, { title: 'Forged', projectId: otherProject }]) await call('post', base() + '/goals', 'manager', data).expect(400);
+      for (const data of [{ title: 'X', epicId: epicA, status: 'DONE' }, { title: 'X', epicId: epicA, requirementIds: [req, req] }, { title: 'X', epicId: epicA, description: null }]) await call('post', base() + '/stories', 'manager', data).expect(400);
+      for (const data of [{ status: 'INVALID', revision: 0 }, { status: 'DONE' }, { status: null, revision: 0 }]) await call('patch', base() + `/stories/${storyA}/status`, 'manager', data).expect(400);
+      for (const position of [-1, 0.5, null, '1']) await call('patch', base() + `/stories/${storyA}/move`, 'manager', { epicId: epicA, position, revision: 0 }).expect(400);
+      await call('patch', base() + `/stories/${storyA}`, 'manager', { revision: 0 }).expect(400);
+    });
+  });
+
 });

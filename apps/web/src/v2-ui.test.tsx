@@ -20,7 +20,7 @@ afterEach(cleanup);
 
 describe('V2 US02 account-only maintenance', () => {
   it('creates an account without exposing or submitting global role assignment', async () => {
-    mocked.mockImplementation(async (_path, method) => method === 'POST' ? member : []);
+    mocked.mockImplementation(async (_path, method) => _path.endsWith('/story-map') ? { goals: [], epics: [], stories: [] } : method === 'POST' ? member : []);
     render(<Users onError={vi.fn()} onChanged={async () => {}} />);
     await userEvent.click(screen.getByRole('button', { name: '创建用户' }));
     expect(screen.queryByLabelText('全局身份')).not.toBeInTheDocument();
@@ -42,7 +42,7 @@ describe('V2 US05 project roles', () => {
 });
 describe('V2 US20/21 formal requirements', () => {
   it('lets a developer view details while hiding create/edit controls', async () => {
-    mocked.mockImplementation(async path => path.endsWith('/8') ? requirement : [requirement]);
+    mocked.mockImplementation(async path => path.endsWith('/story-map') ? { goals: [], epics: [], stories: [] } : path.endsWith('/8') ? requirement : [requirement]);
     render(<Requirements project={{ ...project, canManage: false, projectRole: 'DEVELOPER', canViewOwnTasks: true }} onError={vi.fn()} />);
     await userEvent.click(await screen.findByRole('button', { name: '查看详情' }));
     expect(await screen.findByText('业务说明')).toBeInTheDocument();
@@ -51,7 +51,7 @@ describe('V2 US20/21 formal requirements', () => {
     expect(screen.queryByRole('button', { name: '编辑需求' })).not.toBeInTheDocument();
   });
   it('validates title and creates only a formal requirement, without task links', async () => {
-    mocked.mockImplementation(async (_path, method) => method === 'POST' ? requirement : []);
+    mocked.mockImplementation(async (_path, method) => _path.endsWith('/story-map') ? { goals: [], epics: [], stories: [] } : method === 'POST' ? requirement : []);
     render(<Requirements project={project} onError={vi.fn()} />);
     await userEvent.click(screen.getByRole('button', { name: '创建正式需求' }));
     await userEvent.click(screen.getByRole('button', { name: /OK|确定/ }));
@@ -62,7 +62,7 @@ describe('V2 US20/21 formal requirements', () => {
     await waitFor(() => expect(mocked).toHaveBeenCalledWith('/projects/1/requirements', 'POST', { title: '新正式需求', description: '目标说明' }));
   });
   it('edits requirement content using the current project and requirement id', async () => {
-    mocked.mockImplementation(async (_path, method) => method === 'PATCH' ? requirement : [requirement]);
+    mocked.mockImplementation(async (_path, method) => _path.endsWith('/story-map') ? { goals: [], epics: [], stories: [] } : method === 'PATCH' ? requirement : [requirement]);
     render(<Requirements project={project} onError={vi.fn()} />);
     await userEvent.click(await screen.findByRole('button', { name: '编辑需求' }));
     await userEvent.clear(screen.getByLabelText('需求标题'));
@@ -74,7 +74,7 @@ describe('V2 US20/21 formal requirements', () => {
 describe('V2 US10 personal task viewing', () => {
   it('uses the server-owned personal list/detail routes without an arbitrary user id', async () => {
     const task = { id: 9, projectId: 1, title: '我的开发任务', description: '任务说明', status: 'TODO', assigneeUserId: 3 };
-    mocked.mockImplementation(async path => path.endsWith('/9') ? task : [task]);
+    mocked.mockImplementation(async path => path.endsWith('/story-map') ? { goals: [], epics: [], stories: [] } : path.endsWith('/9') ? task : [task]);
     render(<MyTasks project={{ ...project, canManage: false, projectRole: 'DEVELOPER', canViewOwnTasks: true }} onError={vi.fn()} />);
     await userEvent.click(await screen.findByRole('button', { name: '查看任务' }));
     expect(await screen.findByText('任务说明')).toBeInTheDocument();
@@ -85,7 +85,7 @@ describe('V2 US10 personal task viewing', () => {
   });
   it('integrates formal requirements and personal tasks into an authorized developer project', async () => {
     const visible = { ...project, canManage: false, projectRole: 'DEVELOPER', canViewOwnTasks: true };
-    mocked.mockImplementation(async path => path === '/auth/me' ? member : path === '/projects' ? [visible] : path === '/projects/creation-options' ? { canCreate: false, managers: [] } : path === '/projects/1' ? visible : []);
+    mocked.mockImplementation(async path => path.endsWith('/story-map') ? { goals: [], epics: [], stories: [] } : path === '/auth/me' ? member : path === '/projects' ? [visible] : path === '/projects/creation-options' ? { canCreate: false, managers: [] } : path === '/projects/1' ? visible : []);
     render(<App />);
     await userEvent.click(await screen.findByRole('button', { name: '进入项目' }));
     expect(await screen.findByRole('tab', { name: '正式需求' })).toBeInTheDocument();

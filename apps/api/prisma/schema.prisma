@@ -42,6 +42,9 @@ model Project {
   members ProjectMember[]
   tasks Task[]
   requirements Requirement[]
+  goals ProductGoal[]
+  epics Epic[]
+  stories UserStory[]
   createdAt DateTime @default(now())
 }
 model ProjectMember {
@@ -64,6 +67,8 @@ model Task {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   assigneeMember ProjectMember? @relation(fields: [projectId, assigneeUserId], references: [projectId, userId], onDelete: NoAction, onUpdate: NoAction)
   createdAt DateTime @default(now())
+  storyLinks StoryTask[]
+  @@unique([projectId, id])
 }
 model Requirement {
   id Int @id @default(autoincrement())
@@ -73,5 +78,72 @@ model Requirement {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  storyLinks StoryRequirement[]
+  @@unique([projectId, id])
   @@index([projectId])
+}
+
+enum StoryStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+model ProductGoal {
+  id Int @id @default(autoincrement())
+  projectId Int
+  title String @db.VarChar(200)
+  sortOrder Int @default(0)
+  revision Int @default(0)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  epics Epic[]
+  @@unique([projectId, id])
+  @@index([projectId, sortOrder])
+}
+model Epic {
+  id Int @id @default(autoincrement())
+  projectId Int
+  goalId Int
+  title String @db.VarChar(200)
+  sortOrder Int @default(0)
+  revision Int @default(0)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  goal ProductGoal @relation(fields: [projectId, goalId], references: [projectId, id], onDelete: Cascade)
+  stories UserStory[]
+  @@unique([projectId, id])
+  @@index([projectId, goalId, sortOrder])
+}
+model UserStory {
+  id Int @id @default(autoincrement())
+  projectId Int
+  epicId Int
+  title String @db.VarChar(200)
+  description String @default("") @db.VarChar(10000)
+  acceptanceCriteria String @default("") @db.VarChar(10000)
+  status StoryStatus @default(TODO)
+  sortOrder Int @default(0)
+  revision Int @default(0)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  epic Epic @relation(fields: [projectId, epicId], references: [projectId, id], onDelete: Cascade)
+  requirementLinks StoryRequirement[]
+  taskLinks StoryTask[]
+  @@unique([projectId, id])
+  @@index([projectId, epicId, sortOrder])
+}
+model StoryRequirement {
+  projectId Int
+  storyId Int
+  requirementId Int
+  story UserStory @relation(fields: [projectId, storyId], references: [projectId, id], onDelete: Cascade)
+  requirement Requirement @relation(fields: [projectId, requirementId], references: [projectId, id], onDelete: Cascade)
+  @@id([projectId, storyId, requirementId])
+  @@index([projectId, requirementId])
+}
+model StoryTask {
+  projectId Int
+  storyId Int
+  taskId Int
+  story UserStory @relation(fields: [projectId, storyId], references: [projectId, id], onDelete: Cascade)
+  task Task @relation(fields: [projectId, taskId], references: [projectId, id], onDelete: Cascade)
+  @@id([projectId, storyId, taskId])
+  @@index([projectId, taskId])
 }

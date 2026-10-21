@@ -1,14 +1,22 @@
 {
-  "name": "spm", "private": true, "packageManager": "pnpm@11.25.0",
-  "engines": {"node": ">=22.12"},
+  "name": "spm",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "build": "pnpm --filter @spm/shared build && pnpm --filter @spm/api build && pnpm --filter @spm/web build",
     "typecheck": "pnpm --filter @spm/shared build && pnpm -r typecheck",
     "test": "pnpm --filter @spm/web test && pnpm --filter @spm/api test",
+    "test:e2e:s2": "node scripts/s2-phase1-browser.cjs",
     "dev": "pnpm --parallel --filter @spm/web --filter @spm/api dev",
     "db:generate": "pnpm --filter @spm/api db:generate",
     "db:migrate": "pnpm --filter @spm/api db:migrate",
     "db:seed": "pnpm --filter @spm/api db:seed"
   },
-  "devDependencies": {"typescript": "5.9.3"}
+  "devDependencies": {
+    "playwright": "1.62.1",
+    "typescript": "5.9.3"
+  }
 }

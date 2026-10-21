@@ -39,11 +39,22 @@ it('upgrades a populated V1 database without losing existing records or assignme
       'SELECT * FROM "Task" ORDER BY id',
     ];
     const before = await Promise.all(queries.map(sql => fixture!.query(sql).then(result => result.rows)));
+    // Upgrade to the full committed Sprint 1 before testing the Sprint 2 increment.
+    cpSync(resolve('prisma/migrations/202610130003_v2_project_roles_requirements'), join(migrations, '202610130003_v2_project_roles_requirements'), { recursive: true });
+    deploy(configFile);
+    await fixture.query(`INSERT INTO "Requirement" ("projectId",title,description,"updatedAt") VALUES (1,'existing requirement','preserve me',CURRENT_TIMESTAMP)`);
+    await fixture.query(`INSERT INTO "Session" (id,"userId","expiresAt") VALUES ('existing-session',2,CURRENT_TIMESTAMP + INTERVAL '1 day')`);
+    const sprint1Queries = [...queries, 'SELECT * FROM "ProjectMember" ORDER BY id', 'SELECT * FROM "Requirement" ORDER BY id', 'SELECT * FROM "Session" ORDER BY id'];
+    const sprint1Before = await Promise.all(sprint1Queries.map(sql => fixture!.query(sql).then(result => result.rows)));
     deploy(resolve('prisma.config.ts'));
+    deploy(resolve('prisma.config.ts')); // Repeated deployment must be a no-op.
+    execFileSync(process.execPath, [cli, 'migrate', 'diff', '--config', resolve('prisma.config.ts'), '--from-config-datasource', '--to-schema', resolve('prisma/schema.prisma'), '--exit-code'], { env: { ...process.env, DATABASE_URL: targetUrl }, stdio: 'pipe' });
+    expect(await Promise.all(sprint1Queries.map(sql => fixture!.query(sql).then(result => result.rows)))).toEqual(sprint1Before);
     const after = await Promise.all(queries.map(sql => fixture!.query(sql).then(result => result.rows)));
     expect(after).toEqual(before);
     expect((await fixture.query('SELECT "userId",role FROM "ProjectMember" ORDER BY id')).rows).toEqual([{ userId: 1, role: 'MANAGER' }, { userId: 2, role: 'DEVELOPER' }]);
-    expect((await fixture.query('SELECT count(*)::int AS count FROM "Requirement"')).rows[0].count).toBe(0);
+    expect((await fixture.query('SELECT count(*)::int AS count FROM "Requirement"')).rows[0].count).toBe(1);
+    for (const table of ['ProductGoal', 'Epic', 'UserStory', 'StoryRequirement', 'StoryTask']) expect((await fixture.query(`SELECT count(*)::int AS count FROM "${table}"`)).rows[0].count).toBe(0);
   } finally {
     if (fixture) await fixture.end();
     await pool.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`); await pool.end();

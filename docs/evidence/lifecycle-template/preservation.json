@@ -1,0 +1,30 @@
+{
+  "result": "PASS",
+  "excluded": [
+    "Session",
+    "_prisma_migrations"
+  ],
+  "checks": {
+    "User": true,
+    "ProjectMember": true,
+    "Project": true,
+    "StoryRequirement": true,
+    "Epic": true,
+    "UserStory": true,
+    "StoryTask": true,
+    "ProductGoal": true,
+    "TaskHistory": true,
+    "TaskPlanReference": true,
+    "UmlDiagram": true,
+    "UmlStory": true,
+    "Task": true,
+    "Requirement": true,
+    "UmlNode": true,
+    "UmlEdge": true,
+    "PlanGoal": true,
+    "PlanItem": true,
+    "PlanStage": true,
+    "ProjectDocument": true,
+    "PasswordReset": true
+  }
+}

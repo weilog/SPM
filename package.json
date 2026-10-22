@@ -13,7 +13,9 @@
     "dev": "pnpm --parallel --filter @spm/web --filter @spm/api dev",
     "db:generate": "pnpm --filter @spm/api db:generate",
     "db:migrate": "pnpm --filter @spm/api db:migrate",
-    "db:seed": "pnpm --filter @spm/api db:seed"
+    "db:seed": "pnpm --filter @spm/api db:seed",
+    "test:e2e:v43": "node scripts/s2-v43-browser.cjs",
+    "test:reference:v43": "node scripts/capture-v43-reference.cjs"
   },
   "devDependencies": {
     "playwright": "1.62.1",

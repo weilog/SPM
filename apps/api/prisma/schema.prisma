@@ -20,11 +20,23 @@ model User {
   id Int @id @default(autoincrement())
   username String @unique @db.VarChar(80)
   passwordHash String
+  email String? @unique @db.VarChar(254)
+  passwordResets PasswordReset[]
   role Role @default(MEMBER)
   active Boolean @default(true)
   sessions Session[]
   managedProjects Project[]
   memberships ProjectMember[]
+}
+model PasswordReset {
+  id String @id
+  userId Int
+  passwordHash String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt])
+  @@index([expiresAt])
 }
 model Session {
   id String @id

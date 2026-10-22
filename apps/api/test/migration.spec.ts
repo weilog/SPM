@@ -61,7 +61,7 @@ it("upgrades a populated V1 database without losing existing records or assignme
       `INSERT INTO "Task" ("projectId",title,description,"assigneeUserId") VALUES (1,'existing task','existing task description',2)`,
     );
     const queries = [
-      'SELECT * FROM "User" ORDER BY id',
+      'SELECT id,username,"passwordHash",role,active FROM "User" ORDER BY id',
       'SELECT * FROM "Project" ORDER BY id',
       'SELECT id,"projectId","userId" FROM "ProjectMember" ORDER BY id',
       'SELECT id,"projectId",title,description,status,"assigneeUserId","createdAt" FROM "Task" ORDER BY id',
@@ -121,6 +121,18 @@ it("upgrades a populated V1 database without losing existing records or assignme
       queries.map((sql) => fixture!.query(sql).then((result) => result.rows)),
     );
     expect(after).toEqual(before);
+    expect(
+      (await fixture.query('SELECT email FROM "User"')).rows.every(
+        (row) => row.email === null,
+      ),
+    ).toBe(true);
+    expect(
+      (
+        await fixture.query(
+          'SELECT count(*)::int AS count FROM "PasswordReset"',
+        )
+      ).rows[0].count,
+    ).toBe(0);
     expect(
       (
         await fixture.query(

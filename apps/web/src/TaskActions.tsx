@@ -535,7 +535,7 @@ export function TaskActionsProvider({
               disabled={!store.plans.available}
               className="checkbox-grid"
             >
-              {store.plans.items.map((p) => (
+              {store.plans.items.filter(p => p.kind === "item").map((p) => (
                 <Checkbox key={p.id} value={p.id}>
                   {p.title}
                 </Checkbox>

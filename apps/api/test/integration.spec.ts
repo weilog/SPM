@@ -1590,7 +1590,7 @@ describe("Sprint 1 PostgreSQL REST integration", () => {
       await call("post", base() + "/tasks", "manager", {
         title: "Blocked plan link",
         planIds: ["A-opaque-plan"],
-      }).expect(503);
+      }).expect(400);
       expect(
         await db.task.count({ where: { title: "Blocked plan link" } }),
       ).toBe(0);
@@ -1968,7 +1968,7 @@ describe("Sprint 1 PostgreSQL REST integration", () => {
       const plans = (
         await call("get", base() + "/plan-adapter", "manager").expect(200)
       ).body;
-      expect(plans).toMatchObject({ available: false, stages: [], items: [] });
+      expect(plans).toMatchObject({ available: true, stages: [], items: [] });
     });
   });
 });

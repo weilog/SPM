@@ -1,0 +1,10 @@
+{
+  "health": 200,
+  "login": 201,
+  "projectList": 200,
+  "plan": 200,
+  "planAvailable": true,
+  "documents": 200,
+  "projectId": 1,
+  "logout": 201
+}

@@ -10,6 +10,7 @@ import { TasksModule } from "./tasks/tasks.module";
 import { RequirementsModule } from "./requirements/requirements.module";
 import { StoriesModule } from "./stories/stories.module";
 import { UmlModule } from "./uml/uml.module";
+import { DocumentsModule } from "./documents/documents.module";
 import { WorkbenchModule } from "./workbench/workbench.module";
 @Controller("health")
 class HealthController {
@@ -28,6 +29,7 @@ class HealthController {
     StoriesModule,
     UmlModule,
     WorkbenchModule,
+    DocumentsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: SecurityGuard }],

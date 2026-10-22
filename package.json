@@ -16,7 +16,9 @@
     "db:seed": "pnpm --filter @spm/api db:seed",
     "test:e2e:v43": "node scripts/s2-v43-browser.cjs",
     "test:reference:v43": "node scripts/capture-v43-reference.cjs",
-    "test:e2e:auth": "node scripts/auth-pages-browser.cjs"
+    "test:e2e:auth": "node scripts/auth-pages-browser.cjs",
+    "test:e2e:a": "node scripts/owner-a-browser.cjs",
+    "test:reference:a": "node scripts/capture-a-reference.cjs"
   },
   "devDependencies": {
     "playwright": "1.62.1",

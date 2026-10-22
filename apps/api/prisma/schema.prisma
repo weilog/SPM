@@ -19,6 +19,8 @@ enum ProjectRole {
 model User {
   id Int @id @default(autoincrement())
   username String @unique @db.VarChar(80)
+  displayName String? @db.VarChar(30)
+  createdAt DateTime? @default(now())
   passwordHash String
   email String? @unique @db.VarChar(254)
   passwordResets PasswordReset[]

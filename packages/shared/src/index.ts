@@ -1,5 +1,10 @@
 export type Role = "ADMIN" | "MANAGER" | "MEMBER";
 export type ProjectRole = "MANAGER" | "DEVELOPER" | "TESTER";
+export interface SystemUser extends User {
+  displayName: string | null;
+  email: string | null;
+  createdAt: string | null;
+}
 export interface User {
   id: number;
   username: string;

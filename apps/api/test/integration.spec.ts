@@ -229,6 +229,38 @@ describe("Sprint 1 PostgreSQL REST integration", () => {
     await call("delete", `/users/${created.id}`, "admin").expect(200);
     expect(await db.user.findUnique({ where: { id: created.id } })).toBeNull();
   });
+  it("system user profiles persist real names/email/dates without granting project access", async () => {
+    const created = (await call("post", "/users", "admin", {
+      username: "profile_user", displayName: "平台用户", email: "Profile@Example.test", password, active: false,
+    }).expect(201)).body;
+    expect(created).toMatchObject({ displayName: "平台用户", email: "profile@example.test", active: false, role: "MEMBER" });
+    expect(created.createdAt).toBeTruthy();
+    expect(created).not.toHaveProperty("passwordHash");
+    expect(await db.projectMember.count({ where: { userId: created.id } })).toBe(0);
+    await call("post", "/auth/login", undefined, { username: "profile_user", password }).expect(401);
+    await call("patch", `/users/${created.id}`, "admin", { active: true, displayName: "更新姓名", email: "updated@example.test" }).expect(200);
+    const loginResult = await call("post", "/auth/login", undefined, { username: "profile_user", password }).expect(201);
+    const cookie = loginResult.headers["set-cookie"][0].split(";")[0];
+    await request(app.getHttpServer()).get(`/api/projects/${project}`).set("Cookie", cookie).expect(404);
+    await call("patch", `/users/${created.id}`, "admin", { active: false }).expect(200);
+    await request(app.getHttpServer()).get("/api/auth/me").set("Cookie", cookie).expect(401);
+    expect((await call("get", "/users", "admin").expect(200)).body.find((u: { id: number }) => u.id === created.id)).toMatchObject({ displayName: "更新姓名", email: "updated@example.test", active: false });
+  });
+  it("system profiles reject invalid/duplicate emails and blank names atomically", async () => {
+    const data = { username: "email_owner", password, displayName: "邮箱持有人", email: "unique@example.test" };
+    const owner = (await call("post", "/users", "admin", data).expect(201)).body;
+    await call("post", "/users", "admin", { ...data, username: "other_email", email: "UNIQUE@example.test" }).expect(409);
+    await call("patch", `/users/${owner.id}`, "admin", { email: "not-an-email" }).expect(400);
+    await call("patch", `/users/${owner.id}`, "admin", { displayName: "   " }).expect(400);
+    await call("patch", `/users/${owner.id}`, "manager", { displayName: "越权" }).expect(403);
+    expect((await db.user.findUniqueOrThrow({ where: { id: owner.id } })).displayName).toBe("邮箱持有人");
+  });
+  it("cannot disable the current administrator even when another administrator exists", async () => {
+    const another = await db.user.create({ data: { username: "other_admin", passwordHash: await hashPassword(password), role: "ADMIN" } });
+    await call("patch", `/users/${admin}`, "admin", { active: false }).expect(400);
+    expect((await db.user.findUniqueOrThrow({ where: { id: admin } })).active).toBe(true);
+    await db.user.delete({ where: { id: another.id } });
+  });
   it("US02 validates passwords/usernames/roles and duplicate usernames", async () => {
     for (const data of [
       { username: "weak", password: "123" },

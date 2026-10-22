@@ -1,38 +1,53 @@
-import { Button, Form, Input, Modal, Popconfirm, Space, Switch, Table, Tag, Typography } from 'antd';
-import { useEffect, useState } from 'react';
-import { roleLabels, type Role, type User } from '@spm/shared';
+import { useEffect, useMemo, useState } from 'react';
+import type { SystemUser } from '@spm/shared';
 import { api } from './api';
-export function Users({ onError, onChanged }: { onError: (error: unknown) => void; onChanged: () => Promise<void> }) {
-  const [users, setUsers] = useState<User[]>([]);
-  const [editing, setEditing] = useState<User | 'new' | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [form] = Form.useForm();
-  const reload = () => api<User[]>('/users').then(setUsers).catch(onError);
-  useEffect(() => { void reload(); }, []);
-  function edit(user: User | 'new') { setEditing(user); form.resetFields(); form.setFieldsValue(user === 'new' ? { active: true } : { username: user.username, active: user.active }); }
-  async function save() {
-    let values: { username: string; password?: string; active?: boolean };
-    try { values = await form.validateFields(); } catch { return; }
-    if (!values.password) delete values.password;
-    if (editing === 'new') delete values.active;
-    setSaving(true);
+import './system-users.css';
+const created = (u: SystemUser) => u.createdAt ? new Date(u.createdAt).toLocaleDateString('sv-SE', { timeZone: 'Asia/Shanghai' }) : '—';
+export function Users({ onError, onChanged, actorId }: { onError: (error: unknown) => void; onChanged: () => Promise<void>; actorId?: number }) {
+  const [users, setUsers] = useState<SystemUser[]>([]), [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState(''), [status, setStatus] = useState('all'), [page, setPage] = useState(1);
+  const [editing, setEditing] = useState<SystemUser | 'new' | null>(null), [detail, setDetail] = useState<number | null>(null), [toggling, setToggling] = useState<SystemUser | null>(null);
+  const [form, setForm] = useState({ username: '', displayName: '', email: '', password: '', active: true });
+  const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('');
+  async function reload() { setUsers(await api<SystemUser[]>('/users')); }
+  useEffect(() => { let live = true; api<SystemUser[]>('/users').then(v => { if (live) setUsers(v); }).catch(e => { if(live) { setError((e as Error).message); onError(e); } }).finally(() => { if(live) setLoading(false); }); return () => { live = false; }; }, []);
+  useEffect(() => { const close = (e: KeyboardEvent) => { if(e.key === 'Escape' && !busy) { setEditing(null); setDetail(null); setToggling(null); } }; window.addEventListener('keydown', close); return () => window.removeEventListener('keydown', close); }, [busy]);
+  useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(''), 3500); return () => clearTimeout(timer); }, [notice]);
+  const filtered = useMemo(() => users.filter(u => `${u.username} ${u.displayName || ''} ${u.email || ''}`.toLowerCase().includes(search.trim().toLowerCase()) && (status === 'all' || u.active === (status === 'enabled'))), [users, search, status]);
+  const pages = Math.max(1, Math.ceil(filtered.length / 8)), current = Math.min(page, pages), rows = filtered.slice((current - 1) * 8, current * 8), selected = users.find(u => u.id === detail);
+  function edit(u: SystemUser | 'new') { setError(''); setDetail(null); setEditing(u); setForm(u === 'new' ? { username:'',displayName:'',email:'',password:'',active:true } : { username:u.username,displayName:u.displayName || '',email:u.email || '',password:'',active:u.active }); }
+  async function save(e: React.FormEvent) {
+    e.preventDefault(); if(busy || !editing) return; setBusy(true); setError('');
     try {
-      await api(editing === 'new' ? '/users' : `/users/${(editing as User).id}`, editing === 'new' ? 'POST' : 'PATCH', values);
-      setEditing(null); await reload(); await onChanged();
-    } catch (error) { onError(error); } finally { setSaving(false); }
+      const data = { displayName:form.displayName.trim(), email:form.email.trim(), active:form.active, ...(editing === 'new' ? { username:form.username.trim(), password:form.password } : {}) };
+      await api(editing === 'new' ? '/users' : `/users/${editing.id}`, editing === 'new' ? 'POST' : 'PATCH', data);
+      await reload(); await onChanged(); setEditing(null); setPage(1); setNotice(editing === 'new' ? '用户已创建' : '用户资料已保存');
+    } catch(e) { setError((e as Error).message); } finally { setBusy(false); }
   }
-  async function remove(id: number) { try { await api(`/users/${id}`, 'DELETE'); await reload(); } catch (error) { onError(error); } }
-  return <><Space className="section-heading"><Typography.Title level={2}>系统用户账户</Typography.Title><Button type="primary" onClick={() => edit('new')}>创建用户</Button></Space>
-    <Table rowKey="id" dataSource={users} columns={[
-      { title: '用户名', dataIndex: 'username' }, { title: '全局身份', dataIndex: 'role', render: (role: Role) => roleLabels[role] },
-      { title: '状态', dataIndex: 'active', render: (active: boolean) => <Tag color={active ? 'green' : 'default'}>{active ? '有效' : '停用'}</Tag> },
-      { title: '操作', render: (_, user) => <Space><Button onClick={() => edit(user)}>维护账户</Button><Popconfirm title="确认删除用户？" onConfirm={() => remove(user.id)}><Button danger>删除</Button></Popconfirm></Space> },
-    ]} />
-    <Modal title={editing === 'new' ? '创建用户' : '维护用户账户'} open={editing !== null} onCancel={() => setEditing(null)} onOk={() => void save()} confirmLoading={saving} destroyOnHidden>
-      <Form form={form} layout="vertical">
-        <Form.Item label="用户名" name="username" rules={[{ required: true }, { pattern: /^[a-zA-Z0-9_.-]+$/, message: '使用字母、数字、下划线、点或短横线' }, { max: 80 }]}><Input /></Form.Item>
-        <Form.Item label={editing === 'new' ? '密码' : '新密码（留空保留原密码）'} name="password" rules={[{ required: editing === 'new' }, { min: 12, max: 128 }]}><Input.Password autoComplete="new-password" /></Form.Item>
-        {editing !== 'new' && <Form.Item label="有效账户" name="active" valuePropName="checked"><Switch /></Form.Item>}
-      </Form>
-    </Modal></>;
+  async function toggle() {
+    if(!toggling || busy) return; setBusy(true); setError('');
+    try { await api(`/users/${toggling.id}`, 'PATCH', { active:!toggling.active }); await reload(); setNotice(toggling.active ? '账户已禁用' : '账户已启用'); setToggling(null); }
+    catch(e) { setError((e as Error).message); } finally { setBusy(false); }
+  }
+  return <div className="system-users">
+    <div className="headline"><h1>系统用户管理</h1><button className="primary" onClick={() => edit('new')}>＋ 创建用户</button></div>
+    {error && !editing && !toggling && <p className="error" role="alert">{error}</p>}
+    <section className="stats">{[['用户总数',users.length,'♙'],['已启用账户',users.filter(u=>u.active).length,'✓'],['已禁用账户',users.filter(u=>!u.active).length,'⊘']].map(([label,value,icon],i)=><div className="stat" key={label}><div><span className="muted">{label}</span><strong>{loading?'—':value}</strong></div><span className="dot" style={i===1?{background:'#edfbf3',color:'#2ba971'}:i===2?{background:'#f5f6f8',color:'#8c99a8'}:{}}>{icon}</span></div>)}</section>
+    <section className="panel" aria-busy={loading}>
+      <div className="panelhead"><h2>用户列表 <span className="muted" style={{fontWeight:400,fontSize:12}}>（{users.length}）</span></h2></div>
+      <div className="toolbar"><input className="field search" aria-label="搜索用户名、姓名或邮箱" placeholder="⌕　搜索用户名、姓名或邮箱" value={search} onChange={e=>{setSearch(e.target.value);setPage(1);}}/><select className="field" aria-label="账户状态筛选" value={status} onChange={e=>{setStatus(e.target.value);setPage(1);}}><option value="all">全部状态</option><option value="enabled">已启用</option><option value="disabled">已禁用</option></select><button className="secondary" disabled={!search&&status==='all'} onClick={()=>{setSearch('');setStatus('all');setPage(1);}}>清空筛选</button></div>
+      <div className="tablewrap"><table><thead><tr><th style={{width:'24%'}}>用户</th><th style={{width:'17%'}}>用户名</th><th style={{width:'24%'}}>邮箱</th><th>账户状态</th><th>创建时间</th><th style={{width:'19%'}}>操作</th></tr></thead><tbody>{rows.map(u=><tr key={u.id}><td><div className="namecell"><span className="userbadge">{(u.displayName||u.username).slice(0,1)}</span><div><div className="un">{u.displayName||u.username}</div><div className="small">UID {String(u.id).padStart(4,'0')}</div></div></div></td><td>{u.username}</td><td>{u.email||'—'}</td><td><span className={`tag ${u.active?'':'off'}`}>{u.active?'已启用':'已禁用'}</span></td><td>{created(u)}</td><td><button className="link" onClick={()=>{setError('');setDetail(u.id);}}>查看</button><button className="link" onClick={()=>edit(u)}>编辑</button><button className={`link ${u.active?'danger':''}`} disabled={u.id===actorId&&u.active} title={u.id===actorId?'不能禁用当前登录的管理员账号':undefined} onClick={()=>{setError('');setToggling(u);}}>{u.active?'禁用':'启用'}</button></td></tr>)}</tbody></table>{!rows.length&&<div className="empty">{loading?'正在加载用户…':error?'用户数据加载失败':'暂无符合条件的用户'}</div>}</div>
+      <div className="footer"><span>共 {filtered.length} 条记录</span><div className="pager"><button disabled={current===1} onClick={()=>setPage(current-1)}>上一页</button><span>{current} / {pages}</span><button disabled={current===pages} onClick={()=>setPage(current+1)}>下一页</button></div></div>
+    </section>
+    {editing&&<div className="overlay show"><section className="modal" role="dialog" aria-modal="true" aria-labelledby="sys-user-form-title"><div className="modal-head"><span id="sys-user-form-title">{editing==='new'?'创建用户':'编辑用户资料'}</span><button className="close" aria-label="关闭用户弹窗" disabled={busy} onClick={()=>setEditing(null)}>×</button></div><form onSubmit={save}><div className="modal-body">{error&&<p role="alert" className="error">{error}</p>}
+      <div className="form-row"><label htmlFor="sys-username">用户名 <span className="req">*</span></label><div><input autoFocus id="sys-username" className="textbox" required readOnly={editing!=='new'} pattern={editing==='new'?'[A-Za-z0-9_]{3,30}':undefined} maxLength={editing==='new'?30:80} value={form.username} onChange={e=>setForm({...form,username:e.target.value})} placeholder="请输入用户名（唯一）"/><div className="hint">3–30 位字母、数字、下划线；创建后不可修改</div></div></div>
+      <div className="form-row"><label htmlFor="sys-displayname">姓名 <span className="req">*</span></label><input id="sys-displayname" className="textbox" required maxLength={30} value={form.displayName} onChange={e=>setForm({...form,displayName:e.target.value})} placeholder="请输入姓名"/></div>
+      <div className="form-row"><label htmlFor="sys-email">电子邮箱 <span className="req">*</span></label><input id="sys-email" className="textbox" type="email" required maxLength={254} value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="name@example.com"/></div>
+      {editing==='new'&&<div className="form-row"><label htmlFor="sys-password">初始密码 <span className="req">*</span></label><div><input id="sys-password" className="textbox" type="password" autoComplete="new-password" minLength={12} maxLength={128} required value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="至少 12 位"/><div className="hint">至少 12 位；请勿重复使用其他系统密码</div></div></div>}
+      <div className="form-row"><label>账户状态</label><div style={{paddingTop:8}}>{[true,false].map(active=><label key={String(active)} style={{marginRight:18}}><input type="radio" name="sys-status" checked={form.active===active} disabled={!active&&editing!=='new'&&editing.id===actorId} onChange={()=>setForm({...form,active})}/>{active?' 启用':' 禁用'}</label>)}</div></div>
+      </div><div className="modal-actions"><button type="button" className="secondary" disabled={busy} onClick={()=>setEditing(null)}>取消</button><button className="primary" disabled={busy}>{busy?'保存中…':editing==='new'?'确认创建':'保存修改'}</button></div></form></section></div>}
+    {selected&&<><div className="shade show" onClick={()=>setDetail(null)}/><aside className="drawer open" role="dialog" aria-modal="true" aria-label="用户详情"><div className="drawerhead"><strong>用户详情</strong><button className="close" aria-label="关闭用户详情" onClick={()=>setDetail(null)}>×</button></div><div className="drawerbody"><div className="namecell" style={{marginBottom:24}}><span className="userbadge" style={{width:54,height:54,fontSize:23}}>{(selected.displayName||selected.username).slice(0,1)}</span><div><strong style={{fontSize:18}}>{selected.displayName||selected.username}</strong><div className="small">@{selected.username}</div></div></div>{[['用户 ID',String(selected.id).padStart(4,'0')],['用户名',selected.username],['姓名',selected.displayName||'—'],['电子邮箱',selected.email||'—'],['账户状态',selected.active?'已启用':'已禁用'],['创建日期',created(selected)]].map(([label,value])=><div className="detailrow" key={label}><span>{label}</span><span>{value}</span></div>)}<button className="primary" style={{marginTop:22}} onClick={()=>edit(selected)}>编辑用户资料</button></div></aside></>}
+    {toggling&&<div className="overlay show"><section className="modal" role="dialog" aria-modal="true" aria-label={`确认${toggling.active?'禁用':'启用'}账户`}><div className="modal-head">确认{toggling.active?'禁用':'启用'}账户<button className="close" disabled={busy} onClick={()=>setToggling(null)} aria-label="关闭状态确认">×</button></div><div className="modal-body">{error&&<p className="error" role="alert">{error}</p>}确定要{toggling.active?'禁用':'启用'}用户 <strong>{toggling.displayName||toggling.username}（{toggling.username}）</strong> 吗？</div><div className="modal-actions"><button className="secondary" disabled={busy} onClick={()=>setToggling(null)}>取消</button><button className="primary" disabled={busy} onClick={()=>void toggle()}>{busy?'保存中…':'确认'}</button></div></section></div>}
+    {notice&&<div role="status" className="toast" style={{display:'block'}}>{notice}</div>}
+  </div>;
 }

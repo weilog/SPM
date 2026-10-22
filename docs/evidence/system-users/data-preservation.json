@@ -1,0 +1,29 @@
+{
+  "result": "PASS",
+  "comparison": "Same row counts and SHA-256 of row data excluding displayName/createdAt fields, captured immediately before/after migration and before adding acceptance accounts",
+  "tables": 22,
+  "checks": {
+    "User": true,
+    "ProjectMember": true,
+    "Session": true,
+    "Project": true,
+    "StoryRequirement": true,
+    "Epic": true,
+    "UserStory": true,
+    "StoryTask": true,
+    "ProductGoal": true,
+    "TaskHistory": true,
+    "TaskPlanReference": true,
+    "UmlDiagram": true,
+    "UmlStory": true,
+    "Task": true,
+    "Requirement": true,
+    "UmlNode": true,
+    "UmlEdge": true,
+    "PlanGoal": true,
+    "PlanItem": true,
+    "PlanStage": true,
+    "ProjectDocument": true,
+    "PasswordReset": true
+  }
+}

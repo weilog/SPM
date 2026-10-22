@@ -1,0 +1,17 @@
+{
+  "result": "PASS",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    "Actual administrator navigation, three statistics, six columns and pagination at 1440x900",
+    "Search by display name, username/email, combined status filter and reset",
+    "Real create and profile edit persist after reload; unique account, hashed password and no automatic membership",
+    "Confirmed disable revokes existing sessions and enable permits actual login",
+    "Duplicate email produces a real error without changing data; current administrator cannot be disabled",
+    "Project managers and members cannot see navigation or read global accounts",
+    "Zero browser runtime exceptions"
+  ],
+  "errors": []
+}

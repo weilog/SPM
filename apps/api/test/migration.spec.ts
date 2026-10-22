@@ -121,6 +121,7 @@ it("upgrades a populated V1 database without losing existing records or assignme
       queries.map((sql) => fixture!.query(sql).then((result) => result.rows)),
     );
     expect(after).toEqual(before);
+    expect((await fixture.query('SELECT "displayName","createdAt" FROM "User"')).rows.every(row => row.displayName === null && row.createdAt === null)).toBe(true);
     expect(
       (await fixture.query('SELECT email FROM "User"')).rows.every(
         (row) => row.email === null,

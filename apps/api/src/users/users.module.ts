@@ -13,6 +13,7 @@ import {
 } from "@nestjs/common";
 import {
   IsBoolean,
+  IsEmail,
   IsString,
   Length,
   Matches,
@@ -22,10 +23,17 @@ import type { User } from "@spm/shared";
 import { DbService } from "../db/db.module";
 import { Actor, Roles, userSelect } from "../common/security";
 import { hashPassword } from "../auth/password";
+const accountSelect = { ...userSelect, displayName: true, email: true, createdAt: true } as const;
 
 class CreateUserDto {
   @IsString() @Length(1, 80) @Matches(/^[a-zA-Z0-9_.-]+$/) username!: string;
   @IsString() @Length(12, 128) password!: string;
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString() @Length(1, 30) @Matches(/\S/) displayName?: string;
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsEmail() @Length(3, 254) email?: string;
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsBoolean() active?: boolean;
 }
 class UpdateUserDto {
   @ValidateIf((_object, value) => value !== undefined)
@@ -40,11 +48,17 @@ class UpdateUserDto {
   @ValidateIf((_object, value) => value !== undefined)
   @IsBoolean()
   active?: boolean;
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString() @Length(1, 30) @Matches(/\S/) displayName?: string;
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsEmail() @Length(3, 254) email?: string;
 }
 @Injectable()
 export class UsersService {
   constructor(private readonly db: DbService) {}
-  async update(id: number, dto: UpdateUserDto) {
+  async update(id: number, dto: UpdateUserDto, actor: User) {
+    if (id === actor.id && dto.active === false)
+      throw new BadRequestException("不能禁用当前登录的管理员账号");
     const passwordHash = dto.password
       ? await hashPassword(dto.password)
       : undefined;
@@ -63,8 +77,8 @@ export class UsersService {
       const { password: _password, ...data } = dto;
       const user = await tx.user.update({
         where: { id },
-        data: { ...data, ...(passwordHash ? { passwordHash } : {}) },
-        select: userSelect,
+        data: { ...data, ...(dto.email !== undefined ? { email: dto.email.trim().toLowerCase() } : {}), ...(dto.displayName !== undefined ? { displayName: dto.displayName.trim() } : {}), ...(passwordHash ? { passwordHash } : {}) },
+        select: accountSelect,
       });
       if (passwordHash || dto.active === false)
         await tx.session.deleteMany({ where: { userId: id } });
@@ -109,7 +123,7 @@ export class UsersController {
   ) {}
   @Get() list() {
     return this.db.user.findMany({
-      select: userSelect,
+      select: accountSelect,
       orderBy: { id: "asc" },
     });
   }
@@ -119,15 +133,19 @@ export class UsersController {
       data: {
         username: dto.username,
         passwordHash: await hashPassword(dto.password),
+        displayName: dto.displayName?.trim(),
+        email: dto.email?.trim().toLowerCase(),
+        active: dto.active,
       },
-      select: userSelect,
+      select: accountSelect,
     });
   }
   @Patch(":id") update(
     @Param("id", ParseIntPipe) id: number,
     @Body() dto: UpdateUserDto,
+    @Actor() actor: User,
   ) {
-    return this.users.update(id, dto);
+    return this.users.update(id, dto, actor);
   }
   @Delete(":id") remove(
     @Param("id", ParseIntPipe) id: number,

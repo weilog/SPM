@@ -208,7 +208,7 @@ export function App() {
             {nav("workspace", "split", "多视图工作台")}
             {nav("docs", "file", "项目文档")}
             {project?.canManage && nav("members", "users", "成员与角色")}
-            {user.role === "ADMIN" && nav("users", "users", "用户管理")}
+            {user.role === "ADMIN" && <><div className="nav-section">系统管理</div>{nav("users", "users", "系统用户管理")}</>}
             <div className="sidebar-project-box">
               <span style={{ fontSize: 19 }}>◈</span>
               <div className="sidebar-project-text">
@@ -254,7 +254,7 @@ export function App() {
             <div className="breadcrumb">
               {page === "projects" ? (
                 "工作空间 / 我的项目"
-              ) : (
+              ) : page === "users" ? "系统管理 / 系统用户管理" : (
                 <>
                   我的项目 <span>›</span>
                   {project?.name}
@@ -276,9 +276,7 @@ export function App() {
                 onError={onError}
               />
             ) : page === "users" ? (
-              <div className="card plain-content">
-                <Users onError={onError} onChanged={refreshUser} />
-              </div>
+              <Users actorId={user.id} onError={onError} onChanged={refreshUser} />
             ) : project ? (
               <ProjectProvider
                 key={project.id}
@@ -313,7 +311,7 @@ const labels: Record<string, string> = {
   workspace: "多视图工作台",
   docs: "项目文档",
   members: "成员与角色",
-  users: "用户管理",
+  users: "系统用户管理",
   projects: "我的项目",
 };
 function ProjectSpace({

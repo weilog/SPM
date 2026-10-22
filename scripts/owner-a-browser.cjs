@@ -838,7 +838,7 @@ async function until(check, label) {
       }),
       0,
     );
-    await page.getByRole("button", { name: "重置", exact: true }).click();
+    await page.getByRole("button", { name: "清空筛选", exact: true }).click();
     pass(
       "A06 exact member table/statistics, search, add existing user, adjust canonical project role, detail drawer and confirmed removal",
     );

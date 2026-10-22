@@ -114,7 +114,6 @@ export function ProjectList({
         <div className="page-title">
           <div>
             <h1>我的项目</h1>
-            <p className="sub">快速找到项目，进入团队工作空间</p>
           </div>
           {canCreate && (
             <button className="primary" onClick={() => void showCreate()}>

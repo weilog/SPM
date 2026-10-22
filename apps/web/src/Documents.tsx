@@ -367,9 +367,6 @@ export function Documents() {
                 {can ? "项目经理可管理" : "项目成员只读"}
               </span>
             </h1>
-            <div className="subtitle">
-              按文件夹组织团队资料，集中查阅与管理项目文件
-            </div>
           </div>
           <div className="buttons">
             {can && (

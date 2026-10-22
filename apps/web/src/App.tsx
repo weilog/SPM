@@ -212,7 +212,7 @@ export function App() {
             <div className="sidebar-project-box">
               <span style={{ fontSize: 19 }}>◈</span>
               <div className="sidebar-project-text">
-                <strong>{project?.name || "项目工作空间"}</strong>
+                <strong title={project?.name || "项目工作空间"}>{project?.name || "项目工作空间"}</strong>
                 <div style={{ marginTop: 4, color: "#8da0ba" }}>
                   项目工作空间
                 </div>

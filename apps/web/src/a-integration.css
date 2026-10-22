@@ -26,6 +26,16 @@
 .a-plan-view,.a-docs,.a-members{line-height:normal}
 .a-plan-view .plan-empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;min-height:240px;padding:48px 24px;text-align:center}
 .a-plan-view .plan-empty-state>.btn{flex:none;margin:0}
+.v43-shell .sidebar-project-box{min-width:0;overflow:hidden}
+.v43-shell .sidebar-project-box>svg{flex:none}
+.v43-shell .sidebar-project-box>div{min-width:0;flex:1}
+.v43-shell .sidebar-project-box strong{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.a-plan-view .stageline{flex-wrap:wrap;align-items:flex-start;row-gap:12px}
+.a-plan-view .titlegroup{flex:1 1 280px;max-width:100%;align-items:flex-start}
+.a-plan-view .bigstageicon{flex:none}
+.a-plan-view .titlegroup h1{white-space:normal;overflow-wrap:anywhere;line-height:1.4}
+.a-plan-view .titledate{flex-wrap:wrap;white-space:normal;gap:6px 12px;line-height:1.5}
+.a-plan-view .headbuttons{flex:0 0 auto;flex-wrap:wrap;max-width:100%;margin-left:auto}
 .v43-shell .story-board{display:block;min-width:0;width:100%;padding-bottom:0}
 .v43-shell .story-board>.epic-wrap{min-width:0;width:100%;overflow-x:auto}
 .v43-shell .story-board .board-columns{grid-template-columns:repeat(3,minmax(145px,1fr));min-width:480px;align-items:start}

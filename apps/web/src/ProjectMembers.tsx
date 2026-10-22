@@ -93,9 +93,6 @@ export function ProjectMembers({ onChanged }: { onChanged(): void }) {
         <div className="head">
           <div>
             <h1>成员与角色</h1>
-            <div className="hint">
-              管理当前项目的参与成员、预设项目角色和任务分配关系
-            </div>
           </div>
           <div className="buttons">
             <button className="btn" onClick={() => void open("info")}>
@@ -147,12 +144,13 @@ export function ProjectMembers({ onChanged }: { onChanged(): void }) {
             </select>
             <button
               className="btn"
+              disabled={!search && role === "all"}
               onClick={() => {
                 setSearch("");
                 setRole("all");
               }}
             >
-              重置
+              清空筛选
             </button>
             <div className="spacer" />
             <span className="count">共 {shown.length} 名成员</span>

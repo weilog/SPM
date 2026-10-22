@@ -434,11 +434,7 @@ export function Documents() {
               </button>
               {folders.filter((e) => e.parentId === null).map((e) => tree(e))}
             </div>
-            <div className="folderfoot">
-              按项目统一管理文档
-              <br />
-              目录和文件权限随项目授权变化
-            </div>
+
           </section>
           <section className="file-pane">
             <div className="file-top">

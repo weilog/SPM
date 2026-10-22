@@ -191,7 +191,6 @@ export function StoryMap(props: StoryMapProps) {
           <Icon name="layers" size={14} />{" "}
           <strong>{goal?.title || "暂无产品目标"}</strong> 下的故事地图
         </span>
-        <span>拖动故事卡片可调整顺序或移到其他 Epic；状态在故事看板改变</span>
       </div>
       <div className="epic-wrap">
         <div className="epic-grid">
@@ -278,10 +277,7 @@ export function StoryMap(props: StoryMapProps) {
           )}
         </div>
       </div>
-      <div className="b-board-note">
-        蓝色描边表示当前关联焦点。故事详情通过右侧抽屉查看；产品目标与 Epic
-        不等于项目计划阶段。
-      </div>
+
     </div>
   );
 }
@@ -338,9 +334,7 @@ export function StoryBoard(props: StoryBoardProps) {
           ))}
         </div>
       </div>
-      <p className="b-board-note">
-        项目经理可以跨列拖拽故事；开发和测试人员只读。故事状态不会自动改变关联任务状态。
-      </p>
+
     </div>
   );
 }

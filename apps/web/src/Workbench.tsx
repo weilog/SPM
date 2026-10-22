@@ -112,17 +112,7 @@ export function Workbench() {
             />
           )}
         </div>
-        <div className="pane-footer">
-          {id === "map"
-            ? "目标 → Epic → 用户故事｜项目经理可跨 Epic 拖动故事"
-            : id === "board"
-              ? "拖动故事卡片到其他状态列可更新故事状态"
-              : id === "gantt"
-                ? "完整阶段甘特图复用负责人 A 的确认设计；真实计划服务待接入"
-                : id === "members"
-                  ? "任务节点显示负责人、状态、优先级及完成百分比"
-                  : "参与者、用例、关联关系；用例与故事是独立对象"}
-        </div>
+
       </section>
     );
   }

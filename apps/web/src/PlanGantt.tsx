@@ -44,6 +44,22 @@ export function PlanGantt({
       startX: number;
       moved: boolean;
     } | null>(null);
+  const [infoWidth, setInfoWidth] = useState(445);
+  const resizeStart = useRef<{ x: number; width: number } | null>(null);
+  const maxInfoWidth = useRef(720);
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      maxInfoWidth.current = Math.max(280, Math.min(720, el.clientWidth - 140));
+      setInfoWidth((value) => Math.min(value, maxInfoWidth.current));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  function resizeInfo(value: number) {
+    setInfoWidth(Math.max(280, Math.min(maxInfoWidth.current, value)));
+  }
   const unit = scale === "day" ? 36 : scale === "month" ? 11 : 23,
     count = scale === "day" ? 51 : scale === "month" ? 210 : 105;
   const today = new Date().toLocaleDateString("sv-SE");
@@ -231,16 +247,11 @@ export function PlanGantt({
           <i className="gv-diamond-legend" />
           里程碑
         </span>
-        <span className="gv-tip">
-          {snapshot.available && store.project.canManage
-            ? "拖动计划项调整起止日期；拖动两端调整时长"
-            : "计划数据与日期编辑当前角色只读"}
-        </span>
       </div>
       <div className="gv-scroller" ref={scroller}>
-        <div className="gv-grid-canvas" style={{ width: 445 + width }}>
-          <div className="gv-left-fixed">
-            <div className="gv-left-head">
+        <div className="gv-grid-canvas" style={{ width: infoWidth + width }}>
+          <div className="gv-left-fixed" style={{ width: infoWidth }}>
+            <div className="gv-left-head" style={{ gridTemplateColumns: "minmax(0,1fr) 80px 70px 70px" }}>
               <div>计划 / 工作项</div>
               <div>负责人</div>
               <div>预计开始</div>
@@ -250,6 +261,7 @@ export function PlanGantt({
               <div
                 key={`${r.kind}-${r.id}`}
                 className={`gv-fixed-row ${r.kind === "plan" ? "gv-main-row" : ""}`}
+                style={{ gridTemplateColumns: "minmax(0,1fr) 80px 70px 70px" }}
               >
                 <div
                   className="gv-fixed-name"
@@ -271,6 +283,35 @@ export function PlanGantt({
                 <div>{r.end.slice(5)}</div>
               </div>
             ))}
+            <div
+              className="gv-info-resizer"
+              role="separator"
+              aria-label="调整甘特图信息区宽度"
+              aria-orientation="vertical"
+              aria-valuemin={280}
+              aria-valuemax={maxInfoWidth.current}
+              aria-valuenow={infoWidth}
+              tabIndex={0}
+              onPointerDown={(e) => {
+                if (e.button !== 0) return;
+                e.preventDefault();
+                resizeStart.current = { x: e.clientX, width: infoWidth };
+                e.currentTarget.setPointerCapture(e.pointerId);
+              }}
+              onPointerMove={(e) => {
+                const start = resizeStart.current;
+                if (start) resizeInfo(start.width + e.clientX - start.x);
+              }}
+              onPointerUp={() => { resizeStart.current = null; }}
+              onPointerCancel={() => { resizeStart.current = null; }}
+              onLostPointerCapture={() => { resizeStart.current = null; }}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+                  e.preventDefault();
+                  resizeInfo(infoWidth + (e.key === "ArrowLeft" ? -20 : 20));
+                }
+              }}
+            />
           </div>
           <div className="gv-timeline" style={{ width }}>
             <div className="gv-calendar">
@@ -384,10 +425,6 @@ export function PlanGantt({
             )}
           </div>
         </div>
-      </div>
-      <div className="gv-bottom">
-        <span>横向滚动查看整个项目时间范围</span>
-        <span>选择计划项可打开详情</span>
       </div>
     </section>
   );

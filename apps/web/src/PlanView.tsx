@@ -393,7 +393,6 @@ export function PlanView({
                 );
               })}
           </div>
-          <div className="stagefoot">选择阶段，查看五种工作视图</div>
         </aside>
         <div className="pagearea">
           <div className="stageheading">

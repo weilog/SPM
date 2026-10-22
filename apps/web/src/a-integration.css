@@ -26,6 +26,13 @@
 .a-plan-view,.a-docs,.a-members{line-height:normal}
 .a-plan-view .plan-empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;min-height:240px;padding:48px 24px;text-align:center}
 .a-plan-view .plan-empty-state>.btn{flex:none;margin:0}
+.v43-shell .story-board{display:block;min-width:0;width:100%;padding-bottom:0}
+.v43-shell .story-board>.epic-wrap{min-width:0;width:100%;overflow-x:auto}
+.v43-shell .story-board .board-columns{grid-template-columns:repeat(3,minmax(145px,1fr));min-width:480px;align-items:start}
+.v43-shell .panes .viewpane,.v43-shell .panes .pane-body{min-width:0}
+.a-plan-view .gv-info-resizer{position:absolute;top:0;bottom:0;right:-4px;width:9px;cursor:col-resize;touch-action:none;z-index:12;outline:none}
+.a-plan-view .gv-info-resizer::after{content:"";position:absolute;top:0;bottom:0;left:4px;width:2px;background:#cbd5e5}
+.a-plan-view .gv-info-resizer:hover::after,.a-plan-view .gv-info-resizer:focus-visible::after{background:#1677ff;width:3px}
 
 .a-plan-view [draggable=true]{-webkit-user-drag:element;user-select:none}.a-plan-view [draggable=true] *{user-select:none}
 

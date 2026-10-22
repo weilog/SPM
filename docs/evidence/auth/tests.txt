@@ -1,0 +1,48 @@
+$ pnpm --filter @spm/web test && pnpm --filter @spm/api test
+$ vitest run
+
+ RUN  v4.0.18 D:/Work/shiyan/SPM-s2-b/apps/web
+
+ ✓ src/api.test.ts (2 tests) 4ms
+ ✓ src/auth-ui.test.tsx (6 tests) 3628ms
+     ✓ opens the explicitly simulated mail link on the reset-password screen  458ms
+     ✓ validates registration confirmation before submitting only the confirmed registration fields  1616ms
+     ✓ shows disabled simulation errors without claiming a sent message  386ms
+     ✓ uses the reset email token and requires matching 12-character passwords  480ms
+     ✓ rejects direct resets without a token  516ms
+ ✓ src/stories-ui.test.tsx (6 tests) 3007ms
+   ✓ shares persisted status between board, drawer and map and supports story number search  1049ms
+   ✓ persists a cross-epic map drop  412ms
+   ✓ rolls back an optimistic status change when the server rejects it  348ms
+   ✓ keeps DEVELOPER map, board and drawer read-only  559ms
+   ✓ keeps TESTER map, board and drawer read-only  508ms
+ ✓ src/ui.test.tsx (10 tests) 5612ms
+     ✓ passes a successful user to the app  348ms
+     ✓ view-only project members do not see member/task management tabs  398ms
+     ✓ validates title and sends only task creation contract fields  1882ms
+     ✓ clears a task assignee using its project-scoped endpoint  1865ms
+ ✓ src/v2-ui.test.tsx (7 tests) 15008ms
+     ✓ creates an account without exposing or submitting global role assignment  1706ms
+     ✓ changes a member role through a project-scoped request  1972ms
+     ✓ lets a developer view details while hiding create/edit controls  1208ms
+     ✓ validates title and creates only a formal requirement, without task links  2435ms
+     ✓ edits requirement content using the current project and requirement id  1867ms
+     ✓ uses the server-owned personal list/detail routes without an arbitrary user id  1237ms
+     ✓ integrates formal requirements and personal tasks into an authorized developer project  4582ms
+
+ Test Files  5 passed (5)
+      Tests  31 passed (31)
+   Start at  16:37:21
+   Duration  18.49s (transform 660ms, setup 524ms, import 7.71s, tests 27.26s, environment 3.11s)
+
+$ jest --runInBand
+PASS test/integration.spec.ts (15.577 s)
+PASS test/migration.spec.ts (5.693 s)
+PASS test/auth-pages.spec.ts
+PASS test/password.spec.ts
+
+Test Suites: 4 passed, 4 total
+Tests:       60 passed, 60 total
+Snapshots:   0 total
+Time:        24.35 s
+Ran all test suites.

@@ -1,14 +1,25 @@
 {
-  "name": "spm", "private": true, "packageManager": "pnpm@11.25.0",
-  "engines": {"node": ">=22.12"},
+  "name": "spm",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "build": "pnpm --filter @spm/shared build && pnpm --filter @spm/api build && pnpm --filter @spm/web build",
     "typecheck": "pnpm --filter @spm/shared build && pnpm -r typecheck",
     "test": "pnpm --filter @spm/web test && pnpm --filter @spm/api test",
+    "test:e2e:s2": "node scripts/s2-phase1-browser.cjs",
     "dev": "pnpm --parallel --filter @spm/web --filter @spm/api dev",
     "db:generate": "pnpm --filter @spm/api db:generate",
     "db:migrate": "pnpm --filter @spm/api db:migrate",
-    "db:seed": "pnpm --filter @spm/api db:seed"
+    "db:seed": "pnpm --filter @spm/api db:seed",
+    "test:e2e:v43": "node scripts/s2-v43-browser.cjs",
+    "test:reference:v43": "node scripts/capture-v43-reference.cjs",
+    "test:e2e:auth": "node scripts/auth-pages-browser.cjs"
   },
-  "devDependencies": {"typescript": "5.9.3"}
+  "devDependencies": {
+    "playwright": "1.62.1",
+    "typescript": "5.9.3"
+  }
 }

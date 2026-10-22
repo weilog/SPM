@@ -1,0 +1,72 @@
+$ pnpm --filter @spm/web test && pnpm --filter @spm/api test
+$ vitest run
+
+ RUN  v4.0.18 D:/Work/shiyan/SPM-s2-b/apps/web
+
+ ✓ src/api.test.ts (2 tests) 4ms
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+ ✓ src/ui.test.tsx (10 tests) 10361ms
+     ✓ requires credentials before submitting  701ms
+     ✓ shows the backend wrong-password error  567ms
+     ✓ passes a successful user to the app  553ms
+     ✓ shows login when no server session exists  310ms
+     ✓ calls server logout then discards the user context  749ms
+     ✓ ordinary users cannot see global management or creation controls  471ms
+     ✓ switches project by the selected id rather than a stale global project  558ms
+     ✓ view-only project members do not see member/task management tabs  2096ms
+     ✓ validates title and sends only task creation contract fields  2161ms
+     ✓ clears a task assignee using its project-scoped endpoint  2194ms
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+ ✓ src/stories-ui.test.tsx (6 tests) 14100ms
+   ✓ shares persisted status between board, drawer and map and supports story number search  4220ms
+   ✓ persists a cross-epic map drop  1945ms
+   ✓ rolls back an optimistic status change when the server rejects it  1483ms
+   ✓ keeps DEVELOPER map, board and drawer read-only  2820ms
+   ✓ keeps TESTER map, board and drawer read-only  2708ms
+   ✓ discards the old project while its snapshot request is still pending  923ms
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+ ✓ src/v2-ui.test.tsx (7 tests) 18149ms
+     ✓ creates an account without exposing or submitting global role assignment  1668ms
+     ✓ changes a member role through a project-scoped request  1997ms
+     ✓ lets a developer view details while hiding create/edit controls  2654ms
+     ✓ validates title and creates only a formal requirement, without task links  2939ms
+     ✓ edits requirement content using the current project and requirement id  3376ms
+     ✓ uses the server-owned personal list/detail routes without an arbitrary user id  1507ms
+     ✓ integrates formal requirements and personal tasks into an authorized developer project  4006ms
+
+ Test Files  4 passed (4)
+      Tests  25 passed (25)
+   Start at  21:01:22
+   Duration  21.34s (transform 298ms, setup 387ms, import 6.65s, tests 42.61s, environment 2.23s)
+
+$ jest --runInBand
+PASS test/integration.spec.ts (14.022 s)
+PASS test/migration.spec.ts (6.079 s)
+PASS test/password.spec.ts
+
+Test Suites: 3 passed, 3 total
+Tests:       48 passed, 48 total
+Snapshots:   0 total
+Time:        20.484 s
+Ran all test suites.

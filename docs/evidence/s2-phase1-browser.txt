@@ -1,0 +1,13 @@
+$ node scripts/s2-phase1-browser.cjs
+{
+  "result": "PASS",
+  "checks": [
+    "UI creates requirement, goal, two epics and two linked stories",
+    "Real drag reorder and cross-epic move survive browser reload",
+    "Board drag, drawer status/edit, Epic filter and number search persist through real API",
+    "Failed status write rolls back the card and shows an error",
+    "56px header, 224/64px navigation and mobile viewport checked",
+    "Developer read-only views and Sprint 1 personal tasks retained"
+  ],
+  "pageErrors": []
+}

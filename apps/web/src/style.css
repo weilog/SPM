@@ -94,3 +94,63 @@ body { margin: 0; }
 @media (max-width: 1100px) { .header { gap: 20px; padding-inline: 28px; } .brand small { display: none; } .account-info { padding-right: 0; } .project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .login-story { padding: 40px 9%; } }
 @media (max-width: 760px) { .header { flex-wrap: wrap; gap: 16px; padding: 18px 20px 12px; } .brand { font-size: 20px; } .main-nav { order: 3; flex-basis: 100%; } .main-nav .ant-btn { padding-inline: 12px; } .account-info > span { display: none; } .user-avatar { display: none; } .content { padding: 22px 18px 40px; } .workspace-intro { padding: 24px; margin-bottom: 26px; } .workspace-intro h2.ant-typography { font-size: 24px; } .workspace-symbol { display: none; } .project-grid { grid-template-columns: 1fr; } .workspace-panel { padding: 20px 16px; } .project-detail .ant-card-body { padding: 24px; } .project-detail h2.ant-typography { font-size: 25px; } .member-form { padding: 16px; } .member-form .ant-form-item { margin-right: 0; } .login { grid-template-columns: 1fr; } .login-story { min-height: auto; padding: 24px 28px 32px; } .login-intro { margin-top: 32px; } .login-intro h1 { font-size: 32px; letter-spacing: -1px; } .login-intro p { margin-bottom: 0; font-size: 13px; } .collaboration-art, .login-footnote { display: none; } .login-form-area { padding: 32px 20px 48px; } .login-form-area h2.ant-typography { font-size: 26px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+/* Sprint 2 shared shell: confirmed blue/white, 56px header, 224/64px navigation. */
+:root { color: #1e293b; background: #f5f7fb; }
+.app-shell { background: #f5f7fb; }
+.app-shell > .header { position: fixed; inset: 0 0 auto; z-index: 100; height: 56px; min-height: 56px; padding: 0 20px; gap: 24px; flex-wrap: nowrap; border-color: #e6eaf0; }
+.header .brand { font-size: 18px; gap: 8px; }
+.header .brand-mark { height: 32px; width: 32px; border-radius: 8px; font-size: 18px; background: #2167e8; box-shadow: none; }
+.header .brand small { display: none; }
+.header .main-nav .ant-btn.nav-active { color: #2167e8; background: #edf3ff; }
+.header .user-avatar { width: 30px; height: 30px; color: #2167e8; background: #edf3ff; }
+.workspace-layout { margin-top: 56px; min-height: calc(100vh - 56px); background: #f5f7fb; }
+.workspace-sidebar { border-right: 1px solid #e6eaf0; position: sticky !important; top: 56px; height: calc(100vh - 56px); overflow-y: auto; }
+.sidebar-toggle { width: 100%; height: 52px; text-align: left; padding-left: 23px; color: #64748b; }
+.workspace-sidebar .ant-menu { border: 0 !important; }
+.workspace-layout > .content { min-width: 0; max-width: none; padding: 24px; }
+.workspace-panel { border-color: #e6eaf0; border-radius: 12px; padding: 24px; }
+.project-detail { background: white; border-color: #e6eaf0; margin-bottom: 20px; }
+.project-detail .ant-card-body { padding: 20px 24px; }
+.project-detail h2.ant-typography { font-size: 24px; margin: 8px 0; }
+.eyebrow, .project-card-footer .ant-btn { color: #2167e8; }
+.project-description, .section-subtitle, .project-manager { color: #64748b; }
+.project-tabs > .ant-tabs-nav { margin-bottom: 20px; }
+.project-tabs > .ant-tabs-nav .ant-tabs-tab { padding-bottom: 14px; }
+.story-filters { margin: 0 0 20px; width: 100%; }
+.story-filters .ant-input-affix-wrapper { width: 280px; max-width: 100%; }
+.requirements-workspace .ant-alert { margin-bottom: 16px; }
+.goal-group { margin-top: 20px; border: 1px solid #e6eaf0; border-radius: 10px; overflow: hidden; }
+.goal-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 18px; background: #edf3ff; border-bottom: 1px solid #e6eaf0; }
+.goal-heading h4.ant-typography { margin: 0; font-size: 16px; overflow-wrap: anywhere; }
+.epic-row { display: flex; gap: 16px; padding: 16px; overflow-x: auto; align-items: stretch; min-height: 130px; }
+.epic-column { background: #f7f9fc; border: 1px solid #e6eaf0; border-radius: 8px; padding: 12px; min-width: 280px; flex: 0 0 300px; }
+.epic-heading { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+.epic-heading > strong { flex: 1; overflow-wrap: anywhere; }
+.story-board { display: grid; grid-template-columns: repeat(3, minmax(240px, 1fr)); gap: 20px; overflow-x: auto; padding-bottom: 12px; }
+.board-column { min-height: 360px; background: #f5f7fb; border-radius: 10px; border-top: 3px solid #a4afbf; padding: 16px; }
+.board-in_progress { border-top-color: #2167e8; }
+.board-done { border-top-color: #159763; }
+.board-heading { display: flex; justify-content: space-between; margin-bottom: 16px; }
+.story-card { padding: 14px; border: 1px solid #e6eaf0; border-radius: 8px; background: white; margin-bottom: 12px; box-shadow: 0 2px 5px #20324d05; overflow-wrap: anywhere; }
+.story-card[draggable="true"] { cursor: grab; }
+.story-card[draggable="true"]:active { cursor: grabbing; }
+.story-card.focused { outline: 2px solid #2167e8; }
+.story-card-meta { display: flex; justify-content: space-between; font-size: 12px; }
+.story-title { display: block; margin: 10px 0; padding: 0; color: #1e293b; font: inherit; font-weight: 600; line-height: 1.6; background: transparent; border: 0; cursor: pointer; text-align: left; overflow-wrap: anywhere; }
+.story-title:hover { color: #2167e8; }
+.story-title:focus-visible { outline: 2px solid #2167e8; outline-offset: 3px; }
+.story-card > .ant-typography { font-size: 12px; }
+.drop-placeholder { padding: 32px 8px; text-align: center; color: #8895a6; border: 1px dashed #dbe2ee; border-radius: 6px; margin-bottom: 12px; }
+.detail-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
+@media (max-width: 760px) {
+  .app-shell > .header { padding: 0 12px; gap: 8px; }
+  .header .main-nav { order: initial; flex-basis: auto; }
+  .header .main-nav .ant-btn { padding-inline: 4px; font-size: 12px; }
+  .header .account-info, .header .user-avatar { display: none; }
+  .header .account-menu { flex-shrink: 0; }
+  .workspace-layout > .content { padding: 16px 12px; }
+  .workspace-panel { padding: 16px 12px; }
+  .goal-heading { align-items: flex-start; flex-direction: column; }
+  .story-board { gap: 12px; }
+}

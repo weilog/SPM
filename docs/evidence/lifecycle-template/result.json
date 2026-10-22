@@ -1,0 +1,17 @@
+{
+  "result": "PASS",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "projectId": 6,
+  "checks": [
+    "35 three-level requirements, 35 work items + 5 milestones, 28 leaf Task links, 3 pending-plan tasks + 1 archive; valid progress/history chronology and all four priorities",
+    "Manager overview, expanded 35-row WBS tree and shared story map/three-column board render real records",
+    "All five phases have populated Gantt timelines; execution list, four-state board and member Task tracking load the same plan records",
+    "Member/task graph, real downloadable document bytes, UML and dual workbench focus use this project and its actual IDs",
+    "Frontend/backend/test/operations accounts see their own tasks; plan writes are denied, and outsider cannot enter the project",
+    "Zero browser runtime errors; verification made no project-data changes"
+  ],
+  "errors": []
+}

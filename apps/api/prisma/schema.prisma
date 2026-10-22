@@ -19,6 +19,8 @@ enum ProjectRole {
 model User {
   id Int @id @default(autoincrement())
   username String @unique @db.VarChar(80)
+  displayName String? @db.VarChar(30)
+  createdAt DateTime? @default(now())
   passwordHash String
   email String? @unique @db.VarChar(254)
   passwordResets PasswordReset[]
@@ -58,6 +60,9 @@ model Project {
   epics Epic[]
   stories UserStory[]
   diagrams UmlDiagram[]
+  planStages PlanStage[]
+  planItems PlanItem[]
+  documents ProjectDocument[]
   createdAt DateTime @default(now())
 }
 model ProjectMember {
@@ -67,6 +72,8 @@ model ProjectMember {
   role ProjectRole @default(DEVELOPER)
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ownedStages PlanStage[] @relation("StageOwner")
+  ownedItems PlanItem[] @relation("ItemOwner")
   assignedTasks Task[]
   @@unique([projectId, userId])
 }
@@ -166,11 +173,12 @@ model TaskHistory {
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   @@index([taskId, id])
 }
-// Opaque A-owned identifiers; no A plan/date model is defined by B.
+// Shared task-to-plan relation; A plan items remain distinct from Task.
 model TaskPlanReference {
   projectId Int
   taskId Int
   planId String @db.VarChar(100)
+  plan PlanItem @relation(fields: [projectId, planId], references: [projectId, id], onDelete: Cascade, onUpdate: NoAction)
   task Task @relation(fields: [projectId, taskId], references: [projectId, id], onDelete: Cascade)
   @@id([projectId, taskId, planId])
 }
@@ -239,4 +247,70 @@ model StoryTask {
   task Task @relation(fields: [projectId, taskId], references: [projectId, id], onDelete: Cascade)
   @@id([projectId, storyId, taskId])
   @@index([projectId, taskId])
+}
+
+model PlanStage {
+  id String @id @default(uuid()) @db.VarChar(100)
+  projectId Int
+  title String @db.VarChar(200)
+  description String @default("") @db.VarChar(10000)
+  start String @db.VarChar(10)
+  end String @db.VarChar(10)
+  ownerUserId Int?
+  revision Int @default(0)
+  sortOrder Int @default(0)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner ProjectMember? @relation("StageOwner", fields: [projectId, ownerUserId], references: [projectId, userId], onDelete: NoAction, onUpdate: NoAction)
+  items PlanItem[]
+  goals PlanGoal[]
+  @@unique([projectId, id])
+}
+model PlanGoal {
+  id String @id @default(uuid()) @db.VarChar(100)
+  projectId Int
+  stageId String @db.VarChar(100)
+  title String @db.VarChar(200)
+  done Boolean @default(false)
+  sortOrder Int @default(0)
+  stage PlanStage @relation(fields: [projectId, stageId], references: [projectId, id], onDelete: Cascade)
+}
+model PlanItem {
+  id String @id @default(uuid()) @db.VarChar(100)
+  number Int @unique @default(autoincrement())
+  projectId Int
+  stageId String @db.VarChar(100)
+  kind String @default("item") @db.VarChar(12)
+  title String @db.VarChar(200)
+  description String @default("") @db.VarChar(10000)
+  start String @db.VarChar(10)
+  end String @db.VarChar(10)
+  ownerUserId Int?
+  status String @default("TODO") @db.VarChar(16)
+  priority String @default("NORMAL") @db.VarChar(10)
+  revision Int @default(0)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  stage PlanStage @relation(fields: [projectId, stageId], references: [projectId, id], onDelete: Cascade)
+  owner ProjectMember? @relation("ItemOwner", fields: [projectId, ownerUserId], references: [projectId, userId], onDelete: NoAction, onUpdate: NoAction)
+  taskLinks TaskPlanReference[]
+  @@unique([projectId, id])
+}
+model ProjectDocument {
+  id Int @id @default(autoincrement())
+  projectId Int
+  parentId Int?
+  kind String @db.VarChar(10)
+  name String @db.VarChar(200)
+  mime String @default("") @db.VarChar(100)
+  size Int @default(0)
+  content Bytes?
+  ownerUserId Int
+  ownerName String @db.VarChar(80)
+  revision Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent ProjectDocument? @relation("DocumentTree", fields: [projectId, parentId], references: [projectId, id], onDelete: NoAction, onUpdate: NoAction)
+  children ProjectDocument[] @relation("DocumentTree")
+  @@unique([projectId, id])
+  @@index([projectId, parentId])
 }

@@ -1,0 +1,35 @@
+{
+  "archive_sha256": "f017cf62ffbfdd290c6cd6958e3067731a596d00dcd7a8242d17d6fd3298c415",
+  "pages": {
+    "A01": {
+      "source": "A_独立原型/A01_登录.html",
+      "bytes": 24562,
+      "sha256": "d1d47045519bb02b9668f549856c40768d3e29dc2ea3f0a5877cf6bf113fbbe5"
+    },
+    "A02": {
+      "source": "A_独立原型/A02_我的项目_V2.0.html",
+      "bytes": 17392,
+      "sha256": "39cf716b5dec1489bc0d9b81408b148546c5d3d76b1f1ceb9c81da9b1cf3adb6"
+    },
+    "A03": {
+      "source": "A_独立原型/A03_项目概览.html",
+      "bytes": 13830,
+      "sha256": "2b26f9ef4e4fe33fa294f5abd2e6f882489aad78c205c9a19a9a9de005f6240a"
+    },
+    "A04": {
+      "source": "A_独立原型/A04_项目计划_V3.2.html",
+      "bytes": 82593,
+      "sha256": "f203345daedfdd3055c4ba12ecd30443eef57ef45ce27c7e6bc656c5b8e9270a"
+    },
+    "A05": {
+      "source": "A_独立原型/A05_项目文档.html",
+      "bytes": 45048,
+      "sha256": "f12b3b802f7b58141bbfe48be576f43398309469d369a77dbd783dfdcc0f38a4"
+    },
+    "A06": {
+      "source": "A_独立原型/A06_成员与角色.html",
+      "bytes": 27073,
+      "sha256": "ba724ec9fe4119607946c65f892ae224d8979808bebc351a98cbd06cdc669f82"
+    }
+  }
+}

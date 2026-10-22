@@ -29,8 +29,10 @@ export function ProjectList({
   user,
   onSelect,
   onError,
+  onProjectsChanged,
 }: {
   user: User;
+  onProjectsChanged?: () => void;
   onSelect: (id: number) => void;
   onError: (error: unknown) => void;
 }) {
@@ -70,8 +72,11 @@ export function ProjectList({
         values,
       );
       setOpen(false);
-      if (created.canManage) onSelect(created.id);
-      else {
+      onProjectsChanged?.();
+      if (created.canManage) {
+        setNotice("项目已创建，可进入项目。");
+        await reload();
+      } else {
         setNotice(
           "项目已创建，已授权给指定经理；创建操作不会自动授予项目访问权。",
         );
@@ -89,6 +94,7 @@ export function ProjectList({
       setCanCreate(options.canCreate);
       setManagers(options.managers);
       form.resetFields();
+      form.setFieldsValue({ managerId: user.id });
       setOpen(true);
     } catch (error) {
       onError(error);
@@ -96,7 +102,9 @@ export function ProjectList({
   }
   const shown = projects.filter(
     (p) =>
-      `${p.name} ${p.id}`.toLowerCase().includes(search.toLowerCase()) &&
+      `${p.name} ${p.id} P-${String(p.id).padStart(3, "0")}`
+        .toLowerCase()
+        .includes(search.toLowerCase()) &&
       (role === "all" ||
         (role === "member" ? !p.canManage : p.projectRole === role)),
   );
@@ -106,7 +114,6 @@ export function ProjectList({
         <div className="page-title">
           <div>
             <h1>我的项目</h1>
-            <p className="sub">快速找到项目，进入团队工作空间</p>
           </div>
           {canCreate && (
             <button className="primary" onClick={() => void showCreate()}>
@@ -181,7 +188,9 @@ export function ProjectList({
                         >
                           {p.name}
                         </button>
-                        <div className="identifier">项目编号 #{p.id}</div>
+                        <div className="identifier">
+                          项目编号 P-{String(p.id).padStart(3, "0")}
+                        </div>
                       </div>
                       <span className={`badge ${p.canManage ? "" : "other"}`}>
                         {projectRoleLabels[p.projectRole]}
@@ -228,7 +237,7 @@ export function ProjectList({
                             {p.name}
                           </button>
                         </td>
-                        <td>#{p.id}</td>
+                        <td>P-{String(p.id).padStart(3, "0")}</td>
                         <td>{p.manager.username}</td>
                         <td>{projectRoleLabels[p.projectRole]}</td>
                         <td>
@@ -263,6 +272,10 @@ export function ProjectList({
       <Modal
         centered
         title="创建项目"
+        className="a-project-modal"
+        width={560}
+        okText="创建项目"
+        cancelText="取消"
         open={open}
         onCancel={() => setOpen(false)}
         onOk={() => void create()}
@@ -273,31 +286,32 @@ export function ProjectList({
           <Form.Item
             label="项目名称"
             name="name"
-            rules={[{ required: true, whitespace: true }, { max: 200 }]}
+            rules={[{ required: true, whitespace: true }, { max: 80 }]}
           >
-            <Input />
+            <Input maxLength={80} placeholder="输入项目名称" />
+          </Form.Item>
+          <Form.Item label="项目描述" name="description" rules={[{ max: 500 }]}>
+            <Input.TextArea
+              rows={3}
+              maxLength={500}
+              placeholder="简要介绍项目背景和目标"
+            />
           </Form.Item>
           <Form.Item
-            label="项目说明"
-            name="description"
-            rules={[{ max: 10000 }]}
+            label="项目经理"
+            name="managerId"
+            rules={[{ required: true }]}
           >
-            <Input.TextArea rows={3} />
-          </Form.Item>
-          {user.role === "ADMIN" && (
-            <Form.Item
-              label="项目经理"
-              name="managerId"
-              rules={[{ required: true }]}
-            >
-              <Select
-                options={managers.map((manager) => ({
+            <Select
+              disabled={user.role !== "ADMIN"}
+              options={(user.role === "ADMIN" ? managers : [user]).map(
+                (manager) => ({
                   value: manager.id,
                   label: manager.username,
-                }))}
-              />
-            </Form.Item>
-          )}
+                }),
+              )}
+            />
+          </Form.Item>
         </Form>
       </Modal>
     </>

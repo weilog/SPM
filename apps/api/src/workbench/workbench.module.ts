@@ -64,7 +64,9 @@ class WorkbenchService {
         u.add(id);
       else if (
         q.entityType === "planItem" &&
-        tasks.some((x) => x.planLinks.some((l) => l.planId === q.entityId))
+        !!(await tx.planItem.findFirst({
+          where: { projectId: p, id: q.entityId },
+        }))
       )
         plans.add(q.entityId);
       else throw new NotFoundException("焦点不存在或无权访问");
@@ -143,6 +145,18 @@ class WorkbenchService {
           where: { projectId: p },
           select: { id: true, revision: true },
         });
+        const plans = await tx.planStage.findMany({
+          where: { projectId: p },
+          select: { id: true, revision: true },
+        });
+        const planItems = await tx.planItem.findMany({
+          where: { projectId: p },
+          select: { id: true, revision: true },
+        });
+        const documents = await tx.projectDocument.findMany({
+          where: { projectId: p },
+          select: { id: true, revision: true },
+        });
         return createHash("sha256")
           .update(
             JSON.stringify({
@@ -151,6 +165,9 @@ class WorkbenchService {
               tasks,
               diagrams,
               members,
+              plans,
+              planItems,
+              documents,
               goals,
               epics,
             }),

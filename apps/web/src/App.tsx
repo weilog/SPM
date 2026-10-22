@@ -9,18 +9,21 @@ import {
 import { api, RequestError } from "./api";
 import { Login } from "./Login";
 import { Users } from "./Users";
-import { Members, ProjectList } from "./Projects";
+import { ProjectList } from "./Projects";
 import { ProjectProvider, useProjectData } from "./ProjectData";
 import { TaskActionsProvider, useTaskActions } from "./TaskActions";
 import { TaskWorkspace } from "./TaskWorkspace";
 import { Workbench } from "./Workbench";
 import { UmlView } from "./UmlView";
 import { PlanView } from "./PlanView";
+import { Documents } from "./Documents";
+import { ProjectMembers } from "./ProjectMembers";
 import { ProjectOverview } from "./ProjectOverview";
 import { StoryInspector } from "./StoryInspector";
 import { Icon, PageHeading } from "./ui";
 import "./v43.css";
 import "./v43-react.css";
+import "./a-integration.css";
 import { Requirements } from "./Requirements";
 
 export function App() {
@@ -32,6 +35,10 @@ export function App() {
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
   const [collapsed, setCollapsed] = useState(false);
   const requestVersion = useRef(0);
+  const workspaceRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    workspaceRef.current?.scrollTo?.({ top: 0, left: 0 });
+  }, [page, project?.id, user?.id]);
   function resetContext() {
     requestVersion.current++;
     setProject(null);
@@ -201,11 +208,11 @@ export function App() {
             {nav("workspace", "split", "多视图工作台")}
             {nav("docs", "file", "项目文档")}
             {project?.canManage && nav("members", "users", "成员与角色")}
-            {user.role === "ADMIN" && nav("users", "users", "用户管理")}
+            {user.role === "ADMIN" && <><div className="nav-section">系统管理</div>{nav("users", "users", "系统用户管理")}</>}
             <div className="sidebar-project-box">
               <span style={{ fontSize: 19 }}>◈</span>
               <div className="sidebar-project-text">
-                <strong>{project?.name || "项目工作空间"}</strong>
+                <strong title={project?.name || "项目工作空间"}>{project?.name || "项目工作空间"}</strong>
                 <div style={{ marginTop: 4, color: "#8da0ba" }}>
                   项目工作空间
                 </div>
@@ -232,6 +239,7 @@ export function App() {
           </div>
         </aside>
         <main
+          ref={workspaceRef}
           className={`workspace ${page === "plan" ? "plan-workspace" : ""}`}
         >
           <div className="page-container">
@@ -246,7 +254,7 @@ export function App() {
             <div className="breadcrumb">
               {page === "projects" ? (
                 "工作空间 / 我的项目"
-              ) : (
+              ) : page === "users" ? "系统管理 / 系统用户管理" : (
                 <>
                   我的项目 <span>›</span>
                   {project?.name}
@@ -259,13 +267,16 @@ export function App() {
               <ProjectList
                 key={user.role}
                 user={user}
+                onProjectsChanged={() =>
+                  void api<Project[]>("/projects")
+                    .then(setAvailableProjects)
+                    .catch(onError)
+                }
                 onSelect={(id) => void selectProject(id)}
                 onError={onError}
               />
             ) : page === "users" ? (
-              <div className="card plain-content">
-                <Users onError={onError} onChanged={refreshUser} />
-              </div>
+              <Users actorId={user.id} onError={onError} onChanged={refreshUser} />
             ) : project ? (
               <ProjectProvider
                 key={project.id}
@@ -300,7 +311,7 @@ const labels: Record<string, string> = {
   workspace: "多视图工作台",
   docs: "项目文档",
   members: "成员与角色",
-  users: "用户管理",
+  users: "系统用户管理",
   projects: "我的项目",
 };
 function ProjectSpace({
@@ -327,27 +338,9 @@ function ProjectSpace({
       ) : page === "plan" ? (
         <PlanView />
       ) : page === "members" ? (
-        <div className="card plain-content">
-          <Members
-            project={store.project}
-            onError={store.onError}
-            onChanged={() => {
-              void store.refresh();
-              onMembersChanged();
-            }}
-          />
-        </div>
+        <ProjectMembers onChanged={onMembersChanged} />
       ) : page === "docs" ? (
-        <>
-          <PageHeading title="项目文档" description="管理项目文档与资料" />
-          <div className="card plain-content">
-            <Alert
-              type="info"
-              title="项目文档服务待对接负责人 A"
-              description="保留项目文档入口；当前没有真实文件服务，不显示或下载演示文档。"
-            />
-          </div>
-        </>
+        <Documents />
       ) : (
         <ProjectOverview onNavigate={onNavigate} />
       )}

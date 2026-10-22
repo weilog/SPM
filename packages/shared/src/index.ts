@@ -1,5 +1,10 @@
 export type Role = "ADMIN" | "MANAGER" | "MEMBER";
 export type ProjectRole = "MANAGER" | "DEVELOPER" | "TESTER";
+export interface SystemUser extends User {
+  displayName: string | null;
+  email: string | null;
+  createdAt: string | null;
+}
 export interface User {
   id: number;
   username: string;
@@ -179,7 +184,12 @@ export interface PlanItemView {
   start: string;
   end: string;
   owner: string;
-  status: StoryStatus;
+  status: StoryStatus | "PAUSED";
+  priority?: "NORMAL" | "HIGH" | "MEDIUM" | "LOW";
+  ownerUserId?: number | null;
+  number?: number;
+  taskIds?: number[];
+  tasks?: ManagedTask[];
   revision: number;
 }
 export interface PlanStageView {
@@ -189,6 +199,7 @@ export interface PlanStageView {
   start: string;
   end: string;
   owner: string;
+  ownerUserId?: number | null;
   goals: { id: string; title: string; done: boolean }[];
   revision: number;
 }
@@ -208,3 +219,10 @@ export const projectRoleLabels: Record<ProjectRole, string> = {
   DEVELOPER: "开发人员",
   TESTER: "测试人员",
 };
+
+export interface ProjectDocumentEntry {
+  id: number; projectId: number; parentId: number | null;
+  kind: 'FOLDER' | 'FILE'; name: string; mime: string; size: number;
+  ownerUserId: number; ownerName: string; revision: number;
+  createdAt: string; updatedAt: string;
+}

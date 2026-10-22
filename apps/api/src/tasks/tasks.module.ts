@@ -224,6 +224,17 @@ export class TasksService {
       });
     }
     if (planIds !== undefined) {
+      const previous = await tx.taskPlanReference.findMany({
+        where: { projectId, taskId },
+      });
+      const oldIds = new Set(previous.map((l) => l.planId));
+      const changed = [...new Set([...oldIds, ...planIds])].filter(
+        (id) => oldIds.has(id) !== planIds.includes(id),
+      );
+      await tx.planItem.updateMany({
+        where: { projectId, id: { in: changed } },
+        data: { revision: { increment: 1 } },
+      });
       await tx.taskPlanReference.deleteMany({ where: { projectId, taskId } });
       await tx.taskPlanReference.createMany({
         data: planIds.map((planId) => ({ projectId, taskId, planId })),

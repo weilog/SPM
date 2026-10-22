@@ -47,7 +47,6 @@ export function ProjectOverview({
         <div className="heading">
           <div>
             <h1>{p.name}</h1>
-            <p className="sub">项目概览 · 查看项目信息与工作摘要</p>
           </div>
           <button className="btn outline" onClick={() => setInfo(true)}>
             项目信息
@@ -58,23 +57,19 @@ export function ProjectOverview({
             [
               "正式需求",
               store.requirements.length,
-              "当前项目有权查看的正式需求",
             ],
             [
               p.canManage ? "项目任务" : "我的任务",
               store.tasks.length,
-              p.canManage ? "项目任务列表统计" : "仅本人已分配任务",
             ],
             [
               "项目成员",
               p.canManage ? store.members.length : "—",
-              p.canManage ? "仅项目管理角色可统计" : "当前权限未开放成员统计",
             ],
-          ].map(([label, num, note]) => (
+          ].map(([label, num]) => (
             <div className="metric" key={label}>
               <div className="label">{label}</div>
               <div className="num">{num}</div>
-              <div className="note">{note}</div>
             </div>
           ))}
         </div>

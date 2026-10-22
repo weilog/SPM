@@ -805,13 +805,11 @@ const reference = require("./fixtures/v43-reference.json");
     await nav("项目计划");
     await shot("plan-pending");
     await nav("项目文档");
-    await page
-      .getByText("项目文档服务待对接负责人 A", { exact: true })
-      .waitFor();
+    await page.getByText("文件目录", { exact: true }).waitFor();
     await nav("成员与角色");
-    await page.getByRole("heading", { name: "项目成员" }).waitFor();
+    await page.getByRole("heading", { name: "成员与角色" }).waitFor();
     log(
-      "A plan/Gantt complete timeline controls retained; missing plan/document APIs explicitly pending, no demo data",
+      "A plan/Gantt and document pages read actual empty data, all confirmed controls retained without demo records",
     );
     const peerContext = await browser.newContext({
         viewport: { width: 1440, height: 900 },
@@ -995,10 +993,7 @@ const reference = require("./fixtures/v43-reference.json");
           viewport: { width: 1440, height: 900 },
           checks,
           pageErrors: errors,
-          pending: [
-            "A real plan API/plan links/date writes/end-to-end Gantt integration",
-            "A document service",
-          ],
+          pending: [],
         },
         null,
         2,
@@ -1010,7 +1005,7 @@ const reference = require("./fixtures/v43-reference.json");
           result: "PASS",
           checks,
           pageErrors: errors,
-          pending: ["A plan integration", "A document service"],
+          pending: [],
         },
         null,
         2,

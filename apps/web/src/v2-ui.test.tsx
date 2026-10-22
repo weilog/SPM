@@ -82,18 +82,23 @@ describe("V2 US02 account-only maintenance", () => {
           : [],
     );
     render(<Users onError={vi.fn()} onChanged={async () => {}} />);
-    await userEvent.click(screen.getByRole("button", { name: "创建用户" }));
+    await userEvent.click(screen.getByRole("button", { name: /创建用户/ }));
     expect(screen.queryByLabelText("全局身份")).not.toBeInTheDocument();
-    expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
-    await userEvent.type(screen.getByLabelText("用户名"), "new_user");
-    await userEvent.type(screen.getByLabelText("密码"), "test-password-strong");
+    expect(screen.queryByLabelText("全局身份")).not.toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText(/^用户名/), "new_user");
+    await userEvent.type(screen.getByLabelText(/^姓名/), "新用户");
+    await userEvent.type(screen.getByLabelText(/电子邮箱/), "new-user@example.test");
+    await userEvent.type(screen.getByLabelText(/初始密码/), "test-password-strong");
     await userEvent.click(
-      screen.getByRole("button", { name: /OK|确定|保\s*存/ }),
+      screen.getByRole("button", { name: "确认创建" }),
     );
     await waitFor(() =>
       expect(mocked).toHaveBeenCalledWith("/users", "POST", {
         username: "new_user",
         password: "test-password-strong",
+        displayName: "新用户",
+        email: "new-user@example.test",
+        active: true,
       }),
     );
   });

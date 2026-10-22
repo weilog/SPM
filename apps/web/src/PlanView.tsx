@@ -494,8 +494,8 @@ export function PlanView({
                 onPlanFocus={onPlanFocus}
               />
             ) : !stage ? (
-              <div className="blank">
-                暂无阶段计划
+              <div className="blank plan-empty-state">
+                <span>暂无阶段计划</span>
                 {can && (
                   <button className="btn primary" onClick={() => edit("plan")}>
                     新建阶段计划

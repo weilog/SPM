@@ -24,6 +24,8 @@
 .a-project-modal .ant-modal-content{padding:0}.a-project-modal .ant-modal-header{padding:20px 24px;border-bottom:1px solid #e7eaf0;margin:0}.a-project-modal .ant-modal-title{font-size:18px;margin:0}.a-project-modal .ant-modal-body{padding:20px 24px}.a-project-modal .ant-modal-footer{padding:14px 24px;margin:0;border-top:1px solid #e7eaf0}.a-project-modal .ant-form-item-label>label{font-size:13px}.a-project-modal .ant-input{min-height:38px}
 
 .a-plan-view,.a-docs,.a-members{line-height:normal}
+.a-plan-view .plan-empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;min-height:240px;padding:48px 24px;text-align:center}
+.a-plan-view .plan-empty-state>.btn{flex:none;margin:0}
 
 .a-plan-view [draggable=true]{-webkit-user-drag:element;user-select:none}.a-plan-view [draggable=true] *{user-select:none}
 

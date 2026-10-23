@@ -1,0 +1,390 @@
+{
+  "fixture": "REAL_POSTGRES_RULES_ONLY_TEST",
+  "response": {
+    "id": "1d919b63-0184-4992-96c5-3af877211b4e",
+    "kind": "CROSS_VIEW",
+    "status": "PARTIAL",
+    "scope": {},
+    "createdAt": "2026-10-23T15:45:20.950Z",
+    "startedAt": "2026-10-23T15:45:20.985Z",
+    "finishedAt": "2026-10-23T15:45:21.025Z",
+    "sourceDate": "2026-10-23",
+    "rulesVersion": "p1-2026-10-23.1",
+    "stale": false,
+    "summary": {
+      "uniqueEvents": 12,
+      "dimensions": {
+        "COVERAGE": 2,
+        "PLAN": 8,
+        "PROGRESS": 3,
+        "MEMBER": 2,
+        "TRACEABILITY": 1
+      }
+    },
+    "findings": [
+      {
+        "id": "8a26dff0-e88c-4ecd-b191-f50661051b6c",
+        "eventKey": "LEAF_REQUIREMENT_WITHOUT_STORY:2",
+        "ruleId": "LEAF_REQUIREMENT_WITHOUT_STORY",
+        "severity": "MEDIUM",
+        "dimensions": [
+          "COVERAGE"
+        ],
+        "fact": "叶子需求 REQ-2 的直接故事关联数为0；只统计叶子需求，不把父级缺少直接关联误作子树未覆盖。",
+        "evidence": [
+          {
+            "key": "requirement:2",
+            "fields": {
+              "title": "Leaf without story",
+              "parentId": 1,
+              "storyIds": []
+            },
+            "entityId": 2,
+            "entityType": "requirement"
+          }
+        ],
+        "evidenceCurrent": true
+      },
+      {
+        "id": "1b991214-b601-4d00-86c1-d648e66a0a40",
+        "eventKey": "MILESTONE_OVERDUE:0173d962-4967-4340-9626-5e28357e4726",
+        "ruleId": "MILESTONE_OVERDUE",
+        "severity": "HIGH",
+        "dimensions": [
+          "PLAN",
+          "PROGRESS"
+        ],
+        "fact": "计划里程碑 0173d962-4967-4340-9626-5e28357e4726 的结束日期 2020-01-31 早于检查日期 2026-10-23，当前状态 TODO；这不是Task原生截止日期。",
+        "evidence": [
+          {
+            "key": "planItem:0173d962-4967-4340-9626-5e28357e4726",
+            "fields": {
+              "end": "2020-01-31",
+              "kind": "milestone",
+              "start": "2020-01-31",
+              "title": "Plan 2",
+              "status": "TODO",
+              "stageId": "ce6c311a-fc3e-45c6-bf03-e2805bf1ae0d",
+              "ownerUserId": 2
+            },
+            "entityId": "0173d962-4967-4340-9626-5e28357e4726",
+            "entityType": "planItem"
+          }
+        ],
+        "evidenceCurrent": true
+      },
+      {
+        "id": "76c9655c-ab5c-451b-ae27-69591600c829",
+        "eventKey": "PLAN_OUTSIDE_STAGE:b9584160-e8f2-47f4-8be0-83b9b8ba533e",
+        "ruleId": "PLAN_OUTSIDE_STAGE",
+        "severity": "MEDIUM",
+        "dimensions": [
+          "PLAN"
+        ],
+        "fact": "计划项 b9584160-e8f2-47f4-8be0-83b9b8ba533e 日期超出所属阶段 ce6c311a-fc3e-45c6-bf03-e2805bf1ae0d 的计划区间。",
+        "evidence": [
+          {
+            "key": "planItem:b9584160-e8f2-47f4-8be0-83b9b8ba533e",
+            "fields": {
+              "end": "2020-02-01",
+              "kind": "item",
+              "start": "2020-01-05",
+              "title": "Plan 1",
+              "status": "TODO",
+              "stageId": "ce6c311a-fc3e-45c6-bf03-e2805bf1ae0d",
+              "ownerUserId": 2
+            },
+            "entityId": "b9584160-e8f2-47f4-8be0-83b9b8ba533e",
+            "entityType": "planItem"
+          },
+          {
+            "key": "stage:ce6c311a-fc3e-45c6-bf03-e2805bf1ae0d",
+            "fields": {
+              "end": "2020-01-31",
+              "start": "2020-01-01",
+              "title": "Historical stage"
+            },
+            "entityId": "ce6c311a-fc3e-45c6-bf03-e2805bf1ae0d",
+            "entityType": "stage"
+          }
+        ],
+        "evidenceCurrent": true
+      },
+      {
+        "id": "ecf6b7d6-7c5e-4167-b220-9ad812ed0dca",
+        "eventKey": "PLAN_OVERDUE:70d80cc8-6920-4d1d-b7c4-d287760d13b7",
+        "ruleId": "PLAN_OVERDUE",
+        "severity": "HIGH",
+        "dimensions": [
+          "PLAN",
+          "PROGRESS"
+        ],
+        "fact": "计划工作项 70d80cc8-6920-4d1d-b7c4-d287760d13b7 的结束日期 2020-01-10 早于检查日期 2026-10-23，当前状态 TODO；这不是Task原生截止日期。",
+        "evidence": [
+          {
+            "key": "planItem:70d80cc8-6920-4d1d-b7c4-d287760d13b7",
+            "fields": {
+              "end": "2020-01-10",
+              "kind": "item",
+              "start": "2020-01-02",
+              "title": "Plan 0",
+              "status": "TODO",
+              "stageId": "ce6c311a-fc3e-45c6-bf03-e2805bf1ae0d",
+              "ownerUserId": 2
+            },
+            "entityId": "70d80cc8-6920-4d1d-b7c4-d287760d13b7",
+            "entityType": "planItem"
+          }
+        ],
+        "evidenceCurrent": true
+      },
+      {
+        "id": "c229eb40-3d43-4bd0-9c20-4f00896b9013",
+        "eventKey": "PLAN_OVERDUE:b9584160-e8f2-47f4-8be0-83b9b8ba533e",
+        "ruleId": "PLAN_OVERDUE",
+        "severity": "HIGH",
+        "dimensions": [
+          "PLAN",
+          "PROGRESS"
+        ],
+        "fact": "计划工作项 b9584160-e8f2-47f4-8be0-83b9b8ba533e 的结束日期 2020-02-01 早于检查日期 2026-10-23，当前状态 TODO；这不是Task原生截止日期。",
+        "evidence": [
+          {
+            "key": "planItem:b9584160-e8f2-47f4-8be0-83b9b8ba533e",
+            "fields": {
+              "end": "2020-02-01",
+              "kind": "item",
+              "start": "2020-01-05",
+              "title": "Plan 1",
+              "status": "TODO",
+              "stageId": "ce6c311a-fc3e-45c6-bf03-e2805bf1ae0d",
+              "ownerUserId": 2
+            },
+            "entityId": "b9584160-e8f2-47f4-8be0-83b9b8ba533e",
+            "entityType": "planItem"
+          }
+        ],
+        "evidenceCurrent": true
+      },
+      {
+        "id": "44d4b199-2409-4452-ac35-c126d6019f24",
+        "eventKey": "SAME_OWNER_PLAN_OVERLAP:70d80cc8-6920-4d1d-b7c4-d287760d13b7|b9584160-e8f2-47f4-8be0-83b9b8ba533e",
+        "ruleId": "SAME_OWNER_PLAN_OVERLAP",
+        "severity": "LOW",
+        "dimensions": [
+          "PLAN",
+          "MEMBER"
+        ],
+        "fact": "同一计划负责人 #2 的两个计划项日期交叠；未建模工时和依赖，不能据此断定资源冲突。",
+        "evidence": [
+          {
+            "key": "planItem:70d80cc8-6920-4d1d-b7c4-d287760d13b7",
+            "fields": {
+              "end": "2020-01-10",
+              "kind": "item",
+              "start": "2020-01-02",
+              "title": "Plan 0",
+              "status": "TODO",
+              "stageId": "ce6c311a-fc3e-45c6-bf03-e2805bf1ae0d",
+              "ownerUserId": 2
+            },
+            "entityId": "70d80cc8-6920-4d1d-b7c4-d287760d13b7",
+            "entityType": "planItem"
+          },
+          {
+            "key": "planItem:b9584160-e8f2-47f4-8be0-83b9b8ba533e",
+            "fields": {
+              "end": "2020-02-01",
+              "kind": "item",
+              "start": "2020-01-05",
+              "title": "Plan 1",
+              "status": "TODO",
+              "stageId": "ce6c311a-fc3e-45c6-bf03-e2805bf1ae0d",
+              "ownerUserId": 2
+            },
+            "entityId": "b9584160-e8f2-47f4-8be0-83b9b8ba533e",
+            "entityType": "planItem"
+          }
+        ],
+        "evidenceCurrent": true
+      },
+      {
+        "id": "a7773ad9-ca6c-48d8-bde9-af1be7b3473d",
+        "eventKey": "STORY_WITHOUT_REQUIREMENT:1",
+        "ruleId": "STORY_WITHOUT_REQUIREMENT",
+        "severity": "MEDIUM",
+        "dimensions": [
+          "COVERAGE"
+        ],
+        "fact": "用户故事 US-1 没有直接正式需求关联；应人工核查是否需要建立关联。",
+        "evidence": [
+          {
+            "key": "story:1",
+            "fields": {
+              "title": "Story without requirement or use case",
+              "umlUseCaseIds": [],
+              "requirementIds": []
+            },
+            "entityId": 1,
+            "entityType": "story"
+          }
+        ],
+        "evidenceCurrent": true
+      },
+      {
+        "id": "42740cd0-5b2b-4fd1-9a75-537257dbcbb5",
+        "eventKey": "STORY_WITHOUT_UML:1",
+        "ruleId": "STORY_WITHOUT_UML",
+        "severity": "INFO",
+        "dimensions": [
+          "TRACEABILITY"
+        ],
+        "fact": "用户故事 US-1 无直接UML用例关联；不是所有故事都必须建模用例。",
+        "evidence": [
+          {
+            "key": "story:1",
+            "fields": {
+              "title": "Story without requirement or use case",
+              "umlUseCaseIds": [],
+              "requirementIds": []
+            },
+            "entityId": 1,
+            "entityType": "story"
+          }
+        ],
+        "evidenceCurrent": true
+      },
+      {
+        "id": "cdc25bdd-eafe-4f52-beb2-d51bfcdd7c42",
+        "eventKey": "TASK_PRIORITY_CONCENTRATION:2",
+        "ruleId": "TASK_PRIORITY_CONCENTRATION",
+        "severity": "MEDIUM",
+        "dimensions": [
+          "MEMBER"
+        ],
+        "fact": "成员 #2 有 3 项未完成的高/紧急优先级任务；这是任务集中信号，不代表工时超负荷。",
+        "evidence": [
+          {
+            "key": "task:1",
+            "fields": {
+              "title": "Developer visible 0",
+              "status": "TODO",
+              "planIds": [],
+              "priority": "HIGH",
+              "progress": 0,
+              "assigneeUserId": 2
+            },
+            "entityId": 1,
+            "entityType": "task"
+          },
+          {
+            "key": "task:2",
+            "fields": {
+              "title": "Developer visible 1",
+              "status": "TODO",
+              "planIds": [],
+              "priority": "HIGH",
+              "progress": 0,
+              "assigneeUserId": 2
+            },
+            "entityId": 2,
+            "entityType": "task"
+          },
+          {
+            "key": "task:3",
+            "fields": {
+              "title": "Developer visible 2",
+              "status": "TODO",
+              "planIds": [],
+              "priority": "HIGH",
+              "progress": 0,
+              "assigneeUserId": 2
+            },
+            "entityId": 3,
+            "entityType": "task"
+          }
+        ],
+        "evidenceCurrent": true
+      },
+      {
+        "id": "60c266ba-0271-4c16-9af0-78202542f61f",
+        "eventKey": "TASK_WITHOUT_PLAN:1",
+        "ruleId": "TASK_WITHOUT_PLAN",
+        "severity": "INFO",
+        "dimensions": [
+          "PLAN"
+        ],
+        "fact": "任务 T-1 未关联计划项，不能据此计算任务逾期。",
+        "evidence": [
+          {
+            "key": "task:1",
+            "fields": {
+              "title": "Developer visible 0",
+              "status": "TODO",
+              "planIds": [],
+              "priority": "HIGH",
+              "progress": 0,
+              "assigneeUserId": 2
+            },
+            "entityId": 1,
+            "entityType": "task"
+          }
+        ],
+        "evidenceCurrent": true
+      },
+      {
+        "id": "b355f7a7-40dc-4d90-9e41-89f09aa40262",
+        "eventKey": "TASK_WITHOUT_PLAN:2",
+        "ruleId": "TASK_WITHOUT_PLAN",
+        "severity": "INFO",
+        "dimensions": [
+          "PLAN"
+        ],
+        "fact": "任务 T-2 未关联计划项，不能据此计算任务逾期。",
+        "evidence": [
+          {
+            "key": "task:2",
+            "fields": {
+              "title": "Developer visible 1",
+              "status": "TODO",
+              "planIds": [],
+              "priority": "HIGH",
+              "progress": 0,
+              "assigneeUserId": 2
+            },
+            "entityId": 2,
+            "entityType": "task"
+          }
+        ],
+        "evidenceCurrent": true
+      },
+      {
+        "id": "66f7cae8-e381-4a12-9f72-c92ca56b1f00",
+        "eventKey": "TASK_WITHOUT_PLAN:3",
+        "ruleId": "TASK_WITHOUT_PLAN",
+        "severity": "INFO",
+        "dimensions": [
+          "PLAN"
+        ],
+        "fact": "任务 T-3 未关联计划项，不能据此计算任务逾期。",
+        "evidence": [
+          {
+            "key": "task:3",
+            "fields": {
+              "title": "Developer visible 2",
+              "status": "TODO",
+              "planIds": [],
+              "priority": "HIGH",
+              "progress": 0,
+              "assigneeUserId": 2
+            },
+            "entityId": 3,
+            "entityType": "task"
+          }
+        ],
+        "evidenceCurrent": true
+      }
+    ],
+    "visibility": "AUTHORIZED_FACTS_ONLY"
+  }
+}

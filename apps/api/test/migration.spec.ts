@@ -167,6 +167,8 @@ it("upgrades a populated V1 database without losing existing records or assignme
       "UserStory",
       "StoryRequirement",
       "StoryTask",
+      "AiAnalysisRun",
+      "AiRiskFinding",
     ])
       expect(
         (await fixture.query(`SELECT count(*)::int AS count FROM "${table}"`))

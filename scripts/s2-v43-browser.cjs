@@ -271,6 +271,8 @@ const reference = require("./fixtures/v43-reference.json");
       await p.getByLabel("密码", { exact: true }).fill(password);
       await p.getByRole("button", { name: /登\s*录/ }).click();
       await p.locator(".a-projects").waitFor();
+      // The project shell mounts before the authorized projects request resolves.
+      await p.locator(".a-projects .cards .card").first().waitFor();
     }
     async function enter(p) {
       await p
@@ -327,10 +329,18 @@ const reference = require("./fixtures/v43-reference.json");
     await login(page, manager.username);
     await shot("projects");
     await page.getByLabel("搜索项目").fill("课程");
-    assert.equal(await page.locator(".a-projects .cards .card").count(), 1);
+    await eventually(
+      async () =>
+        (await page.locator(".a-projects .cards .card").count()) === 1,
+      "project search result",
+    );
     await page.getByLabel("搜索项目").fill("");
     await page.getByLabel("项目角色筛选").selectOption("MANAGER");
-    assert.equal(await page.locator(".a-projects .cards .card").count(), 3);
+    await eventually(
+      async () =>
+        (await page.locator(".a-projects .cards .card").count()) === 3,
+      "project role filter",
+    );
     await page.getByLabel("项目角色筛选").selectOption("all");
     await page.getByRole("button", { name: "☷ 列表" }).click();
     assert.equal(await page.locator(".a-projects tbody tr").count(), 6);

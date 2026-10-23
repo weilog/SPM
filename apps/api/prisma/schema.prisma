@@ -29,6 +29,7 @@ model User {
   sessions Session[]
   managedProjects Project[]
   memberships ProjectMember[]
+  aiAnalyses AiAnalysisRun[]
 }
 model PasswordReset {
   id String @id
@@ -63,6 +64,7 @@ model Project {
   planStages PlanStage[]
   planItems PlanItem[]
   documents ProjectDocument[]
+  aiAnalyses AiAnalysisRun[]
   createdAt DateTime @default(now())
 }
 model ProjectMember {
@@ -313,4 +315,50 @@ model ProjectDocument {
   children ProjectDocument[] @relation("DocumentTree")
   @@unique([projectId, id])
   @@index([projectId, parentId])
+}
+
+// P1 reports only: no formal business entities or review/commit tables.
+model AiAnalysisRun {
+  id String @id @default(uuid())
+  projectId Int
+  requestedById Int?
+  kind String @db.VarChar(24)
+  scope Json
+  requestKey String @db.VarChar(100)
+  requestHash String
+  status String @default("QUEUED") @db.VarChar(16)
+  sourceHash String?
+  sourceDate String? @db.VarChar(10)
+  rulesVersion String @db.VarChar(40)
+  modelState String @default("NOT_REQUESTED") @db.VarChar(32)
+  modelInfo Json?
+  errorCode String? @db.VarChar(40)
+  retryOf String?
+  retryDepth Int @default(0)
+  leaseToken String?
+  leaseExpiresAt DateTime?
+  modelAttemptedAt DateTime?
+  createdAt DateTime @default(now())
+  startedAt DateTime?
+  finishedAt DateTime?
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requestedBy User? @relation(fields: [requestedById], references: [id], onDelete: SetNull)
+  findings AiRiskFinding[]
+  @@unique([projectId, requestedById, requestKey])
+  @@index([status, createdAt])
+  @@index([projectId, createdAt, id])
+  @@index([projectId, modelAttemptedAt])
+}
+model AiRiskFinding {
+  id String @id @default(uuid())
+  runId String
+  eventKey String
+  ruleId String @db.VarChar(48)
+  severity String @db.VarChar(10)
+  dimensions Json
+  fact String
+  evidence Json
+  inference Json?
+  run AiAnalysisRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  @@unique([runId, eventKey])
 }

@@ -1,0 +1,18 @@
+$ pnpm --filter @spm/shared build && pnpm --filter @spm/api build && pnpm --filter @spm/web build
+$ tsc
+$ tsc -p tsconfig.build.json
+$ tsc --noEmit && vite build
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 1562 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.35 kB │ gzip:   0.28 kB
+dist/assets/index-nNa2l0VI.css  165.89 kB │ gzip:  34.99 kB
+dist/assets/index-jYrsdlg3.js   960.05 kB │ gzip: 305.79 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.65s

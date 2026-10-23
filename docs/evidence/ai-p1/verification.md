@@ -1,5 +1,7 @@
 # P1 实际验证记录
 
+2026-10-24 补充：已按用户授权完成 DeepSeek 最低价flash模型的真实联调；见 `docs/ai/P1-DEEPSEEK.md` 及本目录 `deepseek-live-result.json`。本文保留首轮与Docker恢复后的原始测试记录，不将当时的未联调状态冒充当前状态。
+
 日期：2026-10-23。分支：`feat/ai-seven-pages`。远程基准再次检查为 `1d717ef378231f117f4b7bc5cfdd858cec9c839a`，没有合并 main。
 
 ## 环境与结果

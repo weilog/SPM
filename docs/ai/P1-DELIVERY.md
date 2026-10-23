@@ -1,5 +1,7 @@
 # P1 共用 AI 基础设施交付
 
+**2026-10-24 更新：用户确认 DeepSeek 后，已补充原生 `deepseek-flash` 适配并完成一次真实模型联调。下文供应商未配置描述是首次交付状态；当前配置、真实证据与限制以 [DeepSeek联调记录](P1-DEEPSEEK.md) 为准。仍未进入P2。**
+
 本次范围严格限定 P1。基于远程 `origin/feat/s2-owner-a-integration` 的 `1d717ef378231f117f4b7bc5cfdd858cec9c839a` 创建 `feat/ai-seven-pages`，不是从模板数据分支开发。没有修改七个业务页面、导航、需求层级规则或正式业务写入接口，没有进入 P2–P7。
 
 ## 实现与文件

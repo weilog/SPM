@@ -43,7 +43,7 @@ export class AiConfig {
   configured() {
     if (
       !this.externalEnabled ||
-      this.provider !== "json-http" ||
+      !["json-http", "deepseek"].includes(this.provider) ||
       !this.supplier ||
       !this.model ||
       !this.apiKey ||
@@ -52,6 +52,12 @@ export class AiConfig {
       return false;
     try {
       const url = new URL(this.endpoint);
+      if (this.provider === "deepseek")
+        return (
+          this.supplier === "DeepSeek" &&
+          url.href === "https://api.deepseek.com/chat/completions" &&
+          this.model === "deepseek-flash"
+        );
       return (
         !url.username &&
         !url.password &&

@@ -6,7 +6,7 @@
 
 Windows / Node **24.22.1**，PostgreSQL **17.9** 原生服务器，监听 `127.0.0.1:5543`。实例位于忽略目录 `.runtime/ai-pg-data`，随机密码只保存在忽略目录；每个数据库/浏览器测试使用独立随机 schema，finally 清理自己的 schema。**不是内存数据库或 Mock DbService**。
 
-本机 Docker 原 PostgreSQL `5433` 未运行；Docker 启动受 Windows 残留 Unix socket 错误阻塞。没有重置 Docker、清理原数据卷或覆盖原业务数据库。采用 PostgreSQL 官方下载页链接的 EDB Windows 17.9 二进制独立执行测试。原5433现有实例的现场迁移尚未执行，需要先恢复该实例，再按正常发布流程备份和部署。这里的迁移通过是独立真实实例的升级验收，不是声称原库已经升级。
+首次交付时，本机 Docker 原 PostgreSQL `5433` 未运行；Docker 启动受 Windows 残留 Unix socket 错误阻塞。当时没有重置 Docker、清理原数据卷或覆盖原业务数据库，采用 PostgreSQL 官方下载页链接的 EDB Windows 17.9 二进制独立执行测试。**用户恢复 Docker 后，已另行完成原5433实例的备份和M1部署，见文末补充复核。** 首轮日志仍保留独立实例的原始验证环境，避免混淆。
 
 | 实际命令 | 最终结果 | 证据 |
 |---|---|---|
@@ -43,5 +43,16 @@ Windows / Node **24.22.1**，PostgreSQL **17.9** 原生服务器，监听 `127.0
 5. 完整测试一次与浏览器同时占用资源，已有v2-ui用例1秒默认等待超时（30/31）；未改业务代码或放松断言，浏览器结束后独立重跑完整 `pnpm test`，31+96全通过。
 
 ## 未通过真实供应商验证的部分
+
+### Docker 恢复后的原库复核（2026-10-23）
+
+- Docker Engine 29.4.1 可用；原容器 `spm-s2-stage1-postgres-1`（postgres:17.9-alpine）healthy，`127.0.0.1:5433`连接成功。Compose默认项目名与原容器项目名不同，因此通过实际容器和Prisma连接确认，未创建第二套容器或卷。
+- 部署前执行真实 `pg_dump -Fc`，备份367106字节，保存在忽略目录 `.runtime/ai-original-before-m1.dump`；备份含敏感业务数据，不入Git。
+- 对public中除AI表和迁移表外的全部22张表，记录排序后的每行JSONB内容SHA-256及列定义SHA-256。执行 `pnpm db:migrate` 只应用 `202610230001_ai_foundation`，随后全部22表内容和原列定义完全相同；6个项目、48条Task、46条Requirement保留。证据见 `original-data-recheck.txt`。
+- `prisma migrate status`确认9项迁移全部已应用，原库schema已最新；见 `original-migration-status.txt`。
+- 使用原5433 PostgreSQL服务器（测试仍各用随机schema，不修改public业务数据）重跑P1三个测试文件：**25/25通过**，包括真实数据库/API、授权隔离和增量升级测试。日志见 `docker-recheck-tests.txt`。
+- 本轮仅补充部署验收记录，没有修改业务代码、页面、模型配置或进入P2；真实外部模型联调仍未完成。
+
+### 真实供应商状态
 
 真实外部供应商、模型和API Key尚未配置，**真实模型联调未完成**。默认 AI_ENABLED=false、AI_EXTERNAL_ENABLED=false。模型接口合同和异常分支通过本机测试服务验证。供应商确认及获准发送的字段范围确认前不启用外部传输。未开发P2–P7七页AI UI、需求规划事务或自动业务修改。

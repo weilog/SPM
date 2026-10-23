@@ -1,0 +1,10 @@
+$ jest --runInBand "--" "ai.spec.ts" "ai-rules.spec.ts" "ai-migration.spec.ts"
+PASS test/ai.spec.ts (11.811 s)
+PASS test/ai-migration.spec.ts (5.221 s)
+PASS test/ai-rules.spec.ts
+
+Test Suites: 3 passed, 3 total
+Tests:       25 passed, 25 total
+Snapshots:   0 total
+Time:        17.499 s
+Ran all test suites matching ai.spec.ts|ai-rules.spec.ts|ai-migration.spec.ts.

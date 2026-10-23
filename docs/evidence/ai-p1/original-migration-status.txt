@@ -1,0 +1,8 @@
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "spm", schema "public" at "127.0.0.1:5433"
+
+9 migrations found in prisma/migrations
+
+Database schema is up to date!

@@ -558,14 +558,6 @@ export function PlanView({
                       done: milestones.filter((i) => i.status === "DONE")
                         .length,
                     },
-                    {
-                      label: "阶段完成率",
-                      count: work.length,
-                      value: work.length
-                        ? `${Math.round((completedWork / work.length) * 100)}%`
-                        : "—",
-                      done: completedWork,
-                    },
                   ].map(({ label, count, value, done }) => (
                     <div className="card metric" key={label}>
                       <div className="statname">{label}</div>

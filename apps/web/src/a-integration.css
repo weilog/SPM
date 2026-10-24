@@ -81,3 +81,5 @@
 .a-plan-view .metrics .metricbody>div:last-child{min-width:0}
 .a-plan-view .metrics .statnumber{font-variant-numeric:tabular-nums;line-height:1.15}
 .a-plan-view .metrics .statsub{white-space:nowrap;line-height:1.5}
+.a-plan-view .metrics{grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}
+@media(max-width:760px){.a-plan-view .metrics{grid-template-columns:minmax(0,1fr)}}

@@ -19,7 +19,7 @@ const views = [
   { id: "board", name: "故事看板", icon: "columns" },
   { id: "gantt", name: "甘特图", icon: "gantt" },
   { id: "members", name: "成员任务图", icon: "network" },
-  { id: "uml", name: "UML 图", icon: "workflow" },
+  { id: "uml", name: "UML 建模", icon: "workflow" },
 ];
 const labels: Record<ViewFocus["entityType"], string> = {
   requirement: "正式需求",
@@ -45,8 +45,8 @@ export function Workbench({
 }: { onNavigate?: (page: string) => void } = {}) {
   const store = useProjectData(),
     actions = useTaskActions();
-  const [primary, setPrimary] = useState("map"),
-    [secondary, setSecondary] = useState("board"),
+  const [primary, setPrimary] = useState("gantt"),
+    [secondary, setSecondary] = useState("members"),
     [dual, setDual] = useState(false);
   const [focus, setFocus] = useState<ViewFocus | null>(null),
     [resolved, setResolved] = useState({ key: "", data: empty });
@@ -57,12 +57,14 @@ export function Workbench({
     [story, setStory] = useState<number | null>(null),
     [relationError, setRelationError] = useState("");
   const [retry, setRetry] = useState(0);
+  const [search, setSearch] = useState("");
   const layout = useRef<HTMLDivElement>(null),
     drag = useRef<{ x: number; ratio: number } | null>(null);
   const focusKey = keyOf(focus),
     relations = resolved.key === focusKey ? resolved.data : empty;
   const loadingRelations =
     !!focus && resolved.key !== focusKey && !relationError;
+  const relationKeys = (relations.trace || []).map(keyOf).sort().join("|");
   function selectFocus(next: ViewFocus | null) {
     setRelationError("");
     setFocus(next);
@@ -83,6 +85,10 @@ export function Workbench({
       setTrack(false);
       setRelationError("");
       setFocus(d);
+      if (e.type === "spm-workbench-task-members") {
+        if (primary !== "members" && secondary !== "members") setSecondary("members");
+        return;
+      }
       if (d.entityType === "task" || d.entityType === "member") {
         setPrimary("members");
         setSecondary("gantt");
@@ -104,7 +110,7 @@ export function Workbench({
       window.removeEventListener("spm-workbench-task-members", locate);
       window.removeEventListener("spm-ai-locate", locate);
     };
-  }, [store.project.id]);
+  }, [store.project.id, primary, secondary]);
   useEffect(() => {
     let live = true;
     if (!focus) {
@@ -156,6 +162,9 @@ export function Workbench({
       ];
       const best =
         elements.find((el) => el.dataset.focusKey === focusKey) ||
+        (pane.getAttribute("data-view") === "members"
+          ? elements.find((el) => el.dataset.focusKey?.startsWith("task:") && relations.tasks.includes(Number(el.dataset.focusKey.slice(5))))
+          : undefined) ||
         elements.find((el) =>
           relations.trace?.some((t) => keyOf(t) === el.dataset.focusKey),
         );
@@ -185,11 +194,11 @@ export function Workbench({
           /(auto|scroll)/.test(style.overflowY) &&
           parent.scrollHeight > parent.clientHeight
         ) {
-          if (target.top < box.top) parent.scrollTop -= box.top - target.top;
-          else if (target.bottom > box.bottom)
+          if (target.top < box.top + 12) parent.scrollTop -= box.top + 12 - target.top;
+          else if (target.bottom > box.bottom - 12)
             parent.scrollTop += Math.min(
               target.top - box.top,
-              target.bottom - box.bottom,
+              target.bottom - box.bottom + 12,
             );
         }
       }
@@ -198,7 +207,7 @@ export function Workbench({
   useEffect(() => {
     const id = requestAnimationFrame(locateVisible);
     return () => cancelAnimationFrame(id);
-  }, [resolved, primary, secondary, dual, umlTab]);
+  }, [focusKey, relationKeys, primary, secondary, dual, umlTab]);
   function navigate(target: Pick<ViewFocus, "entityType" | "entityId">) {
     const next = { ...target, projectId: store.project.id };
     if (target.entityType === "requirement") {
@@ -245,12 +254,18 @@ export function Workbench({
     } else navigate(focus);
   }
   const focused = relations.trace?.find((t) => t.distance === 0);
+  const searchable = [
+    ...store.stories.stories.map((s) => ({ entityType: "story" as const, entityId: s.id, label: `${storyNumber(s.id)} · ${s.title}` })),
+    ...store.tasks.map((t) => ({ entityType: "task" as const, entityId: t.id, label: `T-${t.id} · ${t.title}` })),
+    ...store.plans.items.map((i) => ({ entityType: "planItem" as const, entityId: i.id, label: `计划 · ${i.title}` })),
+  ].filter((x) => x.label.toLowerCase().includes(search.trim().toLowerCase())).slice(0, 12);
   function pane(id: string, side: string) {
     const v = views.find((v) => v.id === id)!;
     return (
       <section
         className={`viewpane ${id === "gantt" ? "viewpane-gantt" : ""}`}
         aria-label={side}
+        data-view={id}
         key={side + id}
       >
         <div className="pane-header">
@@ -340,7 +355,6 @@ export function Workbench({
                       entityType: "story",
                       entityId: id,
                     });
-                    setStory(id);
                   }}
                 />
               ) : (
@@ -355,6 +369,10 @@ export function Workbench({
             </>
           )}
         </div>
+        <div className="wb-pane-foot" aria-live="polite">
+          <span>{id === "gantt" ? "阶段计划 · 任务独立维护" : "单击工作项追踪关联"}</span>
+          <span>{!focus ? "请选择工作项" : loadingRelations ? "读取关联中…" : `${(id === "members" ? relations.tasks : id === "gantt" ? relations.planItems : id === "uml" ? [...relations.umlUseCases, ...(relations.sequences || [])] : relations.stories).length || "暂无"}关联`}</span>
+        </div>
       </section>
     );
   }
@@ -367,20 +385,13 @@ export function Workbench({
     }),
   );
   return (
-    <>
+    <div className={`wb-page ${focus ? "wb-has-focus" : ""}`}>
       <PageHeading
         title="多视图工作台"
-        description="在同一份业务数据上追踪、对照与定位"
+        description="围绕工作项追踪需求、计划与成员协作"
         actions={
           <>
             <AiEntry kind="CROSS_VIEW" label="AI 跨视图分析" />
-            <button
-              className="btn"
-              onClick={() => void store.refresh().catch(store.onError)}
-            >
-              <Icon name="refresh" size={14} />
-              刷新视图
-            </button>
           </>
         }
       />
@@ -388,168 +399,66 @@ export function Workbench({
         <div className="view-tabbar">
           <div className="tabs" role="tablist" aria-label="工作台视图">
             {views.map((v) => (
-              <button
-                role="tab"
-                aria-selected={primary === v.id}
-                className={`tab ${primary === v.id ? "active" : ""}`}
-                key={v.id}
-                onClick={() => {
-                  setPrimary(v.id);
-                  if (v.id === secondary) setSecondary(primary);
-                }}
-              >
-                <Icon name={v.icon} size={15} />
+              <button role="tab" aria-selected={primary === v.id}
+                className={`tab ${primary === v.id ? "active" : ""}`} key={v.id}
+                onClick={() => { setPrimary(v.id); if (v.id === secondary) setSecondary(primary); }}>
                 {v.name}
               </button>
             ))}
           </div>
+          <div className="view-mode">
+            <button className={!dual ? "active" : ""} onClick={() => mode(false)}>单视图</button>
+            <button aria-label="双视图联动" className={dual ? "active" : ""} onClick={() => mode(true)}>双视图</button>
+          </div>
         </div>
         <div className="work-toolbar wb-toolbar">
           <div className="tool-left">
-            <div className="view-mode">
-              <button
-                className={!dual ? "active" : ""}
-                onClick={() => mode(false)}
-              >
-                单视图
-              </button>
-              <button
-                className={dual ? "active" : ""}
-                onClick={() => mode(true)}
-              >
-                双视图联动
-              </button>
-            </div>
-            {dual && (
-              <label className="wb-inline-label">
-                对照视图
-                <select
-                  className="select"
-                  aria-label="右侧视图"
-                  value={secondary}
-                  onChange={(e) => setSecondary(e.target.value)}
-                >
-                  {views
-                    .filter((v) => v.id !== primary)
-                    .map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.name}
-                      </option>
-                    ))}
+            {dual ? <>
+              <span className="wb-label">对照组合</span>
+              <select className="select" aria-label="左侧视图" value={primary}
+                onChange={(e) => { const next = e.target.value; setPrimary(next); if (next === secondary) setSecondary(primary); }}>
+                {views.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+              </select>
+              <span className="wb-label">↔</span>
+              <select className="select" aria-label="右侧视图" value={secondary} onChange={(e) => setSecondary(e.target.value)}>
+                {views.filter((v) => v.id !== primary).map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+              </select>
+            </> : <span className="wb-label">当前视图　<strong>{views.find((v) => v.id === primary)?.name}</strong></span>}
+          </div>
+          <div className="wb-search">
+            <input className="input" aria-label="搜索工作项" placeholder="搜索故事、任务或计划项" value={search}
+              onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") setSearch(""); }} />
+            {search.trim() && <div className="wb-search-results" aria-label="工作项搜索结果">
+              {searchable.map((x) => <button key={keyOf(x)} onClick={() => { navigate(x); setSearch(""); }}>{x.label}</button>)}
+              {!searchable.length && <p>没有匹配的工作项</p>}
+            </div>}
+          </div>
+          <button className={`btn small ${onlyRelated ? "primary" : ""}`} disabled={!focus} aria-pressed={onlyRelated} onClick={() => setOnlyRelated((v) => !v)}>仅看关联项</button>
+          <button className="btn small" disabled={!focus} onClick={locateVisible}><Icon name="target" size={13} />定位关联</button>
+          <div className="wb-toolbar-end">
+            <details className="wb-more">
+              <summary>更多</summary>
+              <div className="wb-more-menu">
+                <p>需求 {store.requirements.length} · 故事 {store.stories.stories.length} · 任务 {store.tasks.length} · 计划 {store.plans.items.length}</p>
+                <select className="select" aria-label="按故事快速定位" value={focus?.entityType === "story" ? focus.entityId : ""}
+                  onChange={(e) => selectFocus(e.target.value ? { projectId: store.project.id, entityType: "story", entityId: Number(e.target.value) } : null)}>
+                  <option value="">按故事快速定位</option>
+                  {store.stories.stories.map((s) => <option key={s.id} value={s.id}>{storyNumber(s.id)} · {s.title}</option>)}
                 </select>
-              </label>
-            )}
-          </div>
-          <div className="tool-right">
-            <button
-              className={`btn small ${onlyRelated ? "primary" : ""}`}
-              disabled={!focus}
-              aria-pressed={onlyRelated}
-              onClick={() => setOnlyRelated((v) => !v)}
-            >
-              仅看关联项
-            </button>
-            <button
-              className="btn small"
-              disabled={!focus}
-              onClick={locateVisible}
-            >
-              定位关联
-            </button>
-            <button
-              className="btn small"
-              aria-expanded={track}
-              onClick={() => setTrack((v) => !v)}
-            >
-              关联追踪
-            </button>
-          </div>
-        </div>
-        <div className="b-workintro">
-          <span>
-            需求与故事{" "}
-            <b>
-              {store.requirements.length} / {store.stories.stories.length}
-            </b>
-          </span>
-          <span>
-            未归档任务 <b>{store.tasks.length}</b>
-          </span>
-          <span>
-            计划项 <b>{store.plans.items.length}</b>
-          </span>
-          <span>
-            UML 用例{" "}
-            <b>
-              {
-                store.diagrams
-                  .flatMap((d) => d.nodes)
-                  .filter((n) => n.kind === "USE_CASE").length
-              }
-            </b>
-          </span>
-          <select
-            className="select b-focus-pick"
-            aria-label="按故事快速定位"
-            value={focus?.entityType === "story" ? focus.entityId : ""}
-            onChange={(e) =>
-              selectFocus(
-                e.target.value
-                  ? {
-                      projectId: store.project.id,
-                      entityType: "story",
-                      entityId: Number(e.target.value),
-                    }
-                  : null,
-              )
-            }
-          >
-            <option value="">按故事快速定位</option>
-            {store.stories.stories.map((s) => (
-              <option key={s.id} value={s.id}>
-                {storyNumber(s.id)} · {s.title}
-              </option>
-            ))}
-          </select>
-          <div className="wb-presets">
-            {[
-              ["map", "board", "地图 + 看板"],
-              ["gantt", "members", "甘特 + 成员"],
-              ["map", "uml", "地图 + UML"],
-            ].map(([a, b, label]) => (
-              <button
-                className="btn small light"
-                key={label}
-                onClick={() => {
-                  setPrimary(a);
-                  setSecondary(b);
-                  mode(true);
-                }}
-              >
-                {label}
-              </button>
-            ))}
+                <div className="wb-presets">{[["map", "board", "地图 + 看板"], ["gantt", "members", "甘特 + 成员"], ["map", "uml", "地图 + UML"]].map(([a,b,label]) =>
+                  <button className="btn small" key={label} onClick={(e) => { setPrimary(a); setSecondary(b); mode(true); e.currentTarget.closest("details")?.removeAttribute("open"); }}>{label}</button>)}</div>
+                <button className="btn small" onClick={() => void store.refresh().catch(store.onError)}>刷新视图</button>
+              </div>
+            </details>
+            <button className="btn small" aria-label="关联追踪" aria-expanded={track} onClick={() => setTrack((v) => !v)}><Icon name="link" size={13} />关联信息</button>
           </div>
         </div>
         <div className="focusbar">
-          <div>
-            <div className="focus-title">
-              <Icon name="target" size={14} />
-              {focus
-                ? `${labels[focus.entityType]} · ${focused?.label || "正在读取对象…"}`
-                : "单击工作项聚焦，关联对象将同步高亮"}
-            </div>
-            <div className="focus-related">
-              {focus
-                ? `直接关联 ${(relations.trace || []).filter((t) => t.distance === 1).length} · 间接关联 ${(relations.trace || []).filter((t) => t.distance > 1).length} · ${onlyRelated ? "仅看关联项" : "保留全部对象"}`
-                : "双向定位 · 按需对照 · 各对象状态独立维护"}
-            </div>
+          <div className="focus-title"><span className="wb-focus-dot" />{focus ? `当前聚焦：${focused?.label || "正在读取对象…"}` : "单击任一工作项，即可追踪它在其他视图中的关联。"}
+            {focus && <span className="focus-related">关联 {Math.max(0, (relations.trace?.length || 1) - 1)} 个对象</span>}
+            {focus && <button className="btn-text" onClick={() => selectFocus(null)}>清除焦点</button>}
           </div>
-          {focus && (
-            <button className="btn small" onClick={() => selectFocus(null)}>
-              清除焦点
-            </button>
-          )}
+          <span className="wb-label">{dual ? "双视图 · 联动对照" : "单视图 · 专注浏览"}</span>
         </div>
         <div className={`wb-workarea ${track && !dual ? "wb-docked" : ""}`}>
           <div
@@ -665,7 +574,7 @@ export function Workbench({
                         disabled={!focused}
                         onClick={inspect}
                       >
-                        查看详情
+                        查看完整详情
                       </button>
                     </div>
                     {loadingRelations && <p role="status">正在读取关联…</p>}
@@ -730,6 +639,6 @@ export function Workbench({
         </div>
       </section>
       <StoryInspector id={story} onClose={() => setStory(null)} />
-    </>
+    </div>
   );
 }

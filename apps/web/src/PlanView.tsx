@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Modal } from "antd";
 import type {
   PlanItemView,
   PlanStageView,
@@ -220,8 +221,18 @@ export function PlanView({
       taskIds: entity && "taskIds" in entity ? entity.taskIds || [] : [],
     });
   }
-  async function save(again = false) {
+  async function save(again = false, datesConfirmed = false) {
     if (!editor || !draft || busy) return;
+    if (editor.entity && !datesConfirmed && (editor.entity.start !== draft.start || editor.entity.end !== (editor.kind === "milestone" ? draft.start : draft.end))) {
+      Modal.confirm({
+        zIndex: 1400,
+        title: "确认调整计划日期",
+        content: <div><p>{editor.entity.title}</p><p>{editor.entity.start} — {editor.entity.end} → {draft.start} — {editor.kind === "milestone" ? draft.start : draft.end}</p><p>仅保存此计划记录。不会自动修改任务排期、任务负责人、故事状态或后继计划。</p></div>,
+        okText: "确认保存", cancelText: "返回编辑",
+        onOk: () => save(again, true),
+      });
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -517,6 +528,8 @@ export function PlanView({
                   </div>
                 </div>
               </div>
+              <details className="wb-plan-actions" open={embedded ? undefined : true}>
+              <summary>计划操作</summary>
               <div className="headbuttons">
                 <button
                   className="btn sm"
@@ -547,6 +560,7 @@ export function PlanView({
                   </>
                 )}
               </div>
+              </details>
             </div>
             {!embedded && (
               <div className="viewtabs">
@@ -1496,18 +1510,16 @@ export function PlanView({
                       <label className="field">
                         关联项目任务
                         <select
+                          multiple
                           aria-label="关联项目任务"
-                          value={draft.taskIds[0] ?? ""}
+                          value={draft.taskIds.map(String)}
                           onChange={(e) =>
                             setDraft({
                               ...draft,
-                              taskIds: e.target.value
-                                ? [Number(e.target.value)]
-                                : [],
+                              taskIds: [...e.target.selectedOptions].map((option) => Number(option.value)),
                             })
                           }
                         >
-                          <option value="">不关联</option>
                           {store.tasks.map((t) => (
                             <option key={t.id} value={t.id}>
                               T-{String(t.id).padStart(3, "0")} · {t.title}

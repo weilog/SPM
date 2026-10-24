@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Priority, StoryStatus, ViewFocus } from "@spm/shared";
 import { priorityLabels, storyStatusLabels } from "@spm/shared";
 import { useProjectData } from "./ProjectData";
@@ -27,6 +27,18 @@ export function MemberTaskGraph({
     [status, setStatus] = useState("all"),
     [priority, setPriority] = useState("all"),
     [search, setSearch] = useState("");
+  const graph = useRef<HTMLDivElement>(null);
+  const [availableWidth, setAvailableWidth] = useState(900);
+  useEffect(() => {
+    if (!focusOnly || !graph.current || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(([entry]) => setAvailableWidth(entry.contentRect.width));
+    observer.observe(graph.current);
+    return () => observer.disconnect();
+  }, [focusOnly]);
+  const canvasWidth = focusOnly ? Math.max(360, availableWidth) : 900;
+  const memberWidth = Math.min(198, canvasWidth * 0.30);
+  const taskX = 28 + memberWidth + Math.min(150, canvasWidth * 0.075);
+  const taskWidth = canvasWidth - taskX - 18;
   const filtered = store.tasks.filter(
     (t) =>
       (!onlyRelated || highlightIds.includes(t.id)) &&
@@ -52,7 +64,9 @@ export function MemberTaskGraph({
         ),
         ys = tasks.map((_, i) => y + i * 78);
       if (!tasks.length) return null;
-      const memberY = (ys[0] + ys[ys.length - 1]) / 2;
+      const focusedTask = tasks.findIndex((t) => focus?.entityType === "task" && t.id === Number(focus.entityId));
+      const firstRelated = tasks.findIndex((t) => highlightIds.includes(t.id));
+      const memberY = focusedTask >= 0 ? ys[focusedTask] : firstRelated >= 0 ? ys[firstRelated] : ys[0];
       y = ys[ys.length - 1] + 112;
       return { m, tasks, ys, memberY };
     })
@@ -78,7 +92,7 @@ export function MemberTaskGraph({
   };
   const height = Math.max(315, y + 10);
   return (
-    <div>
+    <div className={focusOnly ? "wb-member-view" : ""}>
       <div className="b-story-bar">
         <div className="b-story-stats">
           <strong>成员 → 任务关系</strong>
@@ -115,6 +129,8 @@ export function MemberTaskGraph({
           </button>
         </div>
       </div>
+      <details className="wb-graph-options" open={focusOnly ? undefined : true}>
+      <summary>筛选与成员汇总</summary>
       <div className="b-graph-summary">
         {people.map((m) => (
           <button
@@ -192,19 +208,20 @@ export function MemberTaskGraph({
           清除筛选
         </button>
       </div>
-      <div className="graph-scroll">
+      </details>
+      <div className="graph-scroll" ref={graph}>
         <svg
           className="graph-svg"
-          style={{ width: 900 * zoom, maxWidth: "none" }}
-          viewBox={`0 0 900 ${height}`}
+          style={{ width: canvasWidth * zoom, maxWidth: "none" }}
+          viewBox={`0 0 ${canvasWidth} ${height}`}
           aria-label="成员任务关系图"
         >
-          <rect width={900} height={height} fill="#fbfcff" rx={10} />
+          <rect width={canvasWidth} height={height} fill="#fbfcff" rx={10} />
           {points.flatMap((p) =>
             p.tasks.map((t, i) => (
               <path
                 key={`edge-${t.id}`}
-                d={`M225 ${p.memberY} C310 ${p.memberY} 315 ${p.ys[i]} 376 ${p.ys[i]}`}
+                d={`M${28 + memberWidth} ${p.memberY} C${taskX - 20} ${p.memberY} ${taskX - 20} ${p.ys[i]} ${taskX} ${p.ys[i]}`}
                 fill="none"
                 stroke={
                   highlightIds.includes(t.id) || selectedTask === t.id
@@ -236,7 +253,7 @@ export function MemberTaskGraph({
                   className="node-border"
                   x={28}
                   y={p.memberY - 33}
-                  width={198}
+                  width={memberWidth}
                   height={66}
                   rx={9}
                   fill="#ebf3ff"
@@ -259,7 +276,7 @@ export function MemberTaskGraph({
                   fontWeight={660}
                   fill="#37608f"
                 >
-                  {p.m.name}
+                  <title>{p.m.name}</title>{p.m.name.length > Math.floor((memberWidth - 56) / 8) ? p.m.name.slice(0, Math.max(3, Math.floor((memberWidth - 56) / 8))) + "…" : p.m.name}
                 </text>
                 <text x={78} y={p.memberY + 14} fontSize={11} fill="#8097b1">
                   {p.tasks.length} 项任务
@@ -291,9 +308,9 @@ export function MemberTaskGraph({
                   >
                     <rect
                       className="node-border"
-                      x={376}
+                      x={taskX}
                       y={ty - 34}
-                      width={494}
+                      width={taskWidth}
                       height={69}
                       rx={8}
                       fill={
@@ -304,20 +321,20 @@ export function MemberTaskGraph({
                       stroke="#dce6f2"
                     />
                     <text
-                      x={392}
+                      x={taskX + 12}
                       y={ty - 11}
                       fill="#384b63"
                       fontSize={13}
                       fontWeight={650}
                     >
-                      {taskNumber(t.id)} ·{" "}
-                      {t.title.length > 26
-                        ? t.title.slice(0, 25) + "…"
+                      <title>{taskNumber(t.id)} · {t.title}</title>{taskNumber(t.id)} ·{" "}
+                      {t.title.length > Math.max(5, Math.floor((taskWidth - 95) / 12))
+                        ? t.title.slice(0, Math.max(5, Math.floor((taskWidth - 95) / 12))) + "…"
                         : t.title}
                     </text>
                     <text
-                      x={851}
-                      y={ty - 11}
+                      x={taskX + taskWidth - 12}
+                      y={ty + 10}
                       fill={
                         t.status === "DONE"
                           ? "#1b9d68"
@@ -331,30 +348,30 @@ export function MemberTaskGraph({
                       {storyStatusLabels[t.status as StoryStatus]}
                     </text>
                     <text
-                      x={392}
-                      y={ty + 14}
+                      x={taskX + 12}
+                      y={ty + 10}
                       fill={t.priority === "URGENT" ? "#db5d52" : "#8491a4"}
                       fontSize={11}
                     >
-                      {priorityLabels[t.priority as Priority]}优先级
+                      {priorityLabels[t.priority as Priority]} · {t.planIds.length ? "已纳入计划" : "未纳入计划"}
                     </text>
                     <rect
-                      x={487}
-                      y={ty + 6}
-                      width={230}
-                      height={7}
+                      x={taskX + 12}
+                      y={ty + 21}
+                      width={Math.max(45, taskWidth - 64)}
+                      height={4}
                       rx={3}
                       fill="#e8edf5"
                     />
                     <rect
-                      x={487}
-                      y={ty + 6}
-                      width={(230 * t.progress) / 100}
-                      height={7}
+                      x={taskX + 12}
+                      y={ty + 21}
+                      width={(Math.max(45, taskWidth - 64) * t.progress) / 100}
+                      height={4}
                       rx={3}
                       fill={t.status === "DONE" ? "#20aa75" : "#4b8de9"}
                     />
-                    <text x={760} y={ty + 14} fontSize={11} fill="#738197">
+                    <text x={taskX + taskWidth - 38} y={ty + 27} fontSize={10} fill="#738197">
                       {t.progress}%
                     </text>
                   </g>
@@ -364,7 +381,7 @@ export function MemberTaskGraph({
           ))}
           {!points.length && (
             <text
-              x={450}
+              x={canvasWidth / 2}
               y={150}
               textAnchor="middle"
               fontSize={14}

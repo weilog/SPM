@@ -41,6 +41,14 @@ const run=(args,cwd=root,expected=0)=>{
     assert.equal(await db.taskPlanReference.count({where:{projectId}}),28);
     assert.equal(await db.storyRequirement.count({where:{projectId}}),35);
     assert.equal(await db.storyTask.count({where:{projectId}}),32);
+    // Supplemental sequence examples must be additive and idempotent.
+    const beforeScenarios=await db.task.findMany({where:{projectId},orderBy:{id:'asc'}});
+    run(['scripts/seed-workbench-scenarios.cjs']);
+    run(['scripts/seed-workbench-scenarios.cjs']);
+    assert.equal(await db.umlSequence.count({where:{projectId}}),3);
+    assert.equal(await db.umlSequenceStory.count({where:{projectId}}),3);
+    assert.equal(await db.umlSequenceUseCase.count({where:{projectId}}),3);
+    assert.deepEqual(await db.task.findMany({where:{projectId},orderBy:{id:'asc'}}),beforeScenarios);
     const requirements=await db.requirement.findMany({where:{projectId}});
     const depth=r=>r.parentId?1+depth(requirements.find(p=>p.id===r.parentId)):1;
     assert.equal(Math.max(...requirements.map(depth)),3);

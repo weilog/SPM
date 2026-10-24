@@ -65,6 +65,7 @@ export function TaskActionsProvider({
     [draft, setDraft] = useState(0);
   const [form] = Form.useForm<TaskValues>(),
     [assignForm] = Form.useForm<TaskValues>();
+  const nextAssignee = Form.useWatch("assigneeUserId", assignForm);
   const historyRef = useRef<HTMLDivElement>(null);
   const lock = useRef(false),
     mounted = useRef(true);
@@ -579,6 +580,11 @@ export function TaskActionsProvider({
         <p className="banner-inline">
           {assigning && taskNumber(assigning.id)} · {assigning?.title}
         </p>
+          <p className="banner-inline" aria-live="polite">
+            负责人：{store.members.find((m) => m.userId === assigning?.assigneeUserId)?.user.username || "未分配"}
+            {" → "}{store.members.find((m) => m.userId === nextAssignee)?.user.username || "未分配"}
+            <br />保存只调整任务负责人，不修改计划负责人、计划日期或故事状态。
+          </p>
         <Form form={assignForm} layout="vertical" disabled={busy}>
           <Form.Item name="assigneeUserId" label="新的主要负责人">
             <Select

@@ -115,6 +115,20 @@ export function ProjectProvider({
   }, [project.id]);
   useProjectRefresh(project.id, () => void refresh().catch(errorRef.current));
   useEffect(() => {
+    // Revalidate after reconnect/tab activation even when a proxy interrupted SSE.
+    const revalidate = () => {
+      if (document.visibilityState === "visible") void refresh().catch(errorRef.current);
+    };
+    window.addEventListener("focus", revalidate);
+    window.addEventListener("online", revalidate);
+    document.addEventListener("visibilitychange", revalidate);
+    return () => {
+      window.removeEventListener("focus", revalidate);
+      window.removeEventListener("online", revalidate);
+      document.removeEventListener("visibilitychange", revalidate);
+    };
+  }, [project.id]);
+  useEffect(() => {
     if (typeof EventSource === "undefined") return;
     const stream = new EventSource(`/api${base}/events`, {
       withCredentials: true,

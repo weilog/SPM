@@ -695,6 +695,7 @@ const reference = require("./fixtures/v43-reference.json");
         .locator(".graph-svg")
         .evaluate((e) => e.getBoundingClientRect().width)) > oldWidth,
     );
+    await page.locator(".wb-graph-options > summary").click();
     await page.getByLabel("图成员筛选").selectOption(String(users["U-002"].id));
     assert.equal(
       await page
@@ -714,6 +715,7 @@ const reference = require("./fixtures/v43-reference.json");
       "Actual member/task nodes and edges, zoom, filters, highlights and task detail",
     );
     await nav("多视图工作台");
+    await page.locator(".wb-more > summary").click();
     await page.getByRole("button", { name: "地图 + UML", exact: true }).click();
     await page
       .getByLabel("按故事快速定位")
@@ -754,7 +756,7 @@ const reference = require("./fixtures/v43-reference.json");
       .click();
     await page.locator(".ant-drawer-close:visible").click();
     await page.getByRole("button", { name: "单视图", exact: true }).click();
-    await page.getByRole("tab", { name: "UML 图", exact: true }).click();
+    await page.getByRole("tab", { name: "UML 建模", exact: true }).click();
     await shot("uml");
     const umlWidth = await page
       .locator(".uml-svg")

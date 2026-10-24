@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Modal } from "antd";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import type {
   ManagedTask,
@@ -64,7 +65,7 @@ export function PlanGantt({
       moved: boolean;
     } | null>(null);
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
-  const [infoWidth, setInfoWidth] = useState(445);
+  const [infoWidth, setInfoWidth] = useState(showAi ? 445 : 250);
   const [infoCollapsed, setInfoCollapsed] = useState(false);
   const pan = useRef<{ x: number; scroll: number } | null>(null);
   const shownInfoWidth = infoCollapsed ? 0 : infoWidth;
@@ -255,13 +256,18 @@ export function PlanGantt({
       end = add(end, delta);
       if (end < start) end = start;
     }
-    void store
-      .write(`/plan-adapter/items/${encodeURIComponent(d.item.id)}`, "PATCH", {
-        start,
-        end,
-        revision: d.item.revision,
-      })
-      .catch(store.onError);
+    if (start === d.item.start && end === d.item.end) return;
+    Modal.confirm({
+      zIndex: 1400,
+      title: "确认调整计划日期",
+      content: <div><p>{d.item.title}</p><p>{d.item.start} — {d.item.end} → {start} — {end}</p><p>仅修改此计划项日期；任务负责人、任务排期、故事状态和后继计划保持独立。</p></div>,
+      okText: "确认保存", cancelText: "取消",
+      onOk: async () => {
+        try {
+          await store.write(`/plan-adapter/items/${encodeURIComponent(d.item.id)}`, "PATCH", { start, end, revision: d.item.revision });
+        } catch (e) { store.onError(e); throw e; }
+      },
+    });
   }
   const gantt = (
     <section className="gantt-v32">
@@ -283,6 +289,7 @@ export function PlanGantt({
           )}
           <button
             className="gv-btn"
+            aria-label="展开关联任务"
             onClick={() =>
               setExpandedTasks(
                 new Set(
@@ -291,13 +298,14 @@ export function PlanGantt({
               )
             }
           >
-            展开关联任务
+            展开任务
           </button>
           <button
             className="gv-btn"
+            aria-label="收起关联任务"
             onClick={() => setExpandedTasks(new Set())}
           >
-            收起关联任务
+            收起任务
           </button>
           <button className="gv-btn" onClick={() => onCollapse()}>
             {collapsed ? "显示" : "收起"}阶段栏
@@ -411,6 +419,7 @@ export function PlanGantt({
         >
           <div
             className="gv-left-fixed"
+            data-compact={!showAi && infoWidth < 360}
             style={{
               width: infoWidth,
               display: infoCollapsed ? "none" : undefined,

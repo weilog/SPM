@@ -8,6 +8,7 @@ import {
   within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { Modal } from "antd";
 import { Workbench } from "./Workbench";
 import { ProjectProvider } from "./ProjectData";
 import { api } from "./api";
@@ -222,6 +223,7 @@ function mount(p = project) {
 it("single click focuses without opening details, tracks paths and manually filters both story views", async () => {
   mount();
   const u = userEvent.setup();
+  await u.click(screen.getByRole("tab", { name: "故事地图" }));
   await u.click(await screen.findByRole("button", { name: story.title }));
   const panel = await screen.findByRole("complementary", {
     name: "关联追踪面板",
@@ -311,7 +313,7 @@ it("focuses the actual stage rather than treating the stage display row as a pla
 it("creates and reloads a real sequence through the canonical service without writing task or plan endpoints", async () => {
   mount();
   const u = userEvent.setup();
-  await u.click(screen.getByRole("tab", { name: "UML 图" }));
+  await u.click(screen.getByRole("tab", { name: "UML 建模" }));
   await u.click(screen.getByRole("tab", { name: "时序图" }));
   await u.click(screen.getByRole("button", { name: "新建时序场景" }));
   await u.type(
@@ -351,9 +353,46 @@ it("keeps sequence creation and editing unavailable to ordinary members", async 
     canViewOwnTasks: true,
   });
   const u = userEvent.setup();
-  await u.click(screen.getByRole("tab", { name: "UML 图" }));
+  await u.click(screen.getByRole("tab", { name: "UML 建模" }));
   await u.click(screen.getByRole("tab", { name: "时序图" }));
   expect(
     screen.queryByRole("button", { name: "新建时序场景" }),
   ).not.toBeInTheDocument();
+});
+
+it("reverse-focuses a member without changing the chosen view combination", async () => {
+  mount();
+  const u = userEvent.setup();
+  await u.click(screen.getByRole("button", {name:"双视图联动"}));
+  await u.click(await screen.findByRole("button", {name:"成员 经理"}));
+  await waitFor(() => expect(vi.mocked(api).mock.calls.some(([path]) => path.includes("entityType=member&entityId=9"))).toBe(true));
+  expect(screen.getByRole("combobox", {name:"左侧视图"})).toHaveValue("gantt");
+  expect(screen.getByRole("combobox", {name:"右侧视图"})).toHaveValue("members");
+  expect(writes).toHaveLength(0);
+});
+
+it("previews a plan date change before writing only that plan with its revision", async () => {
+  const previews: any[] = [];
+  const confirm = vi.spyOn(Modal, "confirm").mockImplementation((options) => {
+    previews.push(options);
+    return {destroy: vi.fn(), update: vi.fn()};
+  });
+  try {
+    mount();
+    const u = userEvent.setup();
+    await u.click((await screen.findAllByRole("button", {name:"计划1"}))[0]);
+    await u.click(await screen.findByRole("button", {name:"查看完整详情"}));
+    const detail = await screen.findByRole("dialog", {name:"计划详情"});
+    await u.click(within(detail).getByRole("button", {name:"编辑"}));
+    fireEvent.change(await screen.findByLabelText(/开始日期/), {target:{value:"2026-10-03"}});
+    await u.click(screen.getByRole("button", {name:"保存"}));
+    expect(previews).toHaveLength(1);
+    expect(previews[0].title).toBe("确认调整计划日期");
+    expect(writes).toHaveLength(0);
+    await previews[0].onOk();
+    expect(writes).toHaveLength(1);
+    expect(writes[0].path).toBe("/projects/1/plan-adapter/items/p1");
+    expect(writes[0].body).toMatchObject({start:"2026-10-03", revision:0});
+    expect(writes[0].body).not.toHaveProperty("assigneeUserId");
+  } finally { confirm.mockRestore(); }
 });

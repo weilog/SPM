@@ -526,6 +526,7 @@ async function until(check, label) {
       { steps: 10 },
     );
     await page.mouse.up();
+    await page.getByRole("button", {name:"确认保存",exact:true}).click();
     await until(
       async () =>
         (await db.planItem.findUniqueOrThrow({ where: { id: items.I4.id } }))
@@ -545,6 +546,7 @@ async function until(check, label) {
       steps: 8,
     });
     await page.mouse.up();
+    await page.getByRole("button", {name:"确认保存",exact:true}).click();
     await until(
       async () =>
         (await db.planItem.findUniqueOrThrow({ where: { id: items.I4.id } }))
@@ -568,6 +570,7 @@ async function until(check, label) {
       1,
     );
     await shot("AB-gantt");
+    await page.locator(".wb-more > summary").click();
     await page
       .getByRole("button", { name: "甘特 + 成员", exact: true })
       .click();
@@ -579,7 +582,7 @@ async function until(check, label) {
     await page.getByRole("button", { name: "关联追踪", exact: true }).click();
     await page
       .locator(".wb-track")
-      .getByRole("button", { name: "查看详情", exact: true })
+      .getByRole("button", { name: "查看完整详情", exact: true })
       .click();
     await page
       .getByRole("dialog", { name: "计划详情" })
@@ -631,6 +634,7 @@ async function until(check, label) {
     pass(
       "D1 single-view tracking docks, distinguishes paths, closes and clears manual filters; single click does not open a detail drawer",
     );
+    await page.locator(".wb-more > summary").click();
     await page
       .getByRole("button", { name: "甘特 + 成员", exact: true })
       .click();
@@ -693,7 +697,7 @@ async function until(check, label) {
       "D2/D4 draggable 55/45 comparison, keyboard separator, temporary tracking overlay, native Gantt task children and bidirectional task/owner focus without date writes",
     );
     await page.getByRole("button", { name: "单视图", exact: true }).click();
-    await page.getByRole("tab", { name: "UML 图", exact: true }).click();
+    await page.getByRole("tab", { name: "UML 建模", exact: true }).click();
     await page.getByRole("tab", { name: "时序图", exact: true }).click();
     await page
       .getByRole("button", { name: "新建时序场景", exact: true })
@@ -764,7 +768,7 @@ async function until(check, label) {
     await page.reload();
     await page.getByRole("button", { name: project.name, exact: true }).click();
     await nav("多视图工作台");
-    await page.getByRole("tab", { name: "UML 图", exact: true }).click();
+    await page.getByRole("tab", { name: "UML 建模", exact: true }).click();
     await page.getByRole("tab", { name: "时序图", exact: true }).click();
     await page
       .getByRole("img", { name: "已编辑的交互场景时序图", exact: true })

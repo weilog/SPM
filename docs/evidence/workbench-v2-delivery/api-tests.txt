@@ -1,0 +1,19 @@
+$ jest --runInBand
+PASS test/integration.spec.ts (24.439 s)
+PASS test/ai.spec.ts (12.284 s)
+PASS test/ai-p2.spec.ts (10.578 s)
+PASS test/ai-migration.spec.ts (7.979 s)
+PASS test/migration.spec.ts (6.526 s)
+PASS test/workbench-migration.spec.ts (6.282 s)
+PASS test/owner-a.spec.ts
+PASS test/workbench-v2.spec.ts
+PASS test/auth-pages.spec.ts
+PASS test/ai-deepseek.spec.ts
+PASS test/ai-rules.spec.ts
+PASS test/password.spec.ts
+
+Test Suites: 12 passed, 12 total
+Tests:       134 passed, 134 total
+Snapshots:   0 total
+Time:        80.901 s
+Ran all test suites.

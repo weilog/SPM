@@ -438,4 +438,17 @@ describe("Workbench D1-D4 and UML sequences", () => {
       await db.planItem.count(),
     ]).toEqual(before);
   });
+  it("changes the authorized project signal for cross-user edits and rejects outsiders", async () => {
+    const service = app.get(WorkbenchService);
+    const actor = await db.user.findUniqueOrThrow({where:{id:manager}});
+    const token = cookies.manager.split("=").slice(1).join("=");
+    const before = await service.signal(actor, p, token);
+    expect(before).toMatch(/^[a-f0-9]{64}$/);
+    const record = await db.task.findUniqueOrThrow({where:{id:task}});
+    await call("patch", root() + `/tasks/${task}/assignee`, "manager", {
+      revision: record.revision, assigneeUserId: developer,
+    }).expect(200);
+    expect(await service.signal(actor, p, token)).not.toBe(before);
+    expect(await service.signal(actor, other, token)).toBeNull();
+  });
 });

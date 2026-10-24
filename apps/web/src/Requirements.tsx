@@ -11,7 +11,6 @@ import {
   Space,
   Spin,
   Table,
-  Tabs,
   Typography,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
@@ -176,9 +175,12 @@ function RequirementWorkspace({
         setTab("list");
         void openRequirement(Number(d.entityId));
       } else if (d.entityType === "story") {
-        setTab("map");
+        if (embeddedView) setTab(embeddedView);
         setViewing({ kind: "story", id: Number(d.entityId) });
-      } else if (d.entityType === "goal" || d.entityType === "epic")
+      } else if (
+        embeddedView === "map" &&
+        (d.entityType === "goal" || d.entityType === "epic")
+      )
         setTab("map");
     };
     window.addEventListener("spm-ai-locate", locate);
@@ -455,7 +457,7 @@ function RequirementWorkspace({
       {!embeddedView && (
         <PageHeading
           title="需求管理"
-          description="管理正式需求、用户故事和关联关系"
+          description="管理正式需求及其关联关系"
           actions={
             !readOnly && (
               <>
@@ -486,11 +488,7 @@ function RequirementWorkspace({
         {!embeddedView && (
           <div className="view-tabbar">
             <div className="tabs" role="tablist">
-              {[
-                ["list", "需求列表"],
-                ["map", "故事地图"],
-                ["board", "故事看板"],
-              ].map(([id, label]) => (
+              {[["list", "需求列表"]].map(([id, label]) => (
                 <button
                   role="tab"
                   aria-selected={tab === id}
@@ -718,11 +716,9 @@ function RequirementWorkspace({
             </>
           ) : tab === "map" ? (
             <>
-              {!embeddedView && (
-                <div className="ai-row" style={{ marginBottom: 12 }}>
-                  <AiEntry kind="COVERAGE" label="AI 覆盖检查" />
-                </div>
-              )}
+              <div className="ai-row" style={{ marginBottom: 12 }}>
+                <AiEntry kind="COVERAGE" label="AI 覆盖检查" />
+              </div>
               <StoryMap
                 {...common}
                 onMove={(...args) => void move(...args)}

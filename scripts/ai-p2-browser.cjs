@@ -445,6 +445,7 @@ const pass = (s) => {
         .isDisabled(),
     "draft saved",
   );
+  await page.locator('.ai-planner[data-ai-dirty="false"]').waitFor();
   mode = "malformed";
   await page.getByText("规划输入与重新生成", { exact: true }).click();
   await page.getByRole("button", { name: "开始 AI 分析", exact: true }).click();
@@ -466,6 +467,7 @@ const pass = (s) => {
         .isDisabled(),
     "second save",
   );
+  await page.locator('.ai-planner[data-ai-dirty="false"]').waitFor();
   await page.getByRole("button", { name: "返回业务页面", exact: true }).click();
   await page
     .getByRole("button", { name: "✦ AI 智能规划", exact: true })
@@ -518,6 +520,11 @@ const pass = (s) => {
   pass(
     "Requirement AI input, persistent draft restore, failure preserves human edits, unsaved-leave guard, individual review/reuse and atomic three-level commit",
   );
+  assert.equal(
+    await page.getByRole("tab", { name: /故事地图|故事看板/ }).count(),
+    0,
+  );
+  await nav("多视图工作台");
   await page.getByRole("tab", { name: /故事地图/ }).click();
   await scan("✦ AI 覆盖检查");
   await shot("03-coverage");

@@ -436,6 +436,11 @@ const reference = require("./fixtures/v43-reference.json");
     log(
       "Three-level requirement create/reparent, search collapse/expand and 640px detail drawer",
     );
+    assert.equal(
+      await page.getByRole("tab", { name: /故事地图|故事看板/ }).count(),
+      0,
+    );
+    await nav("多视图工作台");
     await page.getByRole("tab", { name: /故事地图/ }).click();
     await page.locator(".story-card").first().waitFor();
     await shot("map");
@@ -832,7 +837,7 @@ const reference = require("./fixtures/v43-reference.json");
     peer.on("pageerror", (e) => errors.push(e.message));
     await login(peer, manager.username);
     await enter(peer);
-    await nav("需求管理", peer);
+    await nav("多视图工作台", peer);
     await peer.getByRole("tab", { name: /故事看板/ }).click();
     await request("patch", `/stories/${stories["US-004"].id}/status`, {
       status: "IN_PROGRESS",
@@ -919,6 +924,7 @@ const reference = require("./fixtures/v43-reference.json");
       await page.getByRole("button", { name: "新建需求", exact: true }).count(),
       0,
     );
+    await nav("多视图工作台");
     await page.getByRole("tab", { name: /故事地图/ }).click();
     assert.equal(await page.locator(".story-card[draggable=true]").count(), 0);
     log(
@@ -987,6 +993,7 @@ const reference = require("./fixtures/v43-reference.json");
         .count(),
       0,
     );
+    await nav("多视图工作台", tester);
     await tester.getByRole("tab", { name: /故事地图/ }).click();
     assert.equal(
       await tester.locator(".story-card[draggable=true]").count(),

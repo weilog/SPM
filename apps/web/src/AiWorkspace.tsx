@@ -52,12 +52,12 @@ export function AiHealthSummary() {
       </div>
       <div className="ai-health-metrics">
         <div>
-          <b>{ready ? r.summary?.uniqueEvents ?? "—" : "—"}</b>
+          <b>{ready ? (r.summary?.uniqueEvents ?? "—") : "—"}</b>
           <span>同源风险总数</span>
         </div>
         {dimensions.map(([key, label]) => (
           <div key={key}>
-            <b>{ready ? r.summary?.dimensions[key] ?? "—" : "—"}</b>
+            <b>{ready ? (r.summary?.dimensions[key] ?? "—") : "—"}</b>
             <span>{label}</span>
           </div>
         ))}
@@ -239,7 +239,10 @@ export function AiWorkspaceProvider({
       entityType: e.entityType,
       entityId: e.entityId,
     };
-    if (opened?.kind === "CROSS_VIEW" && e.entityType !== "requirement") {
+    if (
+      (opened?.kind === "CROSS_VIEW" && e.entityType !== "requirement") ||
+      e.entityType === "story"
+    ) {
       onNavigate("workspace");
       setTimeout(
         () =>

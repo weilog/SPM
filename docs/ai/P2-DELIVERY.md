@@ -2,6 +2,8 @@
 
 分支：`feat/ai-seven-pages`；基于负责人 A 集成分支，延续 P1；不合并 main。实现范围为本轮授权的完整 P2，未启动 P3。设计依据：`docs/ai-design/` 中 V2.0 原型与规格；A/B 原业务组件优先，原型示例数据不进入正式业务。
 
+核心提交：`b108232 feat(ai): integrate all seven P2 workflows with reviewed transactional drafts`。远程负责人 A 基线仍为 `1d717ef`，本轮未重置或覆盖其他分支。审核 PR：<https://github.com/weilog/SPM/pull/4>，目标为 `feat/s2-owner-a-integration`。
+
 ## 七页实现与差异核对
 
 | 页面 | 已实现 AI 功能 | 保留的业务界面与设计差异 | 验证 |

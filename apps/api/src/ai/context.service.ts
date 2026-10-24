@@ -99,6 +99,16 @@ export class AiContextService {
             select: {
               id: true,
               title: true,
+              description: true,
+              storyLinks: {
+                select: { storyId: true },
+                orderBy: { storyId: "asc" },
+              },
+              history: {
+                select: { action: true },
+                orderBy: { id: "desc" },
+                take: 10,
+              },
               status: true,
               progress: true,
               priority: true,
@@ -164,6 +174,8 @@ export class AiContextService {
               id: true,
               title: true,
               parentId: true,
+              description: true,
+              acceptanceCriteria: true,
               updatedAt: true,
               storyLinks: {
                 select: { storyId: true },
@@ -182,6 +194,14 @@ export class AiContextService {
               title: true,
               revision: true,
               acceptanceCriteria: true,
+              description: true,
+              epic: {
+                select: {
+                  id: true,
+                  title: true,
+                  goal: { select: { id: true, title: true } },
+                },
+              },
               requirementLinks: {
                 select: { requirementId: true },
                 orderBy: { requirementId: "asc" },
@@ -225,6 +245,13 @@ export class AiContextService {
           priority: t.priority,
           assigneeUserId: t.assigneeUserId,
           planIds: t.planLinks.map((l) => l.planId),
+          ...(this.config.approvedScope === "project-planning-v2"
+            ? {
+                description: t.description,
+                storyIds: t.storyLinks.map((l) => l.storyId),
+                recentActions: t.history.map((h) => h.action),
+              }
+            : {}),
         }),
       );
       items.forEach((i) =>
@@ -245,12 +272,28 @@ export class AiContextService {
         add("requirement", r.id, {
           title: r.title,
           parentId: r.parentId,
+          ...(this.config.approvedScope === "project-planning-v2"
+            ? {
+                description: r.description,
+                acceptanceCriteria: r.acceptanceCriteria,
+              }
+            : {}),
           storyIds: r.storyLinks.map((l) => l.storyId),
         }),
       );
       stories.forEach((s) =>
         add("story", s.id, {
           title: s.title,
+          ...(this.config.approvedScope === "project-planning-v2"
+            ? {
+                description: s.description,
+                acceptanceCriteria: s.acceptanceCriteria,
+                epicId: s.epic.id,
+                epicTitle: s.epic.title,
+                goalId: s.epic.goal.id,
+                goalTitle: s.epic.goal.title,
+              }
+            : {}),
           requirementIds: s.requirementLinks.map((l) => l.requirementId),
           umlUseCaseIds: s.useCaseLinks.map((l) => l.nodeId),
         }),

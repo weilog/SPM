@@ -1,4 +1,4 @@
-export const RULES_VERSION = "p1-2026-10-23.1";
+export const RULES_VERSION = "p2-2026-10-24.1";
 export const ANALYSIS_KINDS = [
   "HEALTH",
   "COVERAGE",
@@ -6,11 +6,15 @@ export const ANALYSIS_KINDS = [
   "PLAN",
   "MEMBER",
   "CROSS_VIEW",
+  "PLANNING",
+  "TASK_SPLIT",
 ] as const;
 export type AnalysisKind = (typeof ANALYSIS_KINDS)[number];
 export interface AnalysisScope {
   taskId?: number;
   stageId?: string;
+  requirementId?: number;
+  requestText?: string;
 }
 export type Fields = Record<
   string,
@@ -45,6 +49,7 @@ export interface AnalysisContext {
   }[];
   stages: { id: string; title: string; start: string; end: string }[];
   items: {
+    revision?: number;
     id: string;
     title: string;
     stageId: string;
@@ -75,6 +80,7 @@ export interface Explanation {
   evidenceKeys: string[];
 }
 export interface ModelResult {
+  output?: unknown;
   state: string;
   explanations: Explanation[];
   info: Record<string, string | number | boolean>;

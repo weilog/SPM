@@ -6,6 +6,7 @@ import { useTaskActions } from "./TaskActions";
 import { Status } from "./ui";
 import { taskNumber } from "./StoryViews";
 import "./a-overview.css";
+import { AiHealthSummary } from "./AiWorkspace";
 export function ProjectOverview({
   onNavigate,
 }: {
@@ -54,18 +55,9 @@ export function ProjectOverview({
         </div>
         <div className="cards">
           {[
-            [
-              "正式需求",
-              store.requirements.length,
-            ],
-            [
-              p.canManage ? "项目任务" : "我的任务",
-              store.tasks.length,
-            ],
-            [
-              "项目成员",
-              p.canManage ? store.members.length : "—",
-            ],
+            ["正式需求", store.requirements.length],
+            [p.canManage ? "项目任务" : "我的任务", store.tasks.length],
+            ["项目成员", p.canManage ? store.members.length : "—"],
           ].map(([label, num]) => (
             <div className="metric" key={label}>
               <div className="label">{label}</div>
@@ -73,6 +65,7 @@ export function ProjectOverview({
             </div>
           ))}
         </div>
+        <AiHealthSummary />
         <div className="twocol">
           <section className="panel">
             <div className="panelhead">

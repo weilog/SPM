@@ -1,0 +1,9 @@
+PASS Overview manual health scan, four risk dimensions, unique-event summary and persisted history
+PASS Requirement AI input, persistent draft restore, failure preserves human edits, unsaved-leave guard, individual review/reuse and atomic three-level commit
+PASS Story map direct leaf coverage denominator, semantic inference and shared candidate-review entry retain original map
+PASS Task execution advice and independently reviewed TODO split candidates persist through real task/history APIs
+PASS Gantt baseline/candidate comparison is read-only and opens the original centered editor; cancel leaves all dates unchanged
+PASS A member tracking retains its original grouping/filter table and reports actual Task-ID concentration without utilization claims
+PASS Cross-view evidence uses real object IDs, activates correct dual views and focuses actual related nodes
+PASS Ordinary members get filtered facts and no analyze controls; backend rejects member writes and outsider reads
+Browser checks: 8 zero paid requests; zero runtime errors

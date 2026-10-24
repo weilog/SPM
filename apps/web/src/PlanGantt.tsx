@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import type { PlanItemView, PlanStageView } from "@spm/shared";
 import { useProjectData } from "./ProjectData";
+import { AiEntry } from "./ai-events";
+import { AiHint } from "./ai-hints";
 const day = 86400000;
 const date = (s: string) => new Date(s + "T00:00:00Z");
 const add = (s: string, n: number) =>
@@ -18,6 +20,7 @@ export function PlanGantt({
   onCollapse,
   highlightIds = [],
   onPlanFocus,
+  showAi = true,
 }: {
   stage?: PlanStageView;
   items: PlanItemView[];
@@ -27,6 +30,7 @@ export function PlanGantt({
   onCollapse(): void;
   highlightIds?: string[];
   onPlanFocus?: (id: string) => void;
+  showAi?: boolean;
 }) {
   const store = useProjectData(),
     snapshot = store.plans;
@@ -181,6 +185,13 @@ export function PlanGantt({
           </span>
         </div>
         <div className="gv-controls">
+          {showAi && (
+            <AiEntry
+              kind="PLAN"
+              label="AI 风险与推演"
+              scope={stage ? { stageId: stage.id } : {}}
+            />
+          )}
           <button className="gv-btn" onClick={() => onCollapse()}>
             {collapsed ? "显示" : "收起"}阶段栏
           </button>
@@ -251,7 +262,10 @@ export function PlanGantt({
       <div className="gv-scroller" ref={scroller}>
         <div className="gv-grid-canvas" style={{ width: infoWidth + width }}>
           <div className="gv-left-fixed" style={{ width: infoWidth }}>
-            <div className="gv-left-head" style={{ gridTemplateColumns: "minmax(0,1fr) 80px 70px 70px" }}>
+            <div
+              className="gv-left-head"
+              style={{ gridTemplateColumns: "minmax(0,1fr) 80px 70px 70px" }}
+            >
               <div>计划 / 工作项</div>
               <div>负责人</div>
               <div>预计开始</div>
@@ -302,9 +316,15 @@ export function PlanGantt({
                 const start = resizeStart.current;
                 if (start) resizeInfo(start.width + e.clientX - start.x);
               }}
-              onPointerUp={() => { resizeStart.current = null; }}
-              onPointerCancel={() => { resizeStart.current = null; }}
-              onLostPointerCapture={() => { resizeStart.current = null; }}
+              onPointerUp={() => {
+                resizeStart.current = null;
+              }}
+              onPointerCancel={() => {
+                resizeStart.current = null;
+              }}
+              onLostPointerCapture={() => {
+                resizeStart.current = null;
+              }}
               onKeyDown={(e) => {
                 if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
                   e.preventDefault();
@@ -398,7 +418,9 @@ export function PlanGantt({
                         if (e.key === "Enter") open(r);
                       }}
                     >
-                      <span className="gv-range-title">{r.title}</span>
+                      <span className="gv-range-title">
+                        {r.title} <AiHint compact entity={`planItem:${r.id}`} />
+                      </span>
                       {r.kind === "item" &&
                         store.project.canManage &&
                         snapshot.available && (

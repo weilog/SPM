@@ -12,6 +12,7 @@ import { DbService } from "../db/db.module";
 import { ProjectsService } from "../projects/projects.module";
 import { AiConfig } from "./ai.config";
 import { AiContextService, fingerprint } from "./context.service";
+import { AiPlanningService } from "./planning.service";
 import {
   AnalysisKind,
   AnalysisScope,
@@ -25,6 +26,7 @@ export class AiAnalysisService {
     private readonly projects: ProjectsService,
     private readonly config: AiConfig,
     private readonly context: AiContextService,
+    private readonly planning: AiPlanningService,
   ) {}
   async create(
     actor: User,
@@ -39,12 +41,18 @@ export class AiAnalysisService {
     if (!this.config.enabled)
       throw new ServiceUnavailableException("AI_DISABLED");
     if (
-      (scope.taskId && kind !== "TASK") ||
+      (scope.taskId && !["TASK", "TASK_SPLIT"].includes(kind)) ||
+      (scope.requirementId && kind !== "PLANNING") ||
+      (scope.requestText && !["PLANNING", "TASK_SPLIT"].includes(kind)) ||
+      (kind === "TASK_SPLIT" && !scope.taskId) ||
+      (kind === "PLANNING" && !scope.requestText?.trim()) ||
       (scope.stageId && !["PLAN", "MEMBER"].includes(kind)) ||
       (scope.stageId && scope.taskId)
     )
       throw new BadRequestException("分析范围不适用于该分析类型");
-    await this.context.build(actor, p, kind, scope);
+    if (["PLANNING", "TASK_SPLIT"].includes(kind))
+      await this.planning.generationContext(actor, p, scope);
+    else await this.context.build(actor, p, kind, scope);
     const requestKey = key || randomUUID(),
       requestHash = fingerprint({ kind, scope, retryOf: retryOf || null });
     const work = () =>
@@ -155,6 +163,10 @@ export class AiAnalysisService {
       include: { findings: { orderBy: { eventKey: "asc" } } },
     });
     if (!run) throw new NotFoundException("分析记录不存在");
+    const generation = ["PLANNING", "TASK_SPLIT"].includes(run.kind);
+    if (generation && !project.canManage)
+      throw new NotFoundException("分析记录不存在");
+
     const ctx = await this.context.build(
       actor,
       p,
@@ -191,7 +203,16 @@ export class AiAnalysisService {
       (run.sourceDate !== ctx.asOf ||
         run.rulesVersion !== RULES_VERSION ||
         (project.canManage
-          ? run.sourceHash !== ctx.hash
+          ? run.sourceHash !==
+            (generation
+              ? (
+                  await this.planning.generationContext(
+                    actor,
+                    p,
+                    run.scope as AnalysisScope,
+                  )
+                ).hash
+              : ctx.hash)
           : findings.some((f) => !f.evidenceCurrent)));
     // Authorization is checked again after loading evidence, so revocation cannot publish a response.
     await this.projects.authorized(actor, p, project.canManage);
@@ -234,6 +255,7 @@ export class AiAnalysisService {
             errorCode: run.errorCode,
             sourceHash: run.sourceHash,
             retryDepth: run.retryDepth,
+            output: run.output,
           }
         : {}),
     };

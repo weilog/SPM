@@ -395,8 +395,8 @@ describe("P1 AI foundation: real database and authorized HTTP execution", () => 
       "SELECT column_name FROM information_schema.columns WHERE table_schema=$1 AND table_name='Requirement'",
       [schema],
     );
-    expect(columns.rows.map((r) => r.column_name)).not.toContain("revision");
-    expect(columns.rows.map((r) => r.column_name)).not.toContain(
+    expect(columns.rows.map((r) => r.column_name)).toContain("revision");
+    expect(columns.rows.map((r) => r.column_name)).toContain(
       "acceptanceCriteria",
     );
   });

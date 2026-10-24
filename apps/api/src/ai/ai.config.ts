@@ -47,7 +47,9 @@ export class AiConfig {
       !this.supplier ||
       !this.model ||
       !this.apiKey ||
-      this.approvedScope !== "project-evidence-v1"
+      !["project-evidence-v1", "project-planning-v2"].includes(
+        this.approvedScope,
+      )
     )
       return false;
     try {

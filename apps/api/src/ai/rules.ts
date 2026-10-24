@@ -38,6 +38,33 @@ export function detectRisks(
     });
   };
   const relevant = (...kinds: AnalysisKind[]) => kinds.includes(kind);
+  if (kind === "TASK")
+    for (const t of c.tasks)
+      add(
+        "TASK_EXECUTION_REVIEW",
+        [t.id],
+        ["EXECUTION"],
+        "INFO",
+        `任务 T-${t.id} 的状态、描述、故事与计划关联由授权记录提供，执行步骤仅为AI建议，需人工核查。`,
+        [
+          `task:${t.id}`,
+          ...t.planLinks
+            .map((l) => `planItem:${l.planId}`)
+            .filter((k) => c.evidence.has(k)),
+        ],
+      );
+  if (kind === "COVERAGE" && (c.stories.length || c.requirements.length))
+    add(
+      "COVERAGE_SEMANTIC_REVIEW",
+      ["snapshot"],
+      ["COVERAGE"],
+      "INFO",
+      `当前授权快照含 ${c.requirements.length} 条正式需求和 ${c.stories.length} 条用户故事。关联、重复、Epic归属与验收语义需进一步核查；结构关联不等于验收覆盖。`,
+      [
+        ...c.requirements.map((r) => `requirement:${r.id}`),
+        ...c.stories.map((s) => `story:${s.id}`),
+      ],
+    );
   if (relevant("HEALTH", "TASK", "CROSS_VIEW"))
     for (const t of c.tasks) {
       if (t.status !== "DONE" && t.assigneeUserId === null)

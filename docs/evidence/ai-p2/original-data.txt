@@ -1,0 +1,3 @@
+PASS original columns and every original row unchanged across 24 tables
+PASS Requirement acceptanceCriteria empty / revision zero defaults
+Project / Task / Requirement: 6 48 46

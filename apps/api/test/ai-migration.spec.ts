@@ -46,7 +46,7 @@ it("M1 preserves every existing Sprint 2 table row and column on a populated dat
     await pool.query(`CREATE SCHEMA "${schema}"`);
     process.env.DATABASE_URL = url.toString();
     for (const entry of readdirSync(migrationRoot))
-      if (entry !== m1)
+      if (entry !== m1 && entry !== "202610240001_ai_planning")
         cpSync(join(migrationRoot, entry), join(target, entry), {
           recursive: true,
         });
@@ -67,12 +67,16 @@ it("M1 preserves every existing Sprint 2 table row and column on a populated dat
         members: { create: { userId: user.id, role: "MANAGER" } },
       },
     });
-    const parent = await db.requirement.create({
-      data: { projectId: p.id, title: "Existing parent" },
-    });
-    const child = await db.requirement.create({
-      data: { projectId: p.id, parentId: parent.id, title: "Existing child" },
-    });
+    const parent = (
+      await db.$queryRaw<
+        { id: number }[]
+      >`INSERT INTO "Requirement" ("projectId",title,"updatedAt") VALUES (${p.id},'Existing parent',CURRENT_TIMESTAMP) RETURNING id`
+    )[0];
+    const child = (
+      await db.$queryRaw<
+        { id: number }[]
+      >`INSERT INTO "Requirement" ("projectId","parentId",title,"updatedAt") VALUES (${p.id},${parent.id},'Existing child',CURRENT_TIMESTAMP) RETURNING id`
+    )[0];
     const goal = await db.productGoal.create({
       data: { projectId: p.id, title: "Existing goal" },
     });
@@ -186,6 +190,23 @@ it("M1 preserves every existing Sprint 2 table row and column on a populated dat
     expect(await columns()).toEqual(beforeColumns);
     expect(await db.aiAnalysisRun.count()).toBe(0);
     expect(await db.aiRiskFinding.count()).toBe(0);
+    const m2 = "202610240001_ai_planning";
+    cpSync(join(migrationRoot, m2), join(target, m2), { recursive: true });
+    deploy();
+    deploy();
+    expect(await db.aiDraft.count()).toBe(0);
+    expect(
+      (await db.requirement.findMany()).every(
+        (r) => r.acceptanceCriteria === "" && r.revision === 0,
+      ),
+    ).toBe(true);
+    const afterM2 = await rows();
+    const requirementIndex = tables.indexOf("Requirement");
+    afterM2[requirementIndex] = afterM2[requirementIndex].map((record) => {
+      const { acceptanceCriteria, revision, ...old } = record.row;
+      return { row: old };
+    });
+    expect(afterM2).toEqual(before);
     execFileSync(
       process.execPath,
       [

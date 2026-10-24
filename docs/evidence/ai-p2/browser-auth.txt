@@ -1,0 +1,9 @@
+$ node scripts/auth-pages-browser.cjs
+01:26:40 [vite] (client) Re-optimizing dependencies because vite config has changed
+PASS Registration fields, confirmation, password visibility, rejected invitation and real MEMBER account persistence
+PASS Forgot password verifies username/email and displays an explicitly simulated email/reset link without external delivery
+PASS Simulated email link resets the actual password once, rejects reuse and invalidates the old authenticated session
+PASS Existing login failure handling and successful new-password login enter the actual authorized project page
+PASS Disabled simulation explicitly fails, desktop 56/44 layout and 424px form match the prototype, mobile registration has no horizontal overflow
+PASS Four approved embedded prototype screens captured at the same 1440×900 viewport
+PASS Zero browser runtime errors

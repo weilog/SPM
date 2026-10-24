@@ -20,6 +20,7 @@ import {
 } from "./ui";
 import { storyNumber, taskNumber } from "./StoryViews";
 import { MemberTaskGraph } from "./MemberTaskGraph";
+import { AiEntry } from "./ai-events";
 export function TaskWorkspace({ mine = false }: { mine?: boolean }) {
   const store = useProjectData(),
     actions = useTaskActions();
@@ -128,10 +129,16 @@ export function TaskWorkspace({ mine = false }: { mine?: boolean }) {
         actions={
           !mine &&
           store.project.canManage && (
-            <button className="btn primary" onClick={() => actions.edit("new")}>
-              <Icon name="plus" size={14} />
-              新建任务
-            </button>
+            <>
+              <AiEntry kind="TASK" label="AI 任务建议" />
+              <button
+                className="btn primary"
+                onClick={() => actions.edit("new")}
+              >
+                <Icon name="plus" size={14} />
+                新建任务
+              </button>
+            </>
           )
         }
       />

@@ -52,6 +52,75 @@ describe("DeepSeek native adapter, no paid network calls in test suite", () => {
     spy = jest.spyOn(globalThis, "fetch");
   });
   afterEach(() => jest.restoreAllMocks());
+  it("requires v2 context approval before sending planning descriptions", async () => {
+    Object.assign(config, { approvedScope: "project-evidence-v1" });
+    expect(
+      (
+        await provider.generate(
+          { request: "test" },
+          "PLANNING",
+          new AbortController().signal,
+        )
+      ).state,
+    ).toBe("DATA_SCOPE_NOT_APPROVED");
+    expect(spy).not.toHaveBeenCalled();
+  });
+  it("normalizes model review flags to unreviewed candidates and rejects generated four-level trees or wrong split types", async () => {
+    Object.assign(config, { approvedScope: "project-planning-v2" });
+    const generated = (items: unknown[]) =>
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              finish_reason: "stop",
+              message: { content: JSON.stringify({ items }) },
+            },
+          ],
+        }),
+      );
+    spy.mockResolvedValue(
+      generated([
+        {
+          key: "r",
+          kind: "REQUIREMENT",
+          title: "Candidate",
+          reviewed: true,
+          action: "UPDATE",
+        },
+      ]),
+    );
+    const valid = await provider.generate(
+      { request: "test" },
+      "PLANNING",
+      new AbortController().signal,
+    );
+    expect(valid.state).toBe("SUCCEEDED");
+    expect((valid.output as any[])[0]).toMatchObject({
+      action: "CREATE",
+      reviewed: false,
+    });
+    spy.mockResolvedValue(
+      generated(
+        [0, 1, 2, 3].map((n) => ({
+          key: "r" + n,
+          kind: "REQUIREMENT",
+          title: "Candidate",
+          ...(n ? { parentKey: "r" + (n - 1) } : {}),
+        })),
+      ),
+    );
+    expect(
+      (await provider.generate({}, "PLANNING", new AbortController().signal))
+        .state,
+    ).toBe("FORMAT_ERROR");
+    spy.mockResolvedValue(
+      generated([{ key: "r", kind: "REQUIREMENT", title: "Wrong type" }]),
+    );
+    expect(
+      (await provider.generate({}, "TASK_SPLIT", new AbortController().signal))
+        .state,
+    ).toBe("FORMAT_ERROR");
+  });
   const response = (content = JSON.stringify(output), finish = "stop") =>
     new Response(
       JSON.stringify({

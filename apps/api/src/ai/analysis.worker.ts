@@ -16,6 +16,7 @@ import { AiContextService } from "./context.service";
 import { AiProvider } from "./provider";
 import { AnalysisKind, AnalysisScope, ModelResult } from "./ai.types";
 import { detectRisks } from "./rules";
+import { AiPlanningService } from "./planning.service";
 @Injectable()
 export class AiAnalysisWorker implements OnModuleInit, OnModuleDestroy {
   private timer?: ReturnType<typeof setInterval>;
@@ -33,6 +34,7 @@ export class AiAnalysisWorker implements OnModuleInit, OnModuleDestroy {
     private readonly config: AiConfig,
     private readonly context: AiContextService,
     private readonly provider: AiProvider,
+    private readonly planning: AiPlanningService,
   ) {}
   onModuleInit() {
     if (this.config.enabled) {
@@ -115,17 +117,29 @@ export class AiAnalysisWorker implements OnModuleInit, OnModuleDestroy {
         : null;
       if (!actor) throw new ForbiddenException();
       await this.projects.authorized(actor, run.projectId, true);
-      const ctx = await this.context.build(
-        actor,
-        run.projectId,
-        run.kind as AnalysisKind,
-        run.scope as AnalysisScope,
-      );
-      const { findings, truncated } = detectRisks(
-        ctx,
-        run.kind as AnalysisKind,
-        this.config.maxFindings,
-      );
+      const generation = ["PLANNING", "TASK_SPLIT"].includes(run.kind);
+      const generatedContext = generation
+        ? await this.planning.generationContext(
+            actor,
+            run.projectId,
+            run.scope as AnalysisScope,
+          )
+        : null;
+      const ctx =
+        generatedContext ||
+        (await this.context.build(
+          actor,
+          run.projectId,
+          run.kind as AnalysisKind,
+          run.scope as AnalysisScope,
+        ));
+      const { findings, truncated } = generation
+        ? { findings: [], truncated: false }
+        : detectRisks(
+            ctx as import("./ai.types").AnalysisContext,
+            run.kind as AnalysisKind,
+            this.config.maxFindings,
+          );
       let result: ModelResult;
       if (this.config.configured()) {
         const reserved = await this.db.atomic(async (tx) => {
@@ -149,7 +163,13 @@ export class AiAnalysisWorker implements OnModuleInit, OnModuleDestroy {
           );
         });
         result = reserved
-          ? await this.provider.explain(findings, signal)
+          ? generation
+            ? await this.provider.generate(
+                generatedContext!.input,
+                run.kind,
+                signal,
+              )
+            : await this.provider.explain(findings, signal)
           : { state: "BUDGET_EXCEEDED", explanations: [], info: {} };
       } else result = await this.provider.explain(findings, signal);
       if (signal.aborted) throw new Error("WORKER_STOPPED");
@@ -163,6 +183,14 @@ export class AiAnalysisWorker implements OnModuleInit, OnModuleDestroy {
                 ? "COMPLETED"
                 : "PARTIAL",
             sourceHash: ctx.hash,
+            ...(generation && result.state === "SUCCEEDED"
+              ? {
+                  output: {
+                    items: result.output as Prisma.InputJsonValue,
+                    baseline: generatedContext!.baseline,
+                  },
+                }
+              : {}),
             sourceDate: ctx.asOf,
             modelState: result.state,
             modelInfo: { ...result.info, rulesTruncated: truncated },

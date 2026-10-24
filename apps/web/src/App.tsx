@@ -72,6 +72,7 @@ export function App() {
       .finally(() => setLoading(false));
   }, []);
   async function selectProject(id: number) {
+    if (!confirmAiNavigation()) return;
     const version = ++requestVersion.current;
     setError("");
     setProject(null);
@@ -95,6 +96,7 @@ export function App() {
     }
   }
   async function logout() {
+    if (!confirmAiNavigation()) return;
     try {
       await api("/auth/logout", "POST");
       setUser(null);
@@ -117,6 +119,7 @@ export function App() {
         className={`nav-btn ${page === key ? "selected" : ""}`}
         title={label}
         onClick={() => {
+          if (!confirmAiNavigation()) return;
           setError("");
           if (["projects", "users"].includes(key) || project) setPage(key);
           else if (availableProjects.length)
@@ -208,11 +211,18 @@ export function App() {
             {nav("workspace", "split", "多视图工作台")}
             {nav("docs", "file", "项目文档")}
             {project?.canManage && nav("members", "users", "成员与角色")}
-            {user.role === "ADMIN" && <><div className="nav-section">系统管理</div>{nav("users", "users", "系统用户管理")}</>}
+            {user.role === "ADMIN" && (
+              <>
+                <div className="nav-section">系统管理</div>
+                {nav("users", "users", "系统用户管理")}
+              </>
+            )}
             <div className="sidebar-project-box">
               <span style={{ fontSize: 19 }}>◈</span>
               <div className="sidebar-project-text">
-                <strong title={project?.name || "项目工作空间"}>{project?.name || "项目工作空间"}</strong>
+                <strong title={project?.name || "项目工作空间"}>
+                  {project?.name || "项目工作空间"}
+                </strong>
                 <div style={{ marginTop: 4, color: "#8da0ba" }}>
                   项目工作空间
                 </div>
@@ -254,7 +264,9 @@ export function App() {
             <div className="breadcrumb">
               {page === "projects" ? (
                 "工作空间 / 我的项目"
-              ) : page === "users" ? "系统管理 / 系统用户管理" : (
+              ) : page === "users" ? (
+                "系统管理 / 系统用户管理"
+              ) : (
                 <>
                   我的项目 <span>›</span>
                   {project?.name}
@@ -276,7 +288,11 @@ export function App() {
                 onError={onError}
               />
             ) : page === "users" ? (
-              <Users actorId={user.id} onError={onError} onChanged={refreshUser} />
+              <Users
+                actorId={user.id}
+                onError={onError}
+                onChanged={refreshUser}
+              />
             ) : project ? (
               <ProjectProvider
                 key={project.id}
@@ -327,24 +343,30 @@ function ProjectSpace({
   const [story, setStory] = useState<number | null>(null);
   return (
     <TaskActionsProvider onStory={setStory}>
-      {page === "requirements" ? (
-        <RequirementPage />
-      ) : page === "tasks" || page === "mine" ? (
-        <TaskWorkspace mine={page === "mine"} />
-      ) : page === "workspace" ? (
-        <Workbench />
-      ) : page === "uml" ? (
-        <UmlView onStory={setStory} />
-      ) : page === "plan" ? (
-        <PlanView />
-      ) : page === "members" ? (
-        <ProjectMembers onChanged={onMembersChanged} />
-      ) : page === "docs" ? (
-        <Documents />
-      ) : (
-        <ProjectOverview onNavigate={onNavigate} />
-      )}
-      <StoryInspector id={story} onClose={() => setStory(null)} />
+      <AiWorkspaceProvider
+        key={store.project.projectRole}
+        onNavigate={onNavigate}
+        page={page}
+      >
+        {page === "requirements" ? (
+          <RequirementPage />
+        ) : page === "tasks" || page === "mine" ? (
+          <TaskWorkspace mine={page === "mine"} />
+        ) : page === "workspace" ? (
+          <Workbench onNavigate={onNavigate} />
+        ) : page === "uml" ? (
+          <UmlView onStory={setStory} />
+        ) : page === "plan" ? (
+          <PlanView />
+        ) : page === "members" ? (
+          <ProjectMembers onChanged={onMembersChanged} />
+        ) : page === "docs" ? (
+          <Documents />
+        ) : (
+          <ProjectOverview onNavigate={onNavigate} />
+        )}
+        <StoryInspector id={story} onClose={() => setStory(null)} />
+      </AiWorkspaceProvider>
     </TaskActionsProvider>
   );
 }
@@ -359,3 +381,5 @@ function RequirementPage() {
     />
   );
 }
+import { AiWorkspaceProvider } from "./AiWorkspace";
+import { confirmAiNavigation } from "./ai-events";

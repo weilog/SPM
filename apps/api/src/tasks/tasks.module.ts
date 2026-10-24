@@ -147,8 +147,13 @@ export class TasksService {
     if (!task) throw new NotFoundException("任务不存在或不属于本人");
     return present(task);
   }
-  async create(actor: User, projectId: number, dto: CreateTaskDto) {
-    return this.db.atomic(async (tx) => {
+  async create(
+    actor: User,
+    projectId: number,
+    dto: CreateTaskDto,
+    transaction?: Database,
+  ) {
+    const work = async (tx: Database) => {
       await this.projects.authorized(actor, projectId, true, tx);
       await this.validateAssignee(tx, projectId, dto.assigneeUserId);
       await this.validateRelations(
@@ -182,7 +187,8 @@ export class TasksService {
       );
       await this.history(tx, actor, created.id, "创建任务", {}, task);
       return task;
-    });
+    };
+    return transaction ? work(transaction) : this.db.atomic(work);
   }
   async assign(
     actor: User,
@@ -338,8 +344,9 @@ export class TasksService {
       | "archive"
       | "restore",
     dto: EditTaskDto & Partial<TaskStatusDto & TaskProgressDto> = {},
+    transaction?: Database,
   ) {
-    return this.db.atomic(async (tx) => {
+    const work = async (tx: Database) => {
       const { project, task } = await this.access(
         tx,
         actor,
@@ -406,7 +413,8 @@ export class TasksService {
       );
       await this.history(tx, actor, id, action, present(task), updated);
       return updated;
-    });
+    };
+    return transaction ? work(transaction) : this.db.atomic(work);
   }
 }
 @Controller("projects/:projectId/tasks")
@@ -512,5 +520,6 @@ export class TasksController {
   imports: [ProjectsModule, PlanAdapterModule],
   controllers: [TasksController],
   providers: [TasksService],
+  exports: [TasksService],
 })
 export class TasksModule {}

@@ -459,7 +459,10 @@ const reference = require("./fixtures/v43-reference.json");
       0,
     );
     await card(stories["US-001"].id).dragTo(
-      page.getByRole("region", { name: "Epic：任务与协作" }),
+      page
+        .getByRole("region", { name: "Epic：任务与协作" })
+        .locator(".b-epic-col-top"),
+      { targetPosition: { x: 20, y: 20 } },
     );
     await eventually(
       async () =>

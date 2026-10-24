@@ -5,6 +5,8 @@ import { useTaskActions } from "./TaskActions";
 import { PlanGantt } from "./PlanGantt";
 import { AIcon as Icon } from "./AIcons";
 import "./a-plan.css";
+import { AiEntry } from "./ai-events";
+import { AiHint } from "./ai-hints";
 const states = ["TODO", "IN_PROGRESS", "DONE", "PAUSED"] as const;
 const stateLabels = {
   TODO: "待处理",
@@ -106,6 +108,42 @@ export function PlanView({
     setDetail(x.id);
     if ("kind" in x) onPlanFocus?.(x.id);
   }
+  useEffect(() => {
+    const locate = (e: Event) => {
+      const d = (e as CustomEvent).detail;
+      if (d.projectId !== store.project.id) return;
+      const item = plans.items.find((i) => i.id === d.entityId);
+      if (item) {
+        setSelected(item.stageId);
+        setView("gantt");
+        setDetail(item.id);
+      } else if (d.entityType === "stage") {
+        setSelected(String(d.entityId));
+        setView("gantt");
+      }
+    };
+    const candidate = (e: Event) => {
+      const d = (e as CustomEvent).detail;
+      if (d.projectId !== store.project.id || !can) return;
+      const item = plans.items.find((i) => i.id === d.id);
+      if (!item || item.revision !== d.revision) {
+        setError("计划已变化，请重新分析候选方案");
+        return;
+      }
+      setSelected(item.stageId);
+      setView("gantt");
+      edit(item.kind, item);
+      setDraft((current) =>
+        current ? { ...current, start: d.start, end: d.end } : current,
+      );
+    };
+    window.addEventListener("spm-ai-locate", locate);
+    window.addEventListener("spm-ai-edit-plan", candidate);
+    return () => {
+      window.removeEventListener("spm-ai-locate", locate);
+      window.removeEventListener("spm-ai-edit-plan", candidate);
+    };
+  }, [plans.items, store.project.id, can]);
   function edit(kind: "plan" | "item" | "milestone", entity?: Entity) {
     if (!can) return;
     setError("");
@@ -483,6 +521,7 @@ export function PlanView({
           <main className="board">
             {view === "gantt" ? (
               <PlanGantt
+                showAi={!embedded}
                 stage={stage}
                 items={items}
                 onOpen={open}
@@ -893,6 +932,11 @@ export function PlanView({
                     成员任务跟踪 <span>按负责人展开与追踪计划关联任务</span>
                   </div>
                   <div className="mv-tools">
+                    <AiEntry
+                      kind="MEMBER"
+                      label="AI 负载与瓶颈"
+                      scope={stage ? { stageId: stage.id } : {}}
+                    />
                     <input
                       type="search"
                       aria-label="搜索关联任务"
@@ -1025,6 +1069,9 @@ export function PlanView({
                         </span>
                         <span className="mv-avatar">{name[0]}</span>
                         <b>{name}</b>
+                        <AiHint
+                          entity={`member:${trackingRows.find((x) => x.label === name)?.task?.assigneeUserId ?? trackingRows.find((x) => x.label === name)?.item.ownerUserId}`}
+                        />
                         <span className="mv-pill">
                           {
                             new Set(

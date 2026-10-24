@@ -10,6 +10,7 @@ import { UmlView } from "./UmlView";
 import { PlanView } from "./PlanView";
 import { StoryInspector } from "./StoryInspector";
 import { storyNumber, taskNumber } from "./StoryViews";
+import { AiEntry } from "./ai-events";
 const views = [
   { id: "map", name: "故事地图", icon: "layers" },
   { id: "board", name: "故事看板", icon: "columns" },
@@ -23,7 +24,9 @@ const empty: ResolvedRelations = {
   planItems: [],
   umlUseCases: [],
 };
-export function Workbench() {
+export function Workbench({
+  onNavigate,
+}: { onNavigate?: (page: string) => void } = {}) {
   const store = useProjectData(),
     actions = useTaskActions();
   const [primary, setPrimary] = useState("map"),
@@ -32,6 +35,29 @@ export function Workbench() {
     [focus, setFocus] = useState<ViewFocus | null>(null),
     [relations, setRelations] = useState(empty),
     [story, setStory] = useState<number | null>(null);
+  useEffect(() => {
+    const locate = (e: Event) => {
+      const d = (e as CustomEvent<ViewFocus>).detail;
+      if (d.projectId !== store.project.id) return;
+      setDual(true);
+      setFocus(d);
+      if (d.entityType === "task") {
+        setPrimary("members");
+        setSecondary("gantt");
+      } else if (d.entityType === "planItem") {
+        setPrimary("gantt");
+        setSecondary("members");
+      } else if (d.entityType === "umlUseCase") {
+        setPrimary("uml");
+        setSecondary("map");
+      } else {
+        setPrimary("map");
+        setSecondary("gantt");
+      }
+    };
+    window.addEventListener("spm-ai-locate", locate);
+    return () => window.removeEventListener("spm-ai-locate", locate);
+  }, [store.project.id]);
   useEffect(() => {
     let live = true;
     if (!focus) {
@@ -112,33 +138,37 @@ export function Workbench() {
             />
           )}
         </div>
-
       </section>
     );
   }
   const name =
-    focus?.entityType === "story"
-      ? store.stories.stories.find((s) => s.id === focus.entityId)?.title
-      : focus?.entityType === "task"
-        ? store.tasks.find((t) => t.id === focus.entityId)?.title
-        : focus?.entityType === "umlUseCase"
-          ? store.diagrams
-              .flatMap((d) => d.nodes)
-              .find((n) => n.id === focus.entityId)?.name
-          : store.plans.items.find((p) => p.id === focus?.entityId)?.title;
+    focus?.entityType === "requirement"
+      ? store.requirements.find((r) => r.id === focus.entityId)?.title
+      : focus?.entityType === "story"
+        ? store.stories.stories.find((s) => s.id === focus.entityId)?.title
+        : focus?.entityType === "task"
+          ? store.tasks.find((t) => t.id === focus.entityId)?.title
+          : focus?.entityType === "umlUseCase"
+            ? store.diagrams
+                .flatMap((d) => d.nodes)
+                .find((n) => n.id === focus.entityId)?.name
+            : store.plans.items.find((p) => p.id === focus?.entityId)?.title;
   return (
     <>
       <PageHeading
         title="多视图工作台"
         description="五种视图统一查看与关联定位"
         actions={
-          <button
-            className="btn"
-            onClick={() => void store.refresh().catch(store.onError)}
-          >
-            <Icon name="refresh" size={14} />
-            刷新视图
-          </button>
+          <>
+            <AiEntry kind="CROSS_VIEW" label="AI 跨视图分析" />
+            <button
+              className="btn"
+              onClick={() => void store.refresh().catch(store.onError)}
+            >
+              <Icon name="refresh" size={14} />
+              刷新视图
+            </button>
+          </>
         }
       />
       <section className="card workbench">
@@ -306,6 +336,36 @@ export function Workbench() {
           {pane(primary, "左侧视图")}
           {dual && pane(secondary, "右侧视图")}
         </div>
+        {focus && (
+          <div className="focusbar">
+            正式需求直接关联：
+            {(relations.requirements || []).map((id) => (
+              <button
+                className="link"
+                key={id}
+                onClick={() => {
+                  onNavigate?.("requirements");
+                  setTimeout(
+                    () =>
+                      window.dispatchEvent(
+                        new CustomEvent("spm-ai-locate", {
+                          detail: {
+                            projectId: store.project.id,
+                            entityType: "requirement",
+                            entityId: id,
+                          },
+                        }),
+                      ),
+                    120,
+                  );
+                }}
+              >
+                REQ-{id}
+              </button>
+            ))}{" "}
+            · 其余高亮为业务关系多跳可达，请按证据核实。
+          </div>
+        )}
       </section>
       <StoryInspector id={story} onClose={() => setStory(null)} />
     </>

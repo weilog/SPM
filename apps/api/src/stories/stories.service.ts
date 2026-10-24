@@ -102,8 +102,13 @@ export class StoriesService {
     )
       throw new BadRequestException("关联需求必须属于当前项目");
   }
-  async createGoal(actor: User, projectId: number, dto: TitleDto) {
-    return this.db.atomic(async (tx) => {
+  async createGoal(
+    actor: User,
+    projectId: number,
+    dto: TitleDto,
+    transaction?: Database,
+  ) {
+    const work = async (tx: Database) => {
       await this.projects.authorized(actor, projectId, true, tx);
       return tx.productGoal.create({
         data: {
@@ -112,10 +117,16 @@ export class StoriesService {
           sortOrder: await tx.productGoal.count({ where: { projectId } }),
         },
       });
-    });
+    };
+    return transaction ? work(transaction) : this.db.atomic(work);
   }
-  async createEpic(actor: User, projectId: number, dto: CreateEpicDto) {
-    return this.db.atomic(async (tx) => {
+  async createEpic(
+    actor: User,
+    projectId: number,
+    dto: CreateEpicDto,
+    transaction?: Database,
+  ) {
+    const work = async (tx: Database) => {
       await this.projects.authorized(actor, projectId, true, tx);
       await this.goal(tx, projectId, dto.goalId);
       return tx.epic.create({
@@ -127,7 +138,8 @@ export class StoriesService {
           }),
         },
       });
-    });
+    };
+    return transaction ? work(transaction) : this.db.atomic(work);
   }
   async editNode(
     actor: User,
@@ -210,8 +222,13 @@ export class StoriesService {
         : this.epic(tx, projectId, id);
     });
   }
-  async createStory(actor: User, projectId: number, dto: CreateStoryDto) {
-    return this.db.atomic(async (tx) => {
+  async createStory(
+    actor: User,
+    projectId: number,
+    dto: CreateStoryDto,
+    transaction?: Database,
+  ) {
+    const work = async (tx: Database) => {
       await this.projects.authorized(actor, projectId, true, tx);
       await this.epic(tx, projectId, dto.epicId);
       const { requirementIds = [], ...data } = dto;
@@ -233,13 +250,15 @@ export class StoriesService {
         })),
       });
       return present(await this.story(tx, projectId, story.id));
-    });
+    };
+    return transaction ? work(transaction) : this.db.atomic(work);
   }
   async editStory(
     actor: User,
     projectId: number,
     id: number,
     dto: EditStoryDto,
+    transaction?: Database,
   ) {
     const { revision, requirementIds, epicId, ...data } = dto;
     if (
@@ -248,7 +267,7 @@ export class StoriesService {
       epicId === undefined
     )
       throw new BadRequestException("请提供修改内容");
-    return this.db.atomic(async (tx) => {
+    const work = async (tx: Database) => {
       await this.projects.authorized(actor, projectId, true, tx);
       const current = await this.story(tx, projectId, id);
       checkRevision(current.revision, revision);
@@ -292,7 +311,8 @@ export class StoriesService {
         data: { ...data, revision: { increment: 1 } },
       });
       return present(await this.story(tx, projectId, id));
-    });
+    };
+    return transaction ? work(transaction) : this.db.atomic(work);
   }
   async status(
     actor: User,

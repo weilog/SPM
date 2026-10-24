@@ -91,9 +91,7 @@ export function AiWorkspaceProvider({
     [scenarios, setScenarios] = useState<AiScenario[]>([]),
     [shifts, setShifts] = useState([3, 7]);
   useEffect(() => setPlanning(null), [page]);
-  const requestVersion = useRef(0),
-    latest = useRef(opened);
-  latest.current = opened;
+  const requestVersion = useRef(0);
   const safe = (fn: () => Promise<void>) => {
     setBusy(true);
     setError("");
@@ -109,17 +107,19 @@ export function AiWorkspaceProvider({
     setReport(next);
     setScenarios(next.output?.scenarios || []);
   }
-  async function histories(next?: string) {
+  async function histories(next?: string, kind = opened?.kind) {
+    const version = requestVersion.current;
     const data = await api<{ items: AiReport[]; nextCursor: string | null }>(
-      `${path}/analyses?limit=20${next ? "&cursor=" + next : ""}`,
+      `${path}/analyses?limit=20${kind ? "&kind=" + kind : ""}${next ? "&cursor=" + next : ""}`,
     );
+    if (version !== requestVersion.current) return [];
     setHistory((old) => (next ? [...old, ...data.items] : data.items));
     setCursor(data.nextCursor);
     return data.items;
   }
   useEffect(() => {
     let live = true;
-    void api<{ items: AiReport[] }>(`${path}/analyses?limit=20`)
+    void api<{ items: AiReport[] }>(`${path}/analyses?limit=1&kind=HEALTH`)
       .then(async (data) => {
         if (!live || !Array.isArray(data.items)) return;
         const h = data.items.find((r) => r.kind === "HEALTH");
@@ -179,7 +179,7 @@ export function AiWorkspaceProvider({
       setScenarios([]);
       const v = ++requestVersion.current;
       safe(async () => {
-        const list = await histories();
+        const list = await histories(undefined, detail.kind);
         if (v !== requestVersion.current) return;
         const r = list.find(
           (r) =>

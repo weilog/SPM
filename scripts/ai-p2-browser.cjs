@@ -24,7 +24,8 @@ globalThis.fetch = (url, options) => {
     throw new Error("Automatic P2 tests forbid paid external requests");
   return realFetch(url, options);
 };
-const dir = ".runtime/ai-p2-browser";
+const acceptance = process.env.SPM_AI_ACCEPTANCE === "p3";
+const dir = acceptance ? ".runtime/ai-p3-browser" : ".runtime/ai-p2-browser";
 fs.mkdirSync(dir, { recursive: true });
 const schema = "spm_ai_browser_" + randomBytes(8).toString("hex"),
   original = process.env.DATABASE_URL,
@@ -491,6 +492,13 @@ const pass = (s) => {
   await drawer()
     .getByRole("button", { name: "✦ 生成独立候选任务", exact: true })
     .click();
+  if (acceptance) {
+    await page.getByLabel("AI 拆分源任务").click();
+    await page
+      .locator(".ant-select-dropdown:visible .ant-select-item-option-content")
+      .filter({ hasText: `T-${tasks[1].id} · ${tasks[1].title}` })
+      .click();
+  }
   await page.getByRole("button", { name: "开始 AI 分析", exact: true }).click();
   await page.locator(".ai-review-tree button").waitFor();
   await page.getByLabel("此候选已人工审核").check();
@@ -514,6 +522,51 @@ const pass = (s) => {
   pass(
     "Task execution advice and independently reviewed TODO split candidates persist through real task/history APIs",
   );
+  if (acceptance) {
+    // A restored split must keep its source task, and cannot restore a requirement draft.
+    await scan("✦ AI 任务建议");
+    await drawer()
+      .getByRole("button", { name: "✦ 生成独立候选任务", exact: true })
+      .click();
+    await page.getByRole("button", { name: "我的草稿", exact: true }).click();
+    const splitDrafts = await db.aiDraft.findMany({
+      where: { projectId: p.id, kind: "TASK_SPLIT" },
+    });
+    await until(
+      async () =>
+        (await page.locator(".ai-history-row").count()) === splitDrafts.length,
+      "split draft history loaded",
+    );
+    assert.equal(
+      await page.locator(".ai-history-row").count(),
+      splitDrafts.length,
+    );
+    await page
+      .locator(".ai-history-row")
+      .first()
+      .getByRole("button", { name: "恢复草稿" })
+      .click();
+    await page.locator(".ai-review-tree button").first().waitFor();
+    await page.getByText("规划输入与重新生成", { exact: true }).click();
+    await page.locator(".ai-planner details[open]").waitFor();
+    const sourceRun = await db.aiAnalysisRun.findUniqueOrThrow({
+      where: { id: splitDrafts[0].sourceRunId },
+    });
+    assert(
+      (
+        (await page
+          .getByLabel("AI 拆分源任务")
+          .locator("..")
+          .getAttribute("title")) || ""
+      ).includes(`T-${sourceRun.scope.taskId}`),
+    );
+    await page
+      .getByRole("button", { name: "返回业务页面", exact: true })
+      .click();
+    pass(
+      "P3 split draft list excludes planning drafts and restores the original source task",
+    );
+  }
   await nav("项目计划");
   await page.getByRole("button", { name: "甘特图", exact: true }).click();
   await scan("✦ AI 风险与推演");
@@ -543,6 +596,56 @@ const pass = (s) => {
   pass(
     "Gantt baseline/candidate comparison is read-only and opens the original centered editor; cancel leaves all dates unchanged",
   );
+  if (acceptance) {
+    await scan("✦ AI 风险与推演");
+    await drawer()
+      .getByRole("button", { name: "方案推演", exact: true })
+      .click();
+    await drawer()
+      .getByRole("button", { name: "生成候选方案对比", exact: true })
+      .click();
+    await drawer().locator(".ai-scenario-change").first().waitFor();
+    const currentRun = await db.aiAnalysisRun.findFirstOrThrow({
+      where: { projectId: p.id, kind: "PLAN" },
+      orderBy: { createdAt: "desc" },
+    });
+    const proposed = currentRun.output.scenarios[0].changes[0];
+    await drawer()
+      .getByRole("button", { name: "打开原编辑器", exact: true })
+      .first()
+      .click();
+    const editor = page.locator(".a-plan-view .modal");
+    await editor.waitFor();
+    assert.equal(
+      await editor.getByLabel(/开始日期/).inputValue(),
+      proposed.start,
+    );
+    await editor.getByRole("button", { name: "保存", exact: true }).click();
+    await until(
+      async () =>
+        (await db.planItem.findUniqueOrThrow({ where: { id: proposed.id } }))
+          .start === proposed.start,
+      "human confirmed original plan save",
+    );
+    await page.reload();
+    await page.getByRole("button", { name: p.name, exact: true }).click();
+    await nav("项目计划");
+    await page.locator(".a-plan-view").waitFor();
+    await page.locator(".stagecard").filter({hasText:stage.title}).waitFor();
+    assert.equal(
+      (await db.planItem.findUniqueOrThrow({ where: { id: proposed.id } })).end,
+      proposed.end,
+    );
+    await page.getByRole("button", { name: "甘特图", exact: true }).click();
+    await page.locator(".gv-fixed-row").filter({hasText:proposed.title}).waitFor();
+    await page.screenshot({
+      path: `${dir}/human-plan-save.png`,
+      animations: "disabled",
+    });
+    pass(
+      "P3 human confirms candidate dates in the original editor; actual plan persists after browser reload",
+    );
+  }
   await page.getByRole("button", { name: "成员任务跟踪", exact: true }).click();
   await scan("✦ AI 负载与瓶颈");
   await shot("06-member");
@@ -618,6 +721,41 @@ const pass = (s) => {
   pass(
     "Ordinary members get filtered facts and no analyze controls; backend rejects member writes and outsider reads",
   );
+  if (acceptance) {
+    await page
+      .getByRole("button", { name: "✦ AI 跨视图分析", exact: true })
+      .click();
+    await drawer().locator(".ai-risk").first().waitFor();
+    const promote = await context.request.patch(
+      `http://127.0.0.1:5178/api/projects/${p.id}/members/${users.tester.id}/role`,
+      { headers: { "X-SPM-Request": "1" }, data: { role: "MANAGER" } },
+    );
+    assert.equal(promote.status(), 200);
+    const demote = await context.request.patch(
+      `http://127.0.0.1:5178/api/projects/${p.id}/members/${users.manager.id}/role`,
+      { headers: { "X-SPM-Request": "1" }, data: { role: "DEVELOPER" } },
+    );
+    assert.equal(demote.status(), 200);
+    await until(
+      async () => !(await page.locator(".ai-drawer:visible").count()),
+      "role downgrade discards full manager report",
+    );
+    assert.equal(
+      (
+        await context.request.get(
+          `http://127.0.0.1:5178/api/projects/${p.id}/ai/drafts`,
+        )
+      ).status(),
+      403,
+    );
+    await page.screenshot({
+      path: `${dir}/role-downgrade.png`,
+      animations: "disabled",
+    });
+    pass(
+      "P3 live manager downgrade clears the full report via SSE and blocks drafts using the same session",
+    );
+  }
   assert.equal(errors.length, 0);
   fs.writeFileSync(
     `${dir}/result.json`,

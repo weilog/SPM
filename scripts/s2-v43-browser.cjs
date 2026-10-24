@@ -886,6 +886,7 @@ const reference = require("./fixtures/v43-reference.json");
       "owner inline progress",
     );
     await page.locator(".ant-drawer-close:visible").click();
+    await page.locator(".v43-drawer:visible").waitFor({ state: "hidden" });
     await taskRow(personalTask.id)
       .getByRole("button", { name: "完成", exact: true })
       .click();

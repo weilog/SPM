@@ -349,7 +349,7 @@ export class AiPlanningService {
         baseline = output.baseline;
         kind = run.kind;
       }
-      return tx.aiDraft.create({
+      const created = await tx.aiDraft.create({
         data: {
           projectId: p,
           authorId: a.id,
@@ -360,6 +360,11 @@ export class AiPlanningService {
           baseline,
         },
       });
+      return {
+        ...created,
+        stale:
+          fingerprint(baseline) !== fingerprint(await this.baseline(tx, p)),
+      };
     });
   }
   async save(
@@ -379,7 +384,7 @@ export class AiPlanningService {
       if (!d) throw new NotFoundException("草稿不存在");
       if (d.status !== "DRAFT" || d.revision !== revision)
         throw new ConflictException("草稿已变化或已提交");
-      return tx.aiDraft.update({
+      const saved = await tx.aiDraft.update({
         where: { id },
         data: {
           title: text(title, 200, true),
@@ -387,6 +392,11 @@ export class AiPlanningService {
           revision: { increment: 1 },
         },
       });
+      return {
+        ...saved,
+        stale:
+          fingerprint(d.baseline) !== fingerprint(await this.baseline(tx, p)),
+      };
     });
   }
   async revalidate(a: User, p: number, id: string, revision: number) {

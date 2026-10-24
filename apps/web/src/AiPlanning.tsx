@@ -25,7 +25,9 @@ export function AiPlanning({
   const store = useProjectData(),
     path = `/projects/${store.project.id}/ai`;
   const [request, setRequest] = useState(scope.requestText || ""),
-    [taskId, setTaskId] = useState(scope.taskId || store.tasks[0]?.id),
+    [taskId, setTaskId] = useState<number | undefined>(
+      scope.taskId || store.tasks[0]?.id,
+    ),
     [draft, setDraft] = useState<AiDraft | null>(null),
     [selected, setSelected] = useState(0),
     [dirty, setDirty] = useState(false),
@@ -79,10 +81,16 @@ export function AiPlanning({
   async function load(id: string) {
     if (dirty && !window.confirm("放弃未保存修改并恢复所选草稿？")) return;
     const d = await api<AiDraft>(`${path}/drafts/${id}`);
+    if (d.kind !== kind)
+      throw new Error("请从对应的规划或任务拆分入口恢复此草稿");
+    setRun(null);
+    setRequest("");
+    if (kind === "TASK_SPLIT") setTaskId(undefined);
     if (d.sourceRunId) {
       try {
         const r = await api<AiReport>(`${path}/analyses/${d.sourceRunId}`);
         setRequest(r.scope.requestText || "");
+        if (kind === "TASK_SPLIT") setTaskId(r.scope.taskId);
         setRun(r);
       } catch {
         /* Deleted sources are revalidated through the draft workflow. */
@@ -208,7 +216,11 @@ export function AiPlanning({
           <Button
             onClick={() =>
               void perform(async () =>
-                setSaved(await api<AiDraft[]>(`${path}/drafts`)),
+                setSaved(
+                  (await api<AiDraft[]>(`${path}/drafts`)).filter(
+                    (d) => d.kind === kind,
+                  ),
+                ),
               )
             }
           >

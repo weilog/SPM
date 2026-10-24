@@ -67,6 +67,7 @@ class ScenarioRequest {
   shifts!: number[];
 }
 class HistoryQuery {
+  @IsOptional() @IsIn(ANALYSIS_KINDS) kind?: AnalysisKind;
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(20) limit = 10;
   @IsOptional() @IsUUID() cursor?: string;
 }
@@ -122,7 +123,7 @@ export class AiController {
     @Param("projectId", ParseIntPipe) p: number,
     @Query() q: HistoryQuery,
   ) {
-    return this.service.history(a, p, q.limit, q.cursor);
+    return this.service.history(a, p, q.limit, q.cursor, q.kind);
   }
   @Get("analyses/:runId") report(
     @Actor() a: User,

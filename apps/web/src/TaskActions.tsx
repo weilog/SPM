@@ -111,7 +111,7 @@ export function TaskActionsProvider({
     if (activeDetail.current === id) await open(id);
   }
   useEffect(() => {
-    if (detail) {
+    if (detail && activeDetail.current === detail.id) {
       const next = store.tasks.find((t) => t.id === detail.id);
       if (next) {
         if (next.revision !== detail.revision) void refreshDetail(detail.id);

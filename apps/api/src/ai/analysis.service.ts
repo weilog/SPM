@@ -260,17 +260,23 @@ export class AiAnalysisService {
         : {}),
     };
   }
-  async history(actor: User, p: number, limit: number, cursor?: string) {
+  async history(
+    actor: User,
+    p: number,
+    limit: number,
+    cursor?: string,
+    kind?: AnalysisKind,
+  ) {
     await this.projects.authorized(actor, p);
     if (
       cursor &&
       !(await this.db.aiAnalysisRun.findFirst({
-        where: { id: cursor, projectId: p },
+        where: { id: cursor, projectId: p, ...(kind ? { kind } : {}) },
       }))
     )
       throw new NotFoundException("历史游标不存在");
     const rows = await this.db.aiAnalysisRun.findMany({
-      where: { projectId: p },
+      where: { projectId: p, ...(kind ? { kind } : {}) },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),

@@ -626,6 +626,140 @@ describe("P2 real PostgreSQL, transaction review, simulation and HTTP authorizat
       shifts: [3, 7],
     }).expect(409);
   });
+  it("keeps stale warnings on draft creation and save until explicit revalidation", async () => {
+    gatewayMode = "valid";
+    const run = await analyze("PLANNING", { requestText: "Stale recovery" });
+    await db.requirement.update({
+      where: { id: req },
+      data: { revision: { increment: 1 } },
+    });
+    const d = (
+      await call("post", root() + "/drafts", "manager", {
+        title: "Old source",
+        runId: run.id,
+      }).expect(201)
+    ).body;
+    expect(d.stale).toBe(true);
+    const saved = (
+      await call("patch", root() + "/drafts/" + d.id, "manager", {
+        title: "Human revision",
+        revision: d.revision,
+        items: d.items,
+      }).expect(200)
+    ).body;
+    expect(saved.stale).toBe(true);
+    const fresh = (
+      await call("post", root() + `/drafts/${d.id}/revalidate`, "manager", {
+        revision: saved.revision,
+      }).expect(201)
+    ).body;
+    expect(
+      (await call("get", root() + `/drafts/${d.id}`).expect(200)).body.stale,
+    ).toBe(false);
+    expect(fresh.items.every((i: Candidate) => !i.reviewed)).toBe(true);
+  });
+  it("finds health history beyond twenty other reports and paginates by kind without model calls", async () => {
+    const callsBefore = requests;
+    const health = await db.aiAnalysisRun.create({
+      data: {
+        projectId: p,
+        requestedById: ids.manager,
+        kind: "HEALTH",
+        scope: {},
+        requestKey: randomUUID(),
+        requestHash: "history-fixture",
+        rulesVersion: "history-fixture",
+        status: "COMPLETED",
+        createdAt: new Date("2021-01-01"),
+      },
+    });
+    await db.aiAnalysisRun.createMany({
+      data: Array.from({ length: 25 }, (_, n) => ({
+        projectId: p,
+        requestedById: ids.manager,
+        kind: "TASK",
+        scope: {},
+        requestKey: randomUUID(),
+        requestHash: "history-fixture",
+        rulesVersion: "history-fixture",
+        status: "COMPLETED",
+        createdAt: new Date(Date.UTC(2022, 0, n + 1)),
+      })),
+    });
+    const h = (
+      await call("get", root() + "/analyses?kind=HEALTH&limit=20").expect(200)
+    ).body;
+    expect(h.items.some((r: any) => r.id === health.id)).toBe(true);
+    expect(h.items.every((r: any) => r.kind === "HEALTH")).toBe(true);
+    const one = (
+      await call("get", root() + "/analyses?kind=TASK&limit=2").expect(200)
+    ).body;
+    const two = (
+      await call(
+        "get",
+        root() + `/analyses?kind=TASK&limit=2&cursor=${one.nextCursor}`,
+      ).expect(200)
+    ).body;
+    expect(one.items).toHaveLength(2);
+    expect(two.items).toHaveLength(2);
+    expect(
+      two.items.every((r: any) => !one.items.some((a: any) => a.id === r.id)),
+    ).toBe(true);
+    await call(
+      "get",
+      root() + `/analyses?kind=TASK&cursor=${health.id}`,
+    ).expect(404);
+    await call("get", root() + "/analyses?kind=UNKNOWN").expect(400);
+    await call("get", root() + "/analyses?kind=HEALTH", "outsider").expect(404);
+    expect(requests).toBe(callsBefore);
+  });
+  it("keeps repeated concurrent history reads isolated without triggering model work", async () => {
+    const callsBefore = requests;
+    for (let batch = 0; batch < 4; batch++) {
+      const responses = await Promise.all(
+        Array.from({ length: 5 }, (_, n) =>
+          call(
+            "get",
+            root() + "/analyses?kind=HEALTH&limit=2",
+            n % 2 ? "dev" : "manager",
+          ).expect(200),
+        ),
+      );
+      for (let n = 0; n < responses.length; n++)
+        for (const r of responses[n].body.items) {
+          expect(r.kind).toBe("HEALTH");
+          if (n % 2) {
+            expect(r.visibility).toBe("AUTHORIZED_FACTS_ONLY");
+            expect(r.output).toBeUndefined();
+            expect(r.modelInfo).toBeUndefined();
+          }
+        }
+    }
+    expect(requests).toBe(callsBefore);
+  });
+  it("rechecks downgraded manager permissions with the existing session", async () => {
+    const d = await draft([candidate("revoked_manager", "REQUIREMENT")]);
+    const count = await db.requirement.count();
+    await db.projectMember.update({
+      where: { projectId_userId: { projectId: p, userId: ids.manager } },
+      data: { role: "DEVELOPER" },
+    });
+    try {
+      await call("get", root() + `/drafts/${d.id}`).expect(403);
+      await call("post", root() + `/drafts/${d.id}/commit`, "manager", {
+        revision: d.revision,
+      }).expect(403);
+      await call("post", root() + "/analyses", "manager", {
+        kind: "HEALTH",
+      }).expect(403);
+      expect(await db.requirement.count()).toBe(count);
+    } finally {
+      await db.projectMember.update({
+        where: { projectId_userId: { projectId: p, userId: ids.manager } },
+        data: { role: "MANAGER" },
+      });
+    }
+  });
   it("resolves requirement evidence by real IDs, preserving existing cross-view task authorization", async () => {
     await db.storyTask.create({
       data: { projectId: p, storyId: story, taskId: task },

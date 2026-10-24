@@ -11,7 +11,6 @@ import {
   Space,
   Spin,
   Table,
-  Tabs,
   Typography,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
@@ -27,6 +26,7 @@ import {
   type ViewFocus,
 } from "@spm/shared";
 import { api } from "./api";
+import { AiEntry } from "./ai-events";
 import { Icon, PageHeading, announceProject, useProjectRefresh } from "./ui";
 import { useOptionalProjectData } from "./ProjectData";
 import {
@@ -166,6 +166,26 @@ function RequirementWorkspace({
           },
     );
   }
+  useEffect(() => {
+    const locate = (e: Event) => {
+      const d = (e as CustomEvent).detail;
+      if (d.projectId !== project.id) return;
+      if (d.entityType === "requirement") {
+        if (embeddedView) return;
+        setTab("list");
+        void openRequirement(Number(d.entityId));
+      } else if (d.entityType === "story") {
+        if (embeddedView) setTab(embeddedView);
+        setViewing({ kind: "story", id: Number(d.entityId) });
+      } else if (
+        embeddedView === "map" &&
+        (d.entityType === "goal" || d.entityType === "epic")
+      )
+        setTab("map");
+    };
+    window.addEventListener("spm-ai-locate", locate);
+    return () => window.removeEventListener("spm-ai-locate", locate);
+  }, [project.id]);
   async function openRequirement(id: number) {
     try {
       const result = await api<LinkedRequirement>(`${path}/requirements/${id}`);
@@ -267,6 +287,8 @@ function RequirementWorkspace({
       body = {
         title: values.title,
         description: values.description,
+        acceptanceCriteria: values.acceptanceCriteria,
+        ...(item ? { revision: item.revision } : {}),
         parentId: values.parentId ?? null,
         ...(values.storyIds !== undefined ? { storyIds: values.storyIds } : {}),
       };
@@ -435,17 +457,20 @@ function RequirementWorkspace({
       {!embeddedView && (
         <PageHeading
           title="需求管理"
-          description="管理正式需求、用户故事和关联关系"
+          description="管理正式需求及其关联关系"
           actions={
             !readOnly && (
-              <button
-                className="btn primary"
-                disabled={saving}
-                onClick={() => edit({ kind: "requirement" })}
-              >
-                <Icon name="plus" size={14} />
-                新建需求
-              </button>
+              <>
+                <AiEntry kind="PLANNING" label="AI 智能规划" />
+                <button
+                  className="btn primary"
+                  disabled={saving}
+                  onClick={() => edit({ kind: "requirement" })}
+                >
+                  <Icon name="plus" size={14} />
+                  新建需求
+                </button>
+              </>
             )
           }
         />
@@ -463,11 +488,7 @@ function RequirementWorkspace({
         {!embeddedView && (
           <div className="view-tabbar">
             <div className="tabs" role="tablist">
-              {[
-                ["list", "需求列表"],
-                ["map", "故事地图"],
-                ["board", "故事看板"],
-              ].map(([id, label]) => (
+              {[["list", "需求列表"]].map(([id, label]) => (
                 <button
                   role="tab"
                   aria-selected={tab === id}
@@ -694,15 +715,20 @@ function RequirementWorkspace({
               </div>
             </>
           ) : tab === "map" ? (
-            <StoryMap
-              {...common}
-              onMove={(...args) => void move(...args)}
-              onNewGoal={() => edit({ kind: "goal" })}
-              onEditGoal={(item) => edit({ kind: "goal", item })}
-              onNewEpic={(g) => edit({ kind: "epic", goalId: g.id })}
-              onEditEpic={(item) => edit({ kind: "epic", item })}
-              onNewStory={(e) => edit({ kind: "story", epicId: e.id })}
-            />
+            <>
+              <div className="ai-row" style={{ marginBottom: 12 }}>
+                <AiEntry kind="COVERAGE" label="AI 覆盖检查" />
+              </div>
+              <StoryMap
+                {...common}
+                onMove={(...args) => void move(...args)}
+                onNewGoal={() => edit({ kind: "goal" })}
+                onEditGoal={(item) => edit({ kind: "goal", item })}
+                onNewEpic={(g) => edit({ kind: "epic", goalId: g.id })}
+                onEditEpic={(item) => edit({ kind: "epic", item })}
+                onNewStory={(e) => edit({ kind: "story", epicId: e.id })}
+              />
+            </>
           ) : (
             <>
               <div
@@ -787,17 +813,30 @@ function RequirementWorkspace({
           <>
             <Button onClick={() => setViewing(null)}>关闭</Button>
             {!readOnly && (
-              <Button
-                type="primary"
-                disabled={saving}
-                onClick={() => {
-                  if (story) edit({ kind: "story", item: story });
-                  else if (requirement)
-                    edit({ kind: "requirement", item: requirement });
-                }}
-              >
-                {story ? "编辑故事" : "编辑需求"}
-              </Button>
+              <>
+                {requirement && (
+                  <AiEntry
+                    kind="PLANNING"
+                    label="AI 分析已有需求"
+                    scope={{
+                      requirementId: requirement.id,
+                      requestText: `分析已有需求：${requirement.title}，补齐场景、子需求、故事与验收条件。`,
+                    }}
+                    onOpen={() => setViewing(null)}
+                  />
+                )}
+                <Button
+                  type="primary"
+                  disabled={saving}
+                  onClick={() => {
+                    if (story) edit({ kind: "story", item: story });
+                    else if (requirement)
+                      edit({ kind: "requirement", item: requirement });
+                  }}
+                >
+                  {story ? "编辑故事" : "编辑需求"}
+                </Button>
+              </>
             )}
           </>
         }
@@ -884,6 +923,10 @@ function RequirementWorkspace({
             <p className="detail-text">
               {requirement.description || "暂无说明"}
             </p>
+            <Typography.Title level={5}>需求验收条件</Typography.Title>
+            <p className="detail-text">
+              {requirement.acceptanceCriteria || "暂无验收条件"}
+            </p>
             <Typography.Title level={5}>关联用户故事</Typography.Title>
             <Space wrap>
               {(requirement.storyIds ?? []).map((id) => (
@@ -954,6 +997,13 @@ function RequirementWorkspace({
                     </Checkbox>
                   ))}
                 </Checkbox.Group>
+              </Form.Item>
+              <Form.Item
+                name="acceptanceCriteria"
+                label="需求验收条件"
+                rules={[{ max: 10000 }]}
+              >
+                <Input.TextArea rows={3} />
               </Form.Item>
             </>
           )}

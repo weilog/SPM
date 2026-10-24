@@ -1,0 +1,8 @@
+$ node scripts/system-users-browser.cjs
+PASS Actual administrator navigation, three statistics, six columns and pagination at 1440x900
+PASS Search by display name, username/email, combined status filter and reset
+PASS Real create and profile edit persist after reload; unique account, hashed password and no automatic membership
+PASS Confirmed disable revokes existing sessions and enable permits actual login
+PASS Duplicate email produces a real error without changing data; current administrator cannot be disabled
+PASS Project managers and members cannot see navigation or read global accounts
+PASS Zero browser runtime exceptions

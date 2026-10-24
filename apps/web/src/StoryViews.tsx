@@ -10,6 +10,7 @@ import type {
 } from "@spm/shared";
 import { storyStatusLabels } from "@spm/shared";
 import { Icon, Status } from "./ui";
+import { AiHint } from "./ai-hints";
 export const storyNumber = (id: number) => `US-${String(id).padStart(3, "0")}`;
 export const requirementNumber = (id: number) =>
   `REQ-${String(id).padStart(3, "0")}`;
@@ -48,6 +49,7 @@ function StoryCard(props: CommonProps & { story: UserStory; board?: boolean }) {
         e.dataTransfer.effectAllowed = "move";
       }}
     >
+      <AiHint entity={`story:${s.id}`} />
       <button
         className="story-card-main"
         aria-label={s.title}
@@ -277,7 +279,6 @@ export function StoryMap(props: StoryMapProps) {
           )}
         </div>
       </div>
-
     </div>
   );
 }
@@ -334,7 +335,6 @@ export function StoryBoard(props: StoryBoardProps) {
           ))}
         </div>
       </div>
-
     </div>
   );
 }

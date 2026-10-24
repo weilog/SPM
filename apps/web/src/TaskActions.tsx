@@ -22,6 +22,7 @@ import { api } from "./api";
 import { useProjectData } from "./ProjectData";
 import { ProgressBar, PriorityTag, Status } from "./ui";
 import { storyNumber, taskNumber } from "./StoryViews";
+import { AiEntry } from "./ai-events";
 interface Actions {
   open(id: number, history?: boolean): void;
   edit(t: ManagedTask | "new"): void;
@@ -110,7 +111,7 @@ export function TaskActionsProvider({
     if (activeDetail.current === id) await open(id);
   }
   useEffect(() => {
-    if (detail) {
+    if (detail && activeDetail.current === detail.id) {
       const next = store.tasks.find((t) => t.id === detail.id);
       if (next) {
         if (next.revision !== detail.revision) void refreshDetail(detail.id);
@@ -254,8 +255,24 @@ export function TaskActionsProvider({
   const footer = detail ? (
     <>
       <Button onClick={closeDetail}>关闭</Button>
+      {!project.canManage && (
+        <AiEntry
+          kind="TASK"
+          label="查看 AI 执行建议"
+          scope={{ taskId: detail.id }}
+          onOpen={closeDetail}
+        />
+      )}
       {project.canManage && (
         <>
+          {!detail.archivedAt && (
+            <AiEntry
+              kind="TASK"
+              label="AI 执行建议"
+              scope={{ taskId: detail.id }}
+              onOpen={closeDetail}
+            />
+          )}
           <Button
             disabled={busy || !!detail.archivedAt}
             onClick={() => assign(detail)}
@@ -535,11 +552,13 @@ export function TaskActionsProvider({
               disabled={!store.plans.available}
               className="checkbox-grid"
             >
-              {store.plans.items.filter(p => p.kind === "item").map((p) => (
-                <Checkbox key={p.id} value={p.id}>
-                  {p.title}
-                </Checkbox>
-              ))}
+              {store.plans.items
+                .filter((p) => p.kind === "item")
+                .map((p) => (
+                  <Checkbox key={p.id} value={p.id}>
+                    {p.title}
+                  </Checkbox>
+                ))}
             </Checkbox.Group>
           </Form.Item>
         </Form>

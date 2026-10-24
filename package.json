@@ -19,7 +19,9 @@
     "test:e2e:auth": "node scripts/auth-pages-browser.cjs",
     "test:e2e:a": "node scripts/owner-a-browser.cjs",
     "test:reference:a": "node scripts/capture-a-reference.cjs",
-    "test:e2e:users": "node scripts/system-users-browser.cjs"
+    "test:e2e:users": "node scripts/system-users-browser.cjs",
+    "test:e2e:ai": "node scripts/ai-p2-browser.cjs",
+    "test:e2e:ai:p3": "node scripts/ai-p3-browser.cjs"
   },
   "devDependencies": {
     "playwright": "1.62.1",

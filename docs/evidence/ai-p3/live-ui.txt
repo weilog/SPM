@@ -1,0 +1,1 @@
+PASS actual DeepSeek health report loaded via kind-filtered history on current localhost:5173; 1440x900; no new model call

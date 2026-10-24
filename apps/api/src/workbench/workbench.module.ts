@@ -19,11 +19,9 @@ import { Actor, tokenHash } from "../common/security";
 import { DbService } from "../db/db.module";
 import { ProjectsModule, ProjectsService } from "../projects/projects.module";
 class FocusQuery {
-  @IsIn(["story", "task", "planItem", "umlUseCase"]) entityType!:
-    | "story"
-    | "task"
-    | "planItem"
-    | "umlUseCase";
+  @IsIn(["story", "task", "planItem", "umlUseCase", "requirement"])
+  entityType!: "story" | "task" | "planItem" | "umlUseCase" | "requirement";
+  // Requirement is also accepted as an authorized AI evidence focus.
   @IsString() @Length(1, 100) entityId!: string;
 }
 @Injectable()
@@ -56,7 +54,18 @@ class WorkbenchService {
         u = new Set<number>(),
         plans = new Set<string>();
       const id = Number(q.entityId);
-      if (q.entityType === "story" && stories.some((x) => x.id === id))
+      const requirements = await tx.requirement.findMany({
+        where: { projectId: p },
+        select: { id: true, storyLinks: { select: { storyId: true } } },
+      });
+      if (
+        q.entityType === "requirement" &&
+        requirements.some((r) => r.id === id)
+      ) {
+        requirements
+          .find((r) => r.id === id)!
+          .storyLinks.forEach((l) => s.add(l.storyId));
+      } else if (q.entityType === "story" && stories.some((x) => x.id === id))
         s.add(id);
       else if (q.entityType === "task" && tasks.some((x) => x.id === id))
         t.add(id);
@@ -90,6 +99,13 @@ class WorkbenchService {
           }
       }
       return {
+        requirements: requirements
+          .filter(
+            (r) =>
+              r.id === (q.entityType === "requirement" ? id : -1) ||
+              r.storyLinks.some((l) => s.has(l.storyId)),
+          )
+          .map((r) => r.id),
         stories: [...s],
         tasks: [...t],
         planItems: [...plans],

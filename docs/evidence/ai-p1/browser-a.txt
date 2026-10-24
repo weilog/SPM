@@ -1,0 +1,15 @@
+$ node scripts/owner-a-browser.cjs
+23:41:59 [vite] (client) Re-optimizing dependencies because vite config has changed
+PASS A01/A02/A03 actual session, project statistics/cards/list, formatted project-code search, centered create modal, persisted project and authorized overview
+PASS A04 all five native views share persisted stages/items/goals/milestones, member grouping/expand/search, true Task links and independent four-state board drag
+PASS A Gantt and B member graph resolve actual shared Task/PlanItem IDs and focus each other in both directions
+PASS Reusable full V3.2 Gantt supports real task-bar move/edge resize, persisted dates, day/week/month, today and stage collapse; workbench reads the same component and data
+PASS A05 nested folder expand/collapse and path navigation, recursive deletion, batch movement, real image preview and PDF preview/download bytes
+PASS A05 real folder tree/create, uploaded persistent bytes, text preview, identical download, anchored menu rename/move/delete, search and grid/list
+PASS A06 exact member table/statistics, search, add existing user, adjust canonical project role, detail drawer and confirmed removal
+PASS A04 centered stage create/edit forms persist dates, owner and stage identity independently of B goals/Epics
+PASS B requirement tree and floating task menu remain usable; re-login/project selection after reload reads persisted A plan records
+PASS A member tracking filters by the actual reassigned Task owner; the former assignee loses those task rows in real time
+PASS Independent authenticated browsers synchronize A plan edits via SSE; B Task changes update A member tracking without duplicate tasks
+PASS Developer plan views and documents are read-only, member tracking shows only own authorized tasks and document preview remains available
+PASS Logout revokes the real session; route protection survives reload; zero browser runtime errors

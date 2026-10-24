@@ -1,0 +1,13 @@
+$ node scripts/ai-p3-browser.cjs
+PASS Overview manual health scan, four risk dimensions, unique-event summary and persisted history
+PASS Requirement AI input, persistent draft restore, failure preserves human edits, unsaved-leave guard, individual review/reuse and atomic three-level commit
+PASS Story map direct leaf coverage denominator, semantic inference and shared candidate-review entry retain original map
+PASS Task execution advice and independently reviewed TODO split candidates persist through real task/history APIs
+PASS P3 split draft list excludes planning drafts and restores the original source task
+PASS Gantt baseline/candidate comparison is read-only and opens the original centered editor; cancel leaves all dates unchanged
+PASS P3 human confirms candidate dates in the original editor; actual plan persists after browser reload
+PASS A member tracking retains its original grouping/filter table and reports actual Task-ID concentration without utilization claims
+PASS Cross-view evidence uses real object IDs, activates correct dual views and focuses actual related nodes
+PASS Ordinary members get filtered facts and no analyze controls; backend rejects member writes and outsider reads
+PASS P3 live manager downgrade clears the full report via SSE and blocks drafts using the same session
+Browser checks: 11 zero paid requests; zero runtime errors

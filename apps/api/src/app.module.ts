@@ -12,6 +12,7 @@ import { StoriesModule } from "./stories/stories.module";
 import { UmlModule } from "./uml/uml.module";
 import { DocumentsModule } from "./documents/documents.module";
 import { WorkbenchModule } from "./workbench/workbench.module";
+import { AiModule } from "./ai/ai.module";
 @Controller("health")
 class HealthController {
   @Public() @Get() health() {
@@ -30,6 +31,7 @@ class HealthController {
     UmlModule,
     WorkbenchModule,
     DocumentsModule,
+    AiModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: SecurityGuard }],

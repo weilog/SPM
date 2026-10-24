@@ -1,0 +1,282 @@
+.ai-entry {
+  color: #4164bb !important;
+  border-color: #cbd6f6 !important;
+  background: #f8faff !important;
+  white-space: nowrap;
+}
+.ai-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ai-push {
+  flex: 1;
+}
+.ai-actions {
+  margin: 12px 0;
+}
+.ai-filter {
+  margin: 12px 0;
+}
+.ai-filter .ant-input {
+  flex: 1;
+  min-width: 160px;
+}
+.ai-filter .ant-select {
+  min-width: 120px;
+}
+.ai-health-summary {
+  background: white;
+  border: 1px solid #d1ddff;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 0 0 18px;
+}
+.ai-health-summary strong {
+  font-size: 15px;
+  color: #274875;
+}
+.ai-health-metrics {
+  display: grid;
+  grid-template-columns: 155px repeat(4, minmax(75px, 1fr));
+  gap: 10px;
+  margin: 13px 0;
+}
+.ai-health-metrics > div {
+  background: #f6f9fd;
+  border: 1px solid #eef2f7;
+  padding: 10px 8px;
+  border-radius: 6px;
+  text-align: center;
+}
+.ai-health-metrics b {
+  display: block;
+  font-size: 21px;
+}
+.ai-health-metrics span {
+  font-size: 12px;
+  color: #76869b;
+}
+.ai-drawer .ant-drawer-body {
+  padding: 18px;
+}
+.ai-drawer .ant-alert {
+  margin: 12px 0;
+}
+.ai-tabs {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #e6ebf2;
+  margin: 16px 0 12px;
+}
+.ai-tabs button {
+  background: white;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 10px 7px;
+  font-size: 12px;
+  color: #657791;
+  cursor: pointer;
+}
+.ai-tabs button.active {
+  color: #1677ff;
+  border-bottom-color: #1677ff;
+}
+.ai-risk {
+  border: 1px solid #e2e8f1;
+  border-radius: 7px;
+  padding: 14px;
+  margin: 12px 0;
+  background: #fff;
+}
+.ai-risk h4 {
+  font-size: 12px;
+  margin: 12px 0 5px;
+  color: #516580;
+}
+.ai-risk p {
+  font-size: 13px;
+  line-height: 1.65;
+  margin: 6px 0;
+}
+.ai-risk details {
+  background: #f7f9fc;
+  padding: 9px;
+  margin: 10px 0;
+}
+.ai-evidence pre {
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.ai-evidence button {
+  background: transparent;
+  border: 0;
+  color: #1677ff;
+  padding: 6px 0;
+  cursor: pointer;
+}
+.ai-history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #edf0f4;
+  font-size: 12px;
+}
+.ai-box {
+  background: white;
+  border: 1px solid #e1e7f0;
+  border-radius: 8px;
+  padding: 18px;
+  margin: 12px 0;
+  line-height: 1.65;
+}
+.ai-box h3 {
+  font-size: 15px;
+  margin: 0 0 12px;
+}
+.ai-planner {
+  padding: 18px 24px;
+  min-width: 0;
+}
+.ai-planner-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.ai-planner h1 {
+  font-size: 23px;
+  margin: 0 0 8px;
+}
+.ai-planner-heading span {
+  font-size: 12px;
+  color: #7d8da5;
+}
+.ai-review-heading {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.ai-review-heading .ant-input {
+  flex: 1;
+}
+.ai-review-grid {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 18px;
+}
+.ai-review-tree {
+  background: #fff;
+  border: 1px solid #e2e7f0;
+  border-radius: 8px;
+  margin-top: 12px;
+  padding: 8px;
+  align-self: start;
+  max-height: 650px;
+  overflow: auto;
+}
+.ai-review-tree button {
+  display: block;
+  text-align: left;
+  width: 100%;
+  padding: 12px;
+  background: white;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.ai-review-tree button.active {
+  border-color: #9dc1ff;
+  background: #edf5ff;
+}
+.ai-review-tree button span {
+  display: block;
+  font-size: 11px;
+  color: #7c8fa9;
+  margin-bottom: 4px;
+}
+.ai-review-tree button strong {
+  font-size: 13px;
+}
+.ai-candidate-editor fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+.ai-candidate-editor label {
+  font-size: 13px;
+  display: grid;
+  gap: 6px;
+}
+.ai-candidate-editor .ant-select {
+  width: 100%;
+}
+.ai-candidate-editor .ant-checkbox-wrapper {
+  display: flex;
+}
+.ai-candidate-editor .ant-alert {
+  margin-bottom: 16px;
+}
+.ai-scenario-change {
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid #e5ebf3;
+  padding: 12px 0;
+  font-size: 12px;
+}
+.ai-scenario-change .ant-btn {
+  justify-self: start;
+}
+.ai-scenarios .ai-row > .ant-input {
+  width: 100px;
+}
+@media (max-width: 900px) {
+  .ai-review-grid {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+  .ai-review-heading {
+    flex-wrap: wrap;
+  }
+  .ai-health-metrics {
+    grid-template-columns: repeat(5, minmax(60px, 1fr));
+  }
+  .ai-planner {
+    padding: 12px;
+  }
+}
+.ai-hint {
+  display: inline-block;
+  font-size: 10px;
+  color: #6f54b5;
+  background: #f5f0ff;
+  border: 1px solid #e4dafa;
+  border-radius: 4px;
+  padding: 1px 5px;
+  line-height: 16px;
+  pointer-events: none;
+  vertical-align: middle;
+}
+.ai-evidence dl {
+  margin: 12px 0;
+}
+.ai-evidence dl > div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 12px;
+  margin: 6px 0;
+}
+.ai-evidence dt {
+  color: #73849a;
+}
+.ai-evidence dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}

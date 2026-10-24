@@ -5,6 +5,8 @@ import { useTaskActions } from "./TaskActions";
 import { PlanGantt } from "./PlanGantt";
 import { AIcon as Icon } from "./AIcons";
 import "./a-plan.css";
+import { AiEntry } from "./ai-events";
+import { AiHint } from "./ai-hints";
 const states = ["TODO", "IN_PROGRESS", "DONE", "PAUSED"] as const;
 const stateLabels = {
   TODO: "待处理",
@@ -106,6 +108,42 @@ export function PlanView({
     setDetail(x.id);
     if ("kind" in x) onPlanFocus?.(x.id);
   }
+  useEffect(() => {
+    const locate = (e: Event) => {
+      const d = (e as CustomEvent).detail;
+      if (d.projectId !== store.project.id) return;
+      const item = plans.items.find((i) => i.id === d.entityId);
+      if (item) {
+        setSelected(item.stageId);
+        setView("gantt");
+        setDetail(item.id);
+      } else if (d.entityType === "stage") {
+        setSelected(String(d.entityId));
+        setView("gantt");
+      }
+    };
+    const candidate = (e: Event) => {
+      const d = (e as CustomEvent).detail;
+      if (d.projectId !== store.project.id || !can) return;
+      const item = plans.items.find((i) => i.id === d.id);
+      if (!item || item.revision !== d.revision) {
+        setError("计划已变化，请重新分析候选方案");
+        return;
+      }
+      setSelected(item.stageId);
+      setView("gantt");
+      edit(item.kind, item);
+      setDraft((current) =>
+        current ? { ...current, start: d.start, end: d.end } : current,
+      );
+    };
+    window.addEventListener("spm-ai-locate", locate);
+    window.addEventListener("spm-ai-edit-plan", candidate);
+    return () => {
+      window.removeEventListener("spm-ai-locate", locate);
+      window.removeEventListener("spm-ai-edit-plan", candidate);
+    };
+  }, [plans.items, store.project.id, can]);
   function edit(kind: "plan" | "item" | "milestone", entity?: Entity) {
     if (!can) return;
     setError("");
@@ -200,16 +238,6 @@ export function PlanView({
   const toolbar = (
     <div className="work-toolbar">
       <div className="tool-group">
-        {can && (
-          <button
-            className="btn primary sm"
-            onClick={() => edit("item")}
-            disabled={!stage}
-          >
-            <Icon name="plus" />
-            创建计划项
-          </button>
-        )}
         <span className="work-count">
           计划项 <b>{work.length}</b>　里程碑 <b>{milestones.length}</b>
         </span>
@@ -274,8 +302,13 @@ export function PlanView({
       </div>
     </div>
   );
-  const taskSet = [...new Set(work.flatMap((i) => i.taskIds || []))],
-    people = [...new Set(work.map((i) => i.ownerUserId).filter(Boolean))];
+  const taskSet = [...new Set(work.flatMap((i) => i.taskIds || []))];
+  const linkedTasks = [
+    ...new Map(
+      work.flatMap((i) => i.tasks || []).map((t) => [t.id, t]),
+    ).values(),
+  ];
+  const completedWork = work.filter((i) => i.status === "DONE").length;
   const tracking = filtered.filter(
     (i) =>
       (!onlyLinked || (i.tasks || []).length > 0) &&
@@ -483,10 +516,10 @@ export function PlanView({
           <main className="board">
             {view === "gantt" ? (
               <PlanGantt
+                showAi={!embedded}
                 stage={stage}
                 items={items}
                 onOpen={open}
-                onCreate={() => edit("item")}
                 collapsed={collapsed}
                 onCollapse={() => setCollapsed((v) => !v)}
                 highlightIds={highlightIds}
@@ -505,18 +538,43 @@ export function PlanView({
               <>
                 <div className="metrics">
                   {[
-                    ["阶段计划项", work.length, "计划项"],
-                    ["关联任务", taskSet.length, "任务"],
-                    ["阶段里程碑", milestones.length, "里程碑"],
-                    ["覆盖负责人", people.length, "成员"],
-                  ].map(([label, count, unit]) => (
+                    {
+                      label: "阶段计划项",
+                      count: work.length,
+                      value: work.length,
+                      done: completedWork,
+                    },
+                    {
+                      label: "关联任务",
+                      count: taskSet.length,
+                      value: taskSet.length,
+                      done: linkedTasks.filter((t) => t.status === "DONE")
+                        .length,
+                    },
+                    {
+                      label: "阶段里程碑",
+                      count: milestones.length,
+                      value: milestones.length,
+                      done: milestones.filter((i) => i.status === "DONE")
+                        .length,
+                    },
+                  ].map(({ label, count, value, done }) => (
                     <div className="card metric" key={label}>
                       <div className="statname">{label}</div>
                       <div className="metricbody">
-                        <div className="donut" />
+                        <div
+                          className="donut"
+                          role="img"
+                          aria-label={`${label}已完成 ${done}/${count}`}
+                          style={{
+                            background: `conic-gradient(#3478f6 ${count ? (done / count) * 360 : 0}deg, #e8eef7 0deg)`,
+                          }}
+                        />
                         <div>
-                          <div className="statnumber">{count}</div>
-                          <div className="statsub">{unit}</div>
+                          <div className="statnumber">{value}</div>
+                          <div className="statsub">
+                            {count ? `已完成 ${done} / ${count}` : "暂无数据"}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -821,15 +879,6 @@ export function PlanView({
                         <span className="col-counter">
                           {filtered.filter((i) => i.status === s).length}
                         </span>
-                        {can && (
-                          <button
-                            className="iconbutton"
-                            aria-label={`新建${stateLabels[s]}计划项`}
-                            onClick={() => edit("item")}
-                          >
-                            ＋
-                          </button>
-                        )}
                       </div>
                       <div className="kanban-card-list">
                         {filtered
@@ -893,6 +942,11 @@ export function PlanView({
                     成员任务跟踪 <span>按负责人展开与追踪计划关联任务</span>
                   </div>
                   <div className="mv-tools">
+                    <AiEntry
+                      kind="MEMBER"
+                      label="AI 负载与瓶颈"
+                      scope={stage ? { stageId: stage.id } : {}}
+                    />
                     <input
                       type="search"
                       aria-label="搜索关联任务"
@@ -1025,6 +1079,9 @@ export function PlanView({
                         </span>
                         <span className="mv-avatar">{name[0]}</span>
                         <b>{name}</b>
+                        <AiHint
+                          entity={`member:${trackingRows.find((x) => x.label === name)?.task?.assigneeUserId ?? trackingRows.find((x) => x.label === name)?.item.ownerUserId}`}
+                        />
                         <span className="mv-pill">
                           {
                             new Set(

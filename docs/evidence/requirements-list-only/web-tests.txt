@@ -1,0 +1,32 @@
+$ vitest run
+
+ RUN  v4.0.18 D:/Work/shiyan/SPM-s2-b/apps/web
+
+ ✓ src/api.test.ts (2 tests) 4ms
+ ✓ src/auth-ui.test.tsx (6 tests) 3233ms
+     ✓ opens the explicitly simulated mail link on the reset-password screen  500ms
+     ✓ validates registration confirmation before submitting only the confirmed registration fields  1276ms
+     ✓ shows disabled simulation errors without claiming a sent message  464ms
+     ✓ uses the reset email token and requires matching 12-character passwords  445ms
+     ✓ rejects direct resets without a token  387ms
+ ✓ src/stories-ui.test.tsx (6 tests) 2529ms
+   ✓ shares persisted status between board, drawer and map and supports story number search  979ms
+   ✓ keeps DEVELOPER map, board and drawer read-only  478ms
+   ✓ keeps TESTER map, board and drawer read-only  435ms
+ ✓ src/ui.test.tsx (10 tests) 5348ms
+     ✓ view-only project members do not see member/task management tabs  307ms
+     ✓ validates title and sends only task creation contract fields  1715ms
+     ✓ clears a task assignee using its project-scoped endpoint  1972ms
+ ✓ src/v2-ui.test.tsx (7 tests) 13874ms
+     ✓ creates an account without exposing or submitting global role assignment  845ms
+     ✓ changes a member role through a project-scoped request  1892ms
+     ✓ lets a developer view details while hiding create/edit controls  1002ms
+     ✓ validates title and creates only a formal requirement, without task links  2557ms
+     ✓ edits requirement content using the current project and requirement id  1992ms
+     ✓ uses the server-owned personal list/detail routes without an arbitrary user id  1222ms
+     ✓ integrates formal requirements and personal tasks into an authorized developer project  4363ms
+
+ Test Files  5 passed (5)
+      Tests  31 passed (31)
+   Start at  17:32:04
+   Duration  17.74s (transform 958ms, setup 505ms, import 8.70s, tests 24.99s, environment 3.07s)

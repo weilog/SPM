@@ -56,6 +56,8 @@ export interface CreationOptions {
   managers: User[];
 }
 export interface Requirement {
+  acceptanceCriteria?: string;
+  revision?: number;
   id: number;
   projectId: number;
   title: string;
@@ -98,7 +100,7 @@ export const storyStatusLabels: Record<StoryStatus, string> = {
 // A/B integration extension point; no PlanItem persistence or realtime transport is frozen here.
 export interface ViewFocus {
   projectId: number;
-  entityType: "story" | "task" | "planItem" | "umlUseCase";
+  entityType: "story" | "task" | "planItem" | "umlUseCase" | "requirement";
   entityId: number | string;
 }
 export interface WorkbenchViewProps {
@@ -169,6 +171,7 @@ export interface UmlDiagram {
   edges: UmlEdge[];
 }
 export interface ResolvedRelations {
+  requirements?: number[];
   stories: number[];
   tasks: number[];
   planItems: string[];
@@ -221,8 +224,16 @@ export const projectRoleLabels: Record<ProjectRole, string> = {
 };
 
 export interface ProjectDocumentEntry {
-  id: number; projectId: number; parentId: number | null;
-  kind: 'FOLDER' | 'FILE'; name: string; mime: string; size: number;
-  ownerUserId: number; ownerName: string; revision: number;
-  createdAt: string; updatedAt: string;
+  id: number;
+  projectId: number;
+  parentId: number | null;
+  kind: "FOLDER" | "FILE";
+  name: string;
+  mime: string;
+  size: number;
+  ownerUserId: number;
+  ownerName: string;
+  revision: number;
+  createdAt: string;
+  updatedAt: string;
 }

@@ -1,0 +1,33 @@
+{
+  "actualSupplierCall": true,
+  "supplier": "DeepSeek",
+  "model": "deepseek-flash",
+  "endpoint": "https://api.deepseek.com/chat/completions",
+  "thinking": "disabled",
+  "outputTokenLimit": 1000,
+  "attemptsThisIntegration": 1,
+  "runId": "c86cff6c-4b03-4471-a65d-87a04c911362",
+  "projectId": 2,
+  "taskId": 5,
+  "status": "COMPLETED",
+  "modelState": "SUCCEEDED",
+  "modelInfo": {
+    "model": "deepseek-flash",
+    "contract": "project-evidence-v1",
+    "provider": "deepseek",
+    "supplier": "DeepSeek",
+    "actualModel": "deepseek-flash",
+    "total_tokens": 391,
+    "prompt_tokens": 304,
+    "rulesTruncated": false,
+    "completion_tokens": 87,
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 304
+  },
+  "findings": 1,
+  "validatedInferenceCount": 1,
+  "stale": false,
+  "businessDataUnchanged": true,
+  "sourceHashPersisted": true,
+  "finishedAt": "2026-10-23T16:03:54.625Z"
+}

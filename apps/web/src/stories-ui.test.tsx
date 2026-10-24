@@ -16,6 +16,27 @@ import type {
 } from "@spm/shared";
 import { api, RequestError } from "./api";
 import { Requirements } from "./Requirements";
+import { useState, type ComponentProps } from "react";
+
+// Exercise the shared embedded views using the same view selection as the workbench.
+function EmbeddedStoryViews(props: ComponentProps<typeof Requirements>) {
+  const [view, setView] = useState<"map" | "board">("map");
+  return (
+    <>
+      <button role="tab" onClick={() => setView("map")}>
+        故事地图
+      </button>
+      <button role="tab" onClick={() => setView("board")}>
+        故事看板
+      </button>
+      <Requirements
+        {...props}
+        key={`${props.project.id}:${view}`}
+        embeddedView={view}
+      />
+    </>
+  );
+}
 
 vi.mock("./api", async (original) => ({
   ...(await original<typeof import("./api")>()),
@@ -118,7 +139,7 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 it("shares persisted status between board, drawer and map and supports story number search", async () => {
-  render(<Requirements project={project} onError={vi.fn()} />);
+  render(<EmbeddedStoryViews project={project} onError={vi.fn()} />);
   await userEvent.click(await screen.findByRole("tab", { name: /故事看板/ }));
   await screen.findByRole("button", { name: "提交审批" });
   fireEvent.drop(screen.getByRole("region", { name: "进行中" }), {
@@ -155,7 +176,7 @@ it("shares persisted status between board, drawer and map and supports story num
   ).toBeInTheDocument();
 });
 it("persists a cross-epic map drop", async () => {
-  render(<Requirements project={project} onError={vi.fn()} />);
+  render(<EmbeddedStoryViews project={project} onError={vi.fn()} />);
   await userEvent.click(await screen.findByRole("tab", { name: /故事地图/ }));
   await screen.findByRole("button", { name: "提交审批" });
   fireEvent.drop(screen.getByRole("region", { name: "Epic：归档流程" }), {
@@ -184,7 +205,7 @@ it("rolls back an optimistic status change when the server rejects it", async ()
     return original(...args);
   });
   const onError = vi.fn();
-  render(<Requirements project={project} onError={onError} />);
+  render(<EmbeddedStoryViews project={project} onError={onError} />);
   await userEvent.click(await screen.findByRole("tab", { name: /故事看板/ }));
   await screen.findByRole("button", { name: "提交审批" });
   fireEvent.drop(screen.getByRole("region", { name: "已完成" }), {
@@ -202,7 +223,7 @@ it.each(["DEVELOPER", "TESTER"] as const)(
   "keeps %s map, board and drawer read-only",
   async (role) => {
     render(
-      <Requirements
+      <EmbeddedStoryViews
         project={{ ...project, canManage: false, projectRole: role }}
         onError={vi.fn()}
       />,
@@ -246,9 +267,11 @@ it("discards the old project while its snapshot request is still pending", async
         : [],
   );
   const { rerender } = render(
-    <Requirements project={project} onError={vi.fn()} />,
+    <EmbeddedStoryViews project={project} onError={vi.fn()} />,
   );
-  rerender(<Requirements project={{ ...project, id: 7 }} onError={vi.fn()} />);
+  rerender(
+    <EmbeddedStoryViews project={{ ...project, id: 7 }} onError={vi.fn()} />,
+  );
   await waitFor(() =>
     expect(mocked).toHaveBeenCalledWith("/projects/7/story-map"),
   );

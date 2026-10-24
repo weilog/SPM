@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Body,
   Controller,
   Get,
@@ -33,6 +34,10 @@ import {
 } from "../projects/projects.module";
 
 class CreateRequirementDto {
+  @ValidateIf((_o, v) => v !== undefined)
+  @IsString()
+  @MaxLength(10000)
+  acceptanceCriteria?: string;
   @ValidateIf((_o, v) => v !== undefined && v !== null)
   @IsInt()
   @Min(1)
@@ -54,6 +59,11 @@ class CreateRequirementDto {
   storyIds?: number[];
 }
 class UpdateRequirementDto {
+  @ValidateIf((_o, v) => v !== undefined)
+  @IsString()
+  @MaxLength(10000)
+  acceptanceCriteria?: string;
+  @ValidateIf((_o, v) => v !== undefined) @IsInt() @Min(0) revision?: number;
   @ValidateIf((_o, v) => v !== undefined && v !== null)
   @IsInt()
   @Min(1)
@@ -108,11 +118,21 @@ export class RequirementsService {
     if (!requirement) throw new NotFoundException("本项目正式需求不存在");
     return present(requirement);
   }
-  async create(actor: User, projectId: number, dto: CreateRequirementDto) {
-    return this.db.atomic(async (tx) => {
+  async create(
+    actor: User,
+    projectId: number,
+    dto: CreateRequirementDto,
+    transaction?: Database,
+  ) {
+    const work = async (tx: Database) => {
       await this.projects.authorized(actor, projectId, true, tx);
       const requirement = await tx.requirement.create({
-        data: { projectId, title: dto.title, description: dto.description },
+        data: {
+          projectId,
+          title: dto.title,
+          description: dto.description,
+          acceptanceCriteria: dto.acceptanceCriteria,
+        },
       });
       if (dto.parentId != null) {
         await this.hierarchy(tx, projectId, requirement.id, dto.parentId);
@@ -128,33 +148,45 @@ export class RequirementsService {
           include: links,
         }),
       );
-    });
+    };
+    return transaction ? work(transaction) : this.db.atomic(work);
   }
   async update(
     actor: User,
     projectId: number,
     id: number,
     dto: UpdateRequirementDto,
+    transaction?: Database,
   ) {
     if (
+      dto.acceptanceCriteria === undefined &&
       dto.title === undefined &&
       dto.description === undefined &&
       dto.storyIds === undefined &&
       dto.parentId === undefined
     )
       throw new BadRequestException("请提供要修改的需求内容");
-    return this.db.atomic(async (tx) => {
+    const work = async (tx: Database) => {
       await this.projects.authorized(actor, projectId, true, tx);
-      if (!(await tx.requirement.findFirst({ where: { id, projectId } })))
-        throw new NotFoundException("本项目正式需求不存在");
-      const { storyIds, ...data } = dto;
+      const current = await tx.requirement.findFirst({
+        where: { id, projectId },
+      });
+      if (!current) throw new NotFoundException("本项目正式需求不存在");
+      if (dto.revision !== undefined && dto.revision !== current.revision)
+        throw new ConflictException("需求已被修改，请刷新");
+      const { storyIds, revision, ...data } = dto;
       if (dto.parentId !== undefined)
         await this.hierarchy(tx, projectId, id, dto.parentId);
       await this.relate(tx, projectId, id, storyIds);
       return present(
-        await tx.requirement.update({ where: { id }, data, include: links }),
+        await tx.requirement.update({
+          where: { id },
+          data: { ...data, revision: { increment: 1 } },
+          include: links,
+        }),
       );
-    });
+    };
+    return transaction ? work(transaction) : this.db.atomic(work);
   }
   private async hierarchy(
     tx: Database,
@@ -256,5 +288,6 @@ export class RequirementsController {
   imports: [ProjectsModule],
   controllers: [RequirementsController],
   providers: [RequirementsService],
+  exports: [RequirementsService],
 })
 export class RequirementsModule {}

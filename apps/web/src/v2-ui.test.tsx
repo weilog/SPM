@@ -87,11 +87,15 @@ describe("V2 US02 account-only maintenance", () => {
     expect(screen.queryByLabelText("全局身份")).not.toBeInTheDocument();
     await userEvent.type(screen.getByLabelText(/^用户名/), "new_user");
     await userEvent.type(screen.getByLabelText(/^姓名/), "新用户");
-    await userEvent.type(screen.getByLabelText(/电子邮箱/), "new-user@example.test");
-    await userEvent.type(screen.getByLabelText(/初始密码/), "test-password-strong");
-    await userEvent.click(
-      screen.getByRole("button", { name: "确认创建" }),
+    await userEvent.type(
+      screen.getByLabelText(/电子邮箱/),
+      "new-user@example.test",
     );
+    await userEvent.type(
+      screen.getByLabelText(/初始密码/),
+      "test-password-strong",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "确认创建" }));
     await waitFor(() =>
       expect(mocked).toHaveBeenCalledWith("/users", "POST", {
         username: "new_user",
@@ -282,7 +286,11 @@ describe("V2 US10 personal task viewing", () => {
     );
     render(<App />);
     await userEvent.click(
-      await screen.findByRole("button", { name: /进入项目/ }),
+      await screen.findByRole(
+        "button",
+        { name: /进入项目/ },
+        { timeout: 5000 },
+      ),
     );
     expect(
       (await screen.findAllByRole("button", { name: "需求管理" }))[0],

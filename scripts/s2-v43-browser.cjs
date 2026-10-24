@@ -271,6 +271,8 @@ const reference = require("./fixtures/v43-reference.json");
       await p.getByLabel("密码", { exact: true }).fill(password);
       await p.getByRole("button", { name: /登\s*录/ }).click();
       await p.locator(".a-projects").waitFor();
+      // The project shell mounts before the authorized projects request resolves.
+      await p.locator(".a-projects .cards .card").first().waitFor();
     }
     async function enter(p) {
       await p
@@ -327,10 +329,18 @@ const reference = require("./fixtures/v43-reference.json");
     await login(page, manager.username);
     await shot("projects");
     await page.getByLabel("搜索项目").fill("课程");
-    assert.equal(await page.locator(".a-projects .cards .card").count(), 1);
+    await eventually(
+      async () =>
+        (await page.locator(".a-projects .cards .card").count()) === 1,
+      "project search result",
+    );
     await page.getByLabel("搜索项目").fill("");
     await page.getByLabel("项目角色筛选").selectOption("MANAGER");
-    assert.equal(await page.locator(".a-projects .cards .card").count(), 3);
+    await eventually(
+      async () =>
+        (await page.locator(".a-projects .cards .card").count()) === 3,
+      "project role filter",
+    );
     await page.getByLabel("项目角色筛选").selectOption("all");
     await page.getByRole("button", { name: "☷ 列表" }).click();
     assert.equal(await page.locator(".a-projects tbody tr").count(), 6);
@@ -426,6 +436,11 @@ const reference = require("./fixtures/v43-reference.json");
     log(
       "Three-level requirement create/reparent, search collapse/expand and 640px detail drawer",
     );
+    assert.equal(
+      await page.getByRole("tab", { name: /故事地图|故事看板/ }).count(),
+      0,
+    );
+    await nav("多视图工作台");
     await page.getByRole("tab", { name: /故事地图/ }).click();
     await page.locator(".story-card").first().waitFor();
     await shot("map");
@@ -449,7 +464,10 @@ const reference = require("./fixtures/v43-reference.json");
       0,
     );
     await card(stories["US-001"].id).dragTo(
-      page.getByRole("region", { name: "Epic：任务与协作" }),
+      page
+        .getByRole("region", { name: "Epic：任务与协作" })
+        .locator(".b-epic-col-top"),
+      { targetPosition: { x: 20, y: 20 } },
     );
     await eventually(
       async () =>
@@ -819,7 +837,7 @@ const reference = require("./fixtures/v43-reference.json");
     peer.on("pageerror", (e) => errors.push(e.message));
     await login(peer, manager.username);
     await enter(peer);
-    await nav("需求管理", peer);
+    await nav("多视图工作台", peer);
     await peer.getByRole("tab", { name: /故事看板/ }).click();
     await request("patch", `/stories/${stories["US-004"].id}/status`, {
       status: "IN_PROGRESS",
@@ -838,7 +856,7 @@ const reference = require("./fixtures/v43-reference.json");
       "Two authenticated browsers synchronize persisted state through authorized SSE",
     );
     await page
-      .locator(".sidebar")
+      .locator(".topbar")
       .getByRole("button", { name: "退出登录", exact: true })
       .click();
     await login(page, "张三");
@@ -873,6 +891,7 @@ const reference = require("./fixtures/v43-reference.json");
       "owner inline progress",
     );
     await page.locator(".ant-drawer-close:visible").click();
+    await page.locator(".v43-drawer:visible").waitFor({ state: "hidden" });
     await taskRow(personalTask.id)
       .getByRole("button", { name: "完成", exact: true })
       .click();
@@ -905,6 +924,7 @@ const reference = require("./fixtures/v43-reference.json");
       await page.getByRole("button", { name: "新建需求", exact: true }).count(),
       0,
     );
+    await nav("多视图工作台");
     await page.getByRole("tab", { name: /故事地图/ }).click();
     assert.equal(await page.locator(".story-card[draggable=true]").count(), 0);
     log(
@@ -973,6 +993,7 @@ const reference = require("./fixtures/v43-reference.json");
         .count(),
       0,
     );
+    await nav("多视图工作台", tester);
     await tester.getByRole("tab", { name: /故事地图/ }).click();
     assert.equal(
       await tester.locator(".story-card[draggable=true]").count(),

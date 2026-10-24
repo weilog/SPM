@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import type { PlanItemView, PlanStageView } from "@spm/shared";
 import { useProjectData } from "./ProjectData";
+import { AiEntry } from "./ai-events";
+import { AiHint } from "./ai-hints";
 const day = 86400000;
 const date = (s: string) => new Date(s + "T00:00:00Z");
 const add = (s: string, n: number) =>
@@ -13,20 +15,20 @@ export function PlanGantt({
   stage,
   items,
   onOpen,
-  onCreate,
   collapsed,
   onCollapse,
   highlightIds = [],
   onPlanFocus,
+  showAi = true,
 }: {
   stage?: PlanStageView;
   items: PlanItemView[];
   onOpen(item: PlanStageView | PlanItemView): void;
-  onCreate(): void;
   collapsed: boolean;
   onCollapse(): void;
   highlightIds?: string[];
   onPlanFocus?: (id: string) => void;
+  showAi?: boolean;
 }) {
   const store = useProjectData(),
     snapshot = store.plans;
@@ -45,6 +47,33 @@ export function PlanGantt({
       moved: boolean;
     } | null>(null);
   const [infoWidth, setInfoWidth] = useState(445);
+  const [infoCollapsed, setInfoCollapsed] = useState(false);
+  const pan = useRef<{ x: number; scroll: number } | null>(null);
+  const shownInfoWidth = infoCollapsed ? 0 : infoWidth;
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const wheel = (e: WheelEvent) => {
+      if (
+        e.ctrlKey ||
+        !(e.target instanceof Element) ||
+        !e.target.closest(".gv-timeline")
+      )
+        return;
+      const delta =
+        Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      const next = Math.max(
+        0,
+        Math.min(el.scrollWidth - el.clientWidth, el.scrollLeft + delta),
+      );
+      if (next !== el.scrollLeft) {
+        e.preventDefault();
+        el.scrollLeft = next;
+      }
+    };
+    el.addEventListener("wheel", wheel, { passive: false });
+    return () => el.removeEventListener("wheel", wheel);
+  }, []);
   const resizeStart = useRef<{ x: number; width: number } | null>(null);
   const maxInfoWidth = useRef(720);
   useEffect(() => {
@@ -94,8 +123,11 @@ export function PlanGantt({
   }, [base, scale]);
   useEffect(() => {
     const el = scroller.current;
-    if (el && todayPos >= 0 && todayPos < width)
-      el.scrollLeft = Math.max(0, todayPos - 350);
+    if (el)
+      el.scrollLeft = Math.max(
+        0,
+        diff(stage?.start || today, base) * unit - 50,
+      );
   }, [stage?.id, scale]);
   useEffect(() => {
     const target = items.find((i) => highlightIds.includes(i.id));
@@ -181,8 +213,22 @@ export function PlanGantt({
           </span>
         </div>
         <div className="gv-controls">
+          {showAi && (
+            <AiEntry
+              kind="PLAN"
+              label="AI 风险与推演"
+              scope={stage ? { stageId: stage.id } : {}}
+            />
+          )}
           <button className="gv-btn" onClick={() => onCollapse()}>
             {collapsed ? "显示" : "收起"}阶段栏
+          </button>
+          <button
+            className="gv-btn"
+            aria-expanded={!infoCollapsed}
+            onClick={() => setInfoCollapsed((v) => !v)}
+          >
+            {infoCollapsed ? "展开" : "收起"}信息栏
           </button>
           <button
             className="gv-btn"
@@ -223,11 +269,6 @@ export function PlanGantt({
           >
             ＋
           </button>
-          {store.project.canManage && (
-            <button className="gv-btn gv-primary" onClick={onCreate}>
-              ＋ 新建计划项
-            </button>
-          )}
         </div>
       </div>
       <div className="gv-legend">
@@ -236,8 +277,16 @@ export function PlanGantt({
           阶段计划
         </span>
         <span>
+          <i className="gv-swatch gv-todo-swatch" />
+          待处理
+        </span>
+        <span>
           <i className="gv-swatch gv-run-swatch" />
           进行中
+        </span>
+        <span>
+          <i className="gv-swatch gv-paused-swatch" />
+          暂缓
         </span>
         <span>
           <i className="gv-swatch gv-done-swatch" />
@@ -248,10 +297,50 @@ export function PlanGantt({
           里程碑
         </span>
       </div>
-      <div className="gv-scroller" ref={scroller}>
-        <div className="gv-grid-canvas" style={{ width: infoWidth + width }}>
-          <div className="gv-left-fixed" style={{ width: infoWidth }}>
-            <div className="gv-left-head" style={{ gridTemplateColumns: "minmax(0,1fr) 80px 70px 70px" }}>
+      <div
+        className="gv-scroller"
+        ref={scroller}
+        onPointerDown={(e) => {
+          if (
+            e.button !== 0 ||
+            !(e.target instanceof Element) ||
+            !e.target.closest(".gv-timeline") ||
+            e.target.closest(".gv-range,.gv-diamond,button")
+          )
+            return;
+          pan.current = { x: e.clientX, scroll: e.currentTarget.scrollLeft };
+          e.currentTarget.setPointerCapture(e.pointerId);
+        }}
+        onPointerMove={(e) => {
+          if (pan.current)
+            e.currentTarget.scrollLeft =
+              pan.current.scroll + pan.current.x - e.clientX;
+        }}
+        onPointerUp={() => {
+          pan.current = null;
+        }}
+        onPointerCancel={() => {
+          pan.current = null;
+        }}
+        onLostPointerCapture={() => {
+          pan.current = null;
+        }}
+      >
+        <div
+          className="gv-grid-canvas"
+          style={{ width: shownInfoWidth + width }}
+        >
+          <div
+            className="gv-left-fixed"
+            style={{
+              width: infoWidth,
+              display: infoCollapsed ? "none" : undefined,
+            }}
+          >
+            <div
+              className="gv-left-head"
+              style={{ gridTemplateColumns: "minmax(0,1fr) 80px 70px 70px" }}
+            >
               <div>计划 / 工作项</div>
               <div>负责人</div>
               <div>预计开始</div>
@@ -302,9 +391,15 @@ export function PlanGantt({
                 const start = resizeStart.current;
                 if (start) resizeInfo(start.width + e.clientX - start.x);
               }}
-              onPointerUp={() => { resizeStart.current = null; }}
-              onPointerCancel={() => { resizeStart.current = null; }}
-              onLostPointerCapture={() => { resizeStart.current = null; }}
+              onPointerUp={() => {
+                resizeStart.current = null;
+              }}
+              onPointerCancel={() => {
+                resizeStart.current = null;
+              }}
+              onLostPointerCapture={() => {
+                resizeStart.current = null;
+              }}
               onKeyDown={(e) => {
                 if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
                   e.preventDefault();
@@ -380,7 +475,7 @@ export function PlanGantt({
                     </>
                   ) : (
                     <div
-                      className={`gv-range ${r.kind === "plan" ? "gv-stagebar" : "gv-itembar"} ${r.status === "DONE" ? "gv-done" : r.status === "IN_PROGRESS" ? "gv-progress" : ""} ${highlightIds.includes(r.id) ? "focus-halo" : ""}`}
+                      className={`gv-range ${r.kind === "plan" ? "gv-stagebar" : "gv-itembar"} ${r.status === "DONE" ? "gv-done" : r.status === "IN_PROGRESS" ? "gv-progress" : r.status === "PAUSED" ? "gv-paused" : "gv-todo"} ${highlightIds.includes(r.id) ? "focus-halo" : ""}`}
                       role="button"
                       tabIndex={0}
                       aria-label={r.title}
@@ -398,7 +493,9 @@ export function PlanGantt({
                         if (e.key === "Enter") open(r);
                       }}
                     >
-                      <span className="gv-range-title">{r.title}</span>
+                      <span className="gv-range-title">
+                        {r.title} <AiHint compact entity={`planItem:${r.id}`} />
+                      </span>
                       {r.kind === "item" &&
                         store.project.canManage &&
                         snapshot.available && (

@@ -1048,7 +1048,7 @@ async function until(check, label) {
       "Developer plan views and documents are read-only, member tracking shows only own authorized tasks and document preview remains available",
     );
     await page
-      .locator(".sidebar")
+      .locator(".topbar")
       .getByRole("button", { name: "退出登录", exact: true })
       .click();
     await page.getByRole("heading", { name: "欢迎登录爱管理" }).waitFor();

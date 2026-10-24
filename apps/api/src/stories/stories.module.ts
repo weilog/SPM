@@ -123,5 +123,6 @@ class StoriesController {
   imports: [ProjectsModule],
   controllers: [StoriesController],
   providers: [StoriesService],
+  exports: [StoriesService],
 })
 export class StoriesModule {}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Priority, StoryStatus, ViewFocus } from "@spm/shared";
 import { priorityLabels, storyStatusLabels } from "@spm/shared";
 import { useProjectData } from "./ProjectData";
@@ -7,8 +7,16 @@ import { taskNumber } from "./StoryViews";
 export function MemberTaskGraph({
   highlightIds = [],
   onFocusChange,
+  focus,
+  focusOnly = false,
+  onlyRelated = false,
+  memberHighlightIds = [],
 }: {
   highlightIds?: number[];
+  focus?: ViewFocus | null;
+  focusOnly?: boolean;
+  onlyRelated?: boolean;
+  memberHighlightIds?: number[];
   onFocusChange?: (f: ViewFocus) => void;
 }) {
   const store = useProjectData(),
@@ -21,6 +29,7 @@ export function MemberTaskGraph({
     [search, setSearch] = useState("");
   const filtered = store.tasks.filter(
     (t) =>
+      (!onlyRelated || highlightIds.includes(t.id)) &&
       (member === "all" || String(t.assigneeUserId ?? "none") === member) &&
       (status === "all" || t.status === status) &&
       (priority === "all" || t.priority === priority) &&
@@ -48,15 +57,45 @@ export function MemberTaskGraph({
       return { m, tasks, ys, memberY };
     })
     .filter((p) => p !== null);
+  useEffect(() => {
+    setSelectedTask(
+      focus?.entityType === "task" ? Number(focus.entityId) : undefined,
+    );
+    if (focus?.entityType === "task" || focus?.entityType === "member") {
+      setMember("all");
+      setStatus("all");
+      setPriority("all");
+    }
+  }, [focus?.entityType, focus?.entityId]);
+  const selectMember = (id: string) => {
+    if (focusOnly && id !== "none")
+      onFocusChange?.({
+        projectId: store.project.id,
+        entityType: "member",
+        entityId: Number(id),
+      });
+    else setMember(id);
+  };
   const height = Math.max(315, y + 10);
   return (
     <div>
       <div className="b-story-bar">
         <div className="b-story-stats">
           <strong>成员 → 任务关系</strong>
-          <span>已展示 {filtered.length} 项任务 · 点击节点查看详情</span>
+          <span>
+            已展示 {filtered.length} 项任务 ·{" "}
+            {focusOnly ? "单击聚焦，详情从按钮打开" : "点击节点查看详情"}
+          </span>
         </div>
         <div className="b-story-toolbar">
+          {focusOnly && selectedTask && (
+            <button
+              className="btn small"
+              onClick={() => actions.open(selectedTask)}
+            >
+              查看选中任务详情
+            </button>
+          )}
           <button
             className="btn small"
             aria-label="缩小成员任务图"
@@ -81,7 +120,7 @@ export function MemberTaskGraph({
           <button
             key={m.id}
             className="b-person-summary"
-            onClick={() => setMember(m.id)}
+            onClick={() => selectMember(m.id)}
           >
             <span className="b-avatar">{m.name.slice(0, 1)}</span>
             <span>
@@ -186,11 +225,12 @@ export function MemberTaskGraph({
                 role="button"
                 tabIndex={0}
                 aria-label={`成员 ${p.m.name}`}
-                onClick={() => setMember(p.m.id)}
+                onClick={() => selectMember(p.m.id)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") setMember(p.m.id);
+                  if (e.key === "Enter") selectMember(p.m.id);
                 }}
-                className="svg-node"
+                data-focus-key={`member:${p.m.id}`}
+                className={`svg-node ${memberHighlightIds.includes(Number(p.m.id)) ? "selected" : ""}`}
               >
                 <rect
                   className="node-border"
@@ -234,7 +274,7 @@ export function MemberTaskGraph({
                     entityType: "task",
                     entityId: t.id,
                   });
-                  actions.open(t.id);
+                  if (!focusOnly) actions.open(t.id);
                 };
                 return (
                   <g
@@ -242,6 +282,7 @@ export function MemberTaskGraph({
                     tabIndex={0}
                     key={t.id}
                     aria-label={`${taskNumber(t.id)} ${t.title}`}
+                    data-focus-key={`task:${t.id}`}
                     className={`svg-node ${highlightIds.includes(t.id) || selectedTask === t.id ? "selected" : ""}`}
                     onClick={open}
                     onKeyDown={(e) => {

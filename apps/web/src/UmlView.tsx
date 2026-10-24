@@ -18,8 +18,12 @@ export function UmlView({
   highlightIds = [],
   onFocusChange,
   onStory,
+  focusOnly = false,
+  onlyRelated = false,
 }: {
   highlightIds?: number[];
+  focusOnly?: boolean;
+  onlyRelated?: boolean;
   onFocusChange?: (f: ViewFocus) => void;
   onStory?: (id: number) => void;
 }) {
@@ -166,6 +170,14 @@ export function UmlView({
       });
       return;
     }
+    if (focusOnly && n.kind === "USE_CASE") {
+      onFocusChange?.({
+        projectId: store.project.id,
+        entityType: "umlUseCase",
+        entityId: n.id,
+      });
+      return;
+    }
     setNodeDrawer(n.id);
     setEdgeDrawer(undefined);
     if (n.kind === "USE_CASE")
@@ -229,6 +241,30 @@ export function UmlView({
     );
     if (d) setSelected(d.id);
   }, [highlightIds.join(",")]);
+  useEffect(() => {
+    const details = (event: Event) => {
+      const f = (event as CustomEvent<ViewFocus>).detail;
+      if (f.projectId === store.project.id && f.entityType === "umlUseCase")
+        setNodeDrawer(Number(f.entityId));
+    };
+    window.addEventListener("spm-workbench-details", details);
+    return () => window.removeEventListener("spm-workbench-details", details);
+  }, [store.project.id]);
+  const visibleNodes = new Set(
+    diagram?.nodes
+      .filter(
+        (n) =>
+          !onlyRelated ||
+          highlightIds.includes(n.id) ||
+          (n.kind === "ACTOR" &&
+            diagram.edges.some(
+              (e) =>
+                (e.fromId === n.id && highlightIds.includes(e.toId)) ||
+                (e.toId === n.id && highlightIds.includes(e.fromId)),
+            )),
+      )
+      .map((n) => n.id),
+  );
   const boundary = diagram?.boundary ?? {
     x: 260,
     y: 52,
@@ -248,6 +284,14 @@ export function UmlView({
     );
   return (
     <div>
+      {focusOnly && highlightIds.length > 0 && (
+        <button
+          className="btn small"
+          onClick={() => setNodeDrawer(highlightIds[0])}
+        >
+          查看用例详情
+        </button>
+      )}
       <div className="pane-subbar">
         <div className="filters" style={{ margin: 0 }}>
           <select
@@ -435,176 +479,188 @@ export function UmlView({
               {boundary.name}
             </text>
           </g>
-          {diagram?.edges.map((e) => {
-            const from = diagram.nodes.find((n) => n.id === e.fromId),
-              to = diagram.nodes.find((n) => n.id === e.toId);
-            if (!from || !to) return null;
-            const a = draft[from.id] ?? from,
-              b = draft[to.id] ?? to;
-            return (
-              <g
-                key={e.id}
-                role="button"
-                tabIndex={0}
-                aria-label={`关系 ${e.kind} ${from.name} 到 ${to.name}`}
-                onClick={() => {
-                  setEdgeDrawer(e.id);
-                  setNodeDrawer(undefined);
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <line
-                  x1={a.x + (from.kind === "ACTOR" ? 23 : 0)}
-                  y1={a.y}
-                  x2={b.x - (to.kind === "ACTOR" ? 23 : 0)}
-                  y2={b.y}
-                  stroke="#849ab5"
-                  strokeWidth={1.6}
-                  strokeDasharray={e.kind === "association" ? undefined : "6 4"}
-                  markerEnd={
-                    e.kind === "association" ? undefined : `url(#${arrow})`
+          {diagram?.edges
+            .filter(
+              (e) => visibleNodes.has(e.fromId) && visibleNodes.has(e.toId),
+            )
+            .map((e) => {
+              const from = diagram.nodes.find((n) => n.id === e.fromId),
+                to = diagram.nodes.find((n) => n.id === e.toId);
+              if (!from || !to) return null;
+              const a = draft[from.id] ?? from,
+                b = draft[to.id] ?? to;
+              return (
+                <g
+                  key={e.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`关系 ${e.kind} ${from.name} 到 ${to.name}`}
+                  onClick={() => {
+                    setEdgeDrawer(e.id);
+                    setNodeDrawer(undefined);
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  <line
+                    x1={a.x + (from.kind === "ACTOR" ? 23 : 0)}
+                    y1={a.y}
+                    x2={b.x - (to.kind === "ACTOR" ? 23 : 0)}
+                    y2={b.y}
+                    stroke="#849ab5"
+                    strokeWidth={1.6}
+                    strokeDasharray={
+                      e.kind === "association" ? undefined : "6 4"
+                    }
+                    markerEnd={
+                      e.kind === "association" ? undefined : `url(#${arrow})`
+                    }
+                  />
+                  <line
+                    x1={a.x}
+                    y1={a.y}
+                    x2={b.x}
+                    y2={b.y}
+                    stroke="transparent"
+                    strokeWidth={17}
+                    pointerEvents="stroke"
+                  />
+                  {e.kind !== "association" && (
+                    <text
+                      x={(a.x + b.x) / 2}
+                      y={(a.y + b.y) / 2 - 12}
+                      fill="#57718e"
+                      fontSize={11}
+                      textAnchor="middle"
+                    >
+                      «{e.kind}»
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+          {diagram?.nodes
+            .filter((n) => visibleNodes.has(n.id))
+            .map((n) => {
+              const { x, y } = draft[n.id] ?? n,
+                highlight =
+                  highlightIds.includes(n.id) ||
+                  (storyFilter && n.storyIds.includes(storyFilter));
+              return (
+                <g
+                  key={n.id}
+                  className={`uml-node ${highlight ? "highlight" : ""}`}
+                  data-node-id={n.id}
+                  data-focus-key={
+                    n.kind === "USE_CASE" ? `umlUseCase:${n.id}` : undefined
                   }
-                />
-                <line
-                  x1={a.x}
-                  y1={a.y}
-                  x2={b.x}
-                  y2={b.y}
-                  stroke="transparent"
-                  strokeWidth={17}
-                  pointerEvents="stroke"
-                />
-                {e.kind !== "association" && (
-                  <text
-                    x={(a.x + b.x) / 2}
-                    y={(a.y + b.y) / 2 - 12}
-                    fill="#57718e"
-                    fontSize={11}
-                    textAnchor="middle"
-                  >
-                    «{e.kind}»
-                  </text>
-                )}
-              </g>
-            );
-          })}
-          {diagram?.nodes.map((n) => {
-            const { x, y } = draft[n.id] ?? n,
-              highlight =
-                highlightIds.includes(n.id) ||
-                (storyFilter && n.storyIds.includes(storyFilter));
-            return (
-              <g
-                key={n.id}
-                className={`uml-node ${highlight ? "highlight" : ""}`}
-                data-node-id={n.id}
-                role="button"
-                tabIndex={0}
-                aria-label={`${n.kind === "ACTOR" ? "参与者" : "用例"} ${n.name}`}
-                opacity={
-                  (!search ||
-                    `${n.id} ${n.name}`
-                      .toLowerCase()
-                      .includes(search.toLowerCase())) &&
-                  (!storyFilter ||
-                    n.kind === "ACTOR" ||
-                    n.storyIds.includes(storyFilter))
-                    ? 1
-                    : 0.28
-                }
-                onPointerDown={(e) => down(e, n)}
-                onPointerMove={move}
-                onPointerUp={(e) => up(e, n)}
-                onPointerCancel={() => {
-                  drag.current = null;
-                  setDraft({});
-                }}
-                onClick={() => {
-                  if (suppress.current) {
-                    suppress.current = false;
-                    return;
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${n.kind === "ACTOR" ? "参与者" : "用例"} ${n.name}`}
+                  opacity={
+                    (!search ||
+                      `${n.id} ${n.name}`
+                        .toLowerCase()
+                        .includes(search.toLowerCase())) &&
+                    (!storyFilter ||
+                      n.kind === "ACTOR" ||
+                      n.storyIds.includes(storyFilter))
+                      ? 1
+                      : 0.28
                   }
-                  openNode(n);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") openNode(n);
-                }}
-              >
-                {n.kind === "ACTOR" ? (
-                  <>
-                    <rect
-                      className="actor-hit"
-                      x={x - 55}
-                      y={y - 48}
-                      width={110}
-                      height={105}
-                      rx={8}
-                      fill="transparent"
-                      stroke={linkFrom === n.id ? "#1677ff" : "transparent"}
-                    />
-                    <circle
-                      cx={x}
-                      cy={y - 28}
-                      r={11}
-                      fill="white"
-                      stroke="#5e7392"
-                      strokeWidth={2}
-                    />
-                    <path
-                      d={`M${x} ${y - 17}v31 M${x - 19} ${y - 4}h38 M${x} ${y + 14}l-18 20M${x} ${y + 14}l18 20`}
-                      fill="none"
-                      stroke="#5e7392"
-                      strokeWidth={2}
-                    />
-                    <text
-                      x={x}
-                      y={y + 49}
-                      fontSize={12}
-                      fontWeight={650}
-                      textAnchor="middle"
-                      fill="#57677d"
-                    >
-                      {n.name}
-                    </text>
-                  </>
-                ) : (
-                  <>
-                    <ellipse
-                      cx={x}
-                      cy={y}
-                      rx={115}
-                      ry={37}
-                      fill={highlight ? "#e3f0ff" : "#f0f6ff"}
-                      stroke={
-                        highlight || linkFrom === n.id ? "#2878e5" : "#a7c6f0"
-                      }
-                      strokeWidth={highlight ? 2.3 : 1.4}
-                    />
-                    <text
-                      x={x}
-                      y={y - 3}
-                      fill="#275b9f"
-                      fontSize={13}
-                      fontWeight={650}
-                      textAnchor="middle"
-                    >
-                      {n.name}
-                    </text>
-                    <text
-                      x={x}
-                      y={y + 17}
-                      fill="#7393b8"
-                      fontSize={10}
-                      textAnchor="middle"
-                    >
-                      UC-{n.id} ·{" "}
-                      {n.storyIds.map(storyNumber).join(" / ") || "未关联故事"}
-                    </text>
-                  </>
-                )}
-              </g>
-            );
-          })}
+                  onPointerDown={(e) => down(e, n)}
+                  onPointerMove={move}
+                  onPointerUp={(e) => up(e, n)}
+                  onPointerCancel={() => {
+                    drag.current = null;
+                    setDraft({});
+                  }}
+                  onClick={() => {
+                    if (suppress.current) {
+                      suppress.current = false;
+                      return;
+                    }
+                    openNode(n);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") openNode(n);
+                  }}
+                >
+                  {n.kind === "ACTOR" ? (
+                    <>
+                      <rect
+                        className="actor-hit"
+                        x={x - 55}
+                        y={y - 48}
+                        width={110}
+                        height={105}
+                        rx={8}
+                        fill="transparent"
+                        stroke={linkFrom === n.id ? "#1677ff" : "transparent"}
+                      />
+                      <circle
+                        cx={x}
+                        cy={y - 28}
+                        r={11}
+                        fill="white"
+                        stroke="#5e7392"
+                        strokeWidth={2}
+                      />
+                      <path
+                        d={`M${x} ${y - 17}v31 M${x - 19} ${y - 4}h38 M${x} ${y + 14}l-18 20M${x} ${y + 14}l18 20`}
+                        fill="none"
+                        stroke="#5e7392"
+                        strokeWidth={2}
+                      />
+                      <text
+                        x={x}
+                        y={y + 49}
+                        fontSize={12}
+                        fontWeight={650}
+                        textAnchor="middle"
+                        fill="#57677d"
+                      >
+                        {n.name}
+                      </text>
+                    </>
+                  ) : (
+                    <>
+                      <ellipse
+                        cx={x}
+                        cy={y}
+                        rx={115}
+                        ry={37}
+                        fill={highlight ? "#e3f0ff" : "#f0f6ff"}
+                        stroke={
+                          highlight || linkFrom === n.id ? "#2878e5" : "#a7c6f0"
+                        }
+                        strokeWidth={highlight ? 2.3 : 1.4}
+                      />
+                      <text
+                        x={x}
+                        y={y - 3}
+                        fill="#275b9f"
+                        fontSize={13}
+                        fontWeight={650}
+                        textAnchor="middle"
+                      >
+                        {n.name}
+                      </text>
+                      <text
+                        x={x}
+                        y={y + 17}
+                        fill="#7393b8"
+                        fontSize={10}
+                        textAnchor="middle"
+                      >
+                        UC-{n.id} ·{" "}
+                        {n.storyIds.map(storyNumber).join(" / ") ||
+                          "未关联故事"}
+                      </text>
+                    </>
+                  )}
+                </g>
+              );
+            })}
         </svg>
       </div>
       <p className="note">
@@ -612,7 +668,9 @@ export function UmlView({
           ? linkFrom
             ? "已选择连线起点，请点击终点。"
             : "连线模式：先点击起点，再点击终点。"
-          : "点击节点查看属性；项目经理可拖动节点调整位置，并关联真实用户故事。"}
+          : focusOnly
+            ? "单击用例聚焦，详情从按钮打开；项目经理可拖动节点并关联用户故事。"
+            : "点击节点查看属性；项目经理可拖动节点调整位置，并关联真实用户故事。"}
       </p>
       <Drawer
         className="v43-drawer"

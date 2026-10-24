@@ -100,7 +100,15 @@ export const storyStatusLabels: Record<StoryStatus, string> = {
 // A/B integration extension point; no PlanItem persistence or realtime transport is frozen here.
 export interface ViewFocus {
   projectId: number;
-  entityType: "story" | "task" | "planItem" | "umlUseCase" | "requirement";
+  entityType:
+    | "story"
+    | "task"
+    | "planItem"
+    | "umlUseCase"
+    | "requirement"
+    | "member"
+    | "stage"
+    | "sequence";
   entityId: number | string;
 }
 export interface WorkbenchViewProps {
@@ -176,6 +184,38 @@ export interface ResolvedRelations {
   tasks: number[];
   planItems: string[];
   umlUseCases: number[];
+  members?: number[];
+  stages?: string[];
+  sequences?: number[];
+  trace?: RelationTarget[];
+}
+export interface RelationTarget {
+  entityType: ViewFocus["entityType"];
+  entityId: number | string;
+  label: string;
+  distance: number;
+  path: string[];
+}
+export interface SequenceParticipant {
+  id: string;
+  name: string;
+}
+export interface SequenceMessage {
+  fromId: string;
+  toId: string;
+  label: string;
+  kind: "call" | "return";
+}
+export interface UmlSequence {
+  id: number;
+  projectId: number;
+  name: string;
+  description: string;
+  participants: SequenceParticipant[];
+  messages: SequenceMessage[];
+  storyIds: number[];
+  useCaseIds: number[];
+  revision: number;
 }
 // A-facing DTOs describe transport only; persistence remains owned by A.
 export interface PlanItemView {

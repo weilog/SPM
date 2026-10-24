@@ -197,6 +197,7 @@ export function TaskActionsProvider({
       await run(() =>
         store.write(`/tasks/${assigning.id}/assignee`, "PATCH", {
           assigneeUserId: values.assigneeUserId ?? null,
+          revision: assigning.revision,
         }),
       )
     ) {

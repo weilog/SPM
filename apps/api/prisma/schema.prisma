@@ -61,6 +61,7 @@ model Project {
   goals ProductGoal[]
   epics Epic[]
   stories UserStory[]
+  sequences UmlSequence[]
   diagrams UmlDiagram[]
   planStages PlanStage[]
   planItems PlanItem[]
@@ -162,6 +163,7 @@ model UserStory {
   epic Epic @relation(fields: [projectId, epicId], references: [projectId, id], onDelete: Cascade)
   requirementLinks StoryRequirement[]
   taskLinks StoryTask[]
+  sequenceLinks UmlSequenceStory[]
   useCaseLinks UmlStory[]
   @@unique([projectId, id])
   @@index([projectId, epicId, sortOrder])
@@ -211,6 +213,7 @@ model UmlNode {
   revision Int @default(0)
   diagram UmlDiagram @relation(fields: [projectId, diagramId], references: [projectId, id], onDelete: Cascade)
   storyLinks UmlStory[]
+  sequenceLinks UmlSequenceUseCase[]
   outgoing UmlEdge[] @relation("UmlFrom")
   incoming UmlEdge[] @relation("UmlTo")
   @@unique([projectId, diagramId, id])
@@ -386,4 +389,35 @@ model AiRiskFinding {
   inference Json?
   run AiAnalysisRun @relation(fields: [runId], references: [id], onDelete: Cascade)
   @@unique([runId, eventKey])
+}
+
+// Design scenarios are independent from use-case nodes and business task state.
+model UmlSequence {
+  id Int @id @default(autoincrement())
+  projectId Int
+  name String @db.VarChar(200)
+  description String @default("") @db.VarChar(10000)
+  participants Json @default("[]")
+  messages Json @default("[]")
+  revision Int @default(0)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  storyLinks UmlSequenceStory[]
+  useCaseLinks UmlSequenceUseCase[]
+  @@unique([projectId, id])
+}
+model UmlSequenceStory {
+  projectId Int
+  sequenceId Int
+  storyId Int
+  sequence UmlSequence @relation(fields: [projectId, sequenceId], references: [projectId, id], onDelete: Cascade)
+  story UserStory @relation(fields: [projectId, storyId], references: [projectId, id], onDelete: Cascade)
+  @@id([projectId, sequenceId, storyId])
+}
+model UmlSequenceUseCase {
+  projectId Int
+  sequenceId Int
+  nodeId Int
+  sequence UmlSequence @relation(fields: [projectId, sequenceId], references: [projectId, id], onDelete: Cascade)
+  node UmlNode @relation(fields: [projectId, nodeId], references: [projectId, id], onDelete: Cascade)
+  @@id([projectId, sequenceId, nodeId])
 }

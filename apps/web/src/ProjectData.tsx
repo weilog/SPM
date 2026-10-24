@@ -8,6 +8,7 @@ import type {
   ProjectMember,
   StoryMapData,
   UmlDiagram,
+  UmlSequence,
   User,
 } from "@spm/shared";
 import { api, RequestError } from "./api";
@@ -18,6 +19,7 @@ interface Data {
   stories: StoryMapData;
   requirements: LinkedRequirement[];
   diagrams: UmlDiagram[];
+  sequences: UmlSequence[];
   plans: PlanSnapshot;
 }
 const initial: Data = {
@@ -26,6 +28,7 @@ const initial: Data = {
   stories: { goals: [], epics: [], stories: [] },
   requirements: [],
   diagrams: [],
+  sequences: [],
   plans: { available: false, stages: [], items: [] },
 };
 interface Store extends Data {
@@ -68,17 +71,19 @@ export function ProjectProvider({
   const base = `/projects/${project.id}`;
   async function refresh() {
     const v = ++version.current;
-    const [graph, stories, requirements, diagrams, plans] = await Promise.all([
-      api<{
-        tasks: ManagedTask[];
-        members: ProjectMember[];
-        project?: Project;
-      }>(base + "/tasks/graph"),
-      api<StoryMapData>(base + "/story-map"),
-      api<LinkedRequirement[]>(base + "/requirements"),
-      api<UmlDiagram[]>(base + "/uml-diagrams"),
-      api<PlanSnapshot>(base + "/plan-adapter"),
-    ]);
+    const [graph, stories, requirements, diagrams, plans, sequences] =
+      await Promise.all([
+        api<{
+          tasks: ManagedTask[];
+          members: ProjectMember[];
+          project?: Project;
+        }>(base + "/tasks/graph"),
+        api<StoryMapData>(base + "/story-map"),
+        api<LinkedRequirement[]>(base + "/requirements"),
+        api<UmlDiagram[]>(base + "/uml-diagrams"),
+        api<PlanSnapshot>(base + "/plan-adapter"),
+        api<UmlSequence[]>(base + "/uml-sequences"),
+      ]);
     if (live.current && v === version.current) {
       setData({
         tasks: graph.tasks,
@@ -86,6 +91,7 @@ export function ProjectProvider({
         stories,
         requirements,
         diagrams,
+        sequences: sequences ?? [],
         plans,
       });
       if (graph.project) {
@@ -126,7 +132,15 @@ export function ProjectProvider({
   }, [project.id]);
   async function write<T>(path: string, method: string, body?: unknown) {
     const result = await api<T>(base + path, method, body);
-    await refresh();
+    try {
+      await refresh();
+    } catch (e) {
+      errorRef.current(
+        new Error(
+          `保存成功，但刷新失败，请刷新后继续：${(e as Error).message}`,
+        ),
+      );
+    }
     announceProject(project.id);
     return result;
   }

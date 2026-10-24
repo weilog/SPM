@@ -26,6 +26,7 @@ interface CommonProps {
   highlightIds?: number[];
   onFocusChange?: (focus: ViewFocus) => void;
   embedded?: boolean;
+  focusOnly?: boolean;
   onOpen(story: UserStory): void;
   taskCounts?: Record<number, number>;
 }
@@ -39,6 +40,7 @@ function StoryCard(props: CommonProps & { story: UserStory; board?: boolean }) {
       className={`story-card ${highlighted ? "highlight" : ""}`}
       aria-label={storyNumber(s.id)}
       data-story-id={s.id}
+      data-focus-key={`story:${s.id}`}
       draggable={!readOnly && !busy}
       onDragStart={(e) => {
         if (readOnly || busy) {
@@ -59,7 +61,7 @@ function StoryCard(props: CommonProps & { story: UserStory; board?: boolean }) {
             entityType: "story",
             entityId: s.id,
           });
-          props.onOpen(s);
+          if (!props.focusOnly) props.onOpen(s);
         }}
       >
         <div className="story-id">
@@ -73,6 +75,15 @@ function StoryCard(props: CommonProps & { story: UserStory; board?: boolean }) {
         <div className="story-name">{s.title}</div>
         <div className="b-story-desc">{s.description || "暂无描述"}</div>
       </button>
+      {props.focusOnly && (
+        <button
+          className="b-inline-link wb-story-details"
+          onClick={() => props.onOpen(s)}
+          aria-label={`查看 ${storyNumber(s.id)} 详情`}
+        >
+          查看详情 ↗
+        </button>
+      )}
       {board ? (
         <div className="b-story-footer">
           <span>{props.data.epics.find((e) => e.id === s.epicId)?.title}</span>

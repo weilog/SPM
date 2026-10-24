@@ -1,0 +1,16 @@
+$ vitest run "workbench-v2" "--maxWorkers=1"
+
+ RUN  v4.0.18 C:/Users/cdk/Desktop/SPM/apps/web
+
+ ✓ src/workbench-v2.test.tsx (6 tests) 6211ms
+   ✓ single click focuses without opening details, tracks paths and manually filters both story views  1011ms
+   ✓ opens dual on demand at 55/45, keyboard resizes and overlays tracking  537ms
+   ✓ retains the real Gantt and expands the same task under both associated plans without invented task dates  1011ms
+   ✓ focuses the actual stage rather than treating the stage display row as a plan item  615ms
+   ✓ creates and reloads a real sequence through the canonical service without writing task or plan endpoints  2664ms
+   ✓ keeps sequence creation and editing unavailable to ordinary members  373ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  18:41:11
+   Duration  9.68s (transform 361ms, setup 123ms, import 2.48s, tests 6.21s, environment 660ms)

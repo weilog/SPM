@@ -71,6 +71,7 @@ class CreateTaskDto {
   @IsOptional() @IsInt() @Min(1) assigneeUserId?: number | null;
 }
 class AssignTaskDto {
+  @IsOptional() @IsInt() @Min(0) revision?: number;
   @ValidateIf((_object, value) => value !== null)
   @IsInt()
   @Min(1)
@@ -195,9 +196,11 @@ export class TasksService {
     projectId: number,
     taskId: number,
     userId: number | null,
+    revision?: number,
   ) {
     return this.change(actor, projectId, taskId, "assign", {
       assigneeUserId: userId,
+      revision,
     });
   }
   private async validateRelations(
@@ -513,7 +516,13 @@ export class TasksController {
     @Param("taskId", ParseIntPipe) taskId: number,
     @Body() dto: AssignTaskDto,
   ) {
-    return this.tasks.assign(actor, projectId, taskId, dto.assigneeUserId);
+    return this.tasks.assign(
+      actor,
+      projectId,
+      taskId,
+      dto.assigneeUserId,
+      dto.revision,
+    );
   }
 }
 @Module({

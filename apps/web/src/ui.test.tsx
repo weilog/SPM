@@ -258,7 +258,7 @@ describe("US07/09 task creation UI", () => {
       expect(mocked).toHaveBeenCalledWith(
         "/projects/1/tasks/9/assignee",
         "PATCH",
-        { assigneeUserId: null },
+        { assigneeUserId: null, revision: 0 },
       ),
     );
   });

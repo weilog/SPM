@@ -281,11 +281,16 @@ async function until(check, label) {
     page = await context.newPage();
     page.setDefaultTimeout(12000);
     page.on("pageerror", (e) => errors.push(e.message));
-    const shot = (name) =>
-        page.screenshot({
+    const shot = async (name) => {
+        if (name.startsWith("V2-"))
+          await page.locator(".workspace").evaluate((el) => {
+            el.scrollTop = 0;
+          });
+        return page.screenshot({
           path: `${dir}/after-${name}.png`,
           animations: "disabled",
-        }),
+        });
+      },
       nav = async (label) => {
         await page
           .locator(".sidebar")
@@ -571,9 +576,17 @@ async function until(check, label) {
       .locator(".gv-fixed-name")
       .getByRole("button", { name: "核心页面原型设计", exact: true })
       .click();
+    await page.getByRole("button", { name: "关联追踪", exact: true }).click();
+    await page
+      .locator(".wb-track")
+      .getByRole("button", { name: "查看详情", exact: true })
+      .click();
     await page
       .getByRole("dialog", { name: "计划详情" })
       .getByRole("button", { name: "关闭", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "收起关联追踪", exact: true })
       .click();
     await page
       .locator(".svg-node.selected")
@@ -581,6 +594,9 @@ async function until(check, label) {
       .waitFor();
     await page
       .getByRole("button", { name: "T-102 完成前端页面", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "查看选中任务详情", exact: true })
       .click();
     await page.locator(".ant-drawer-close").click();
     await page
@@ -594,6 +610,181 @@ async function until(check, label) {
     pass(
       "Reusable full V3.2 Gantt supports real task-bar move/edge resize, persisted dates, day/week/month, today and stage collapse; workbench reads the same component and data",
     );
+    // V2 selective fusion: the native Gantt above remains the implementation.
+    await page.getByRole("button", { name: "单视图", exact: true }).click();
+    await page.getByRole("tab", { name: "故事地图", exact: true }).click();
+    await page.getByRole("button", { name: story.title, exact: true }).click();
+    await page.locator(".wb-workarea.wb-docked").waitFor();
+    await page.locator(".wb-track-item").first().waitFor();
+    assert.equal(await page.locator(".ant-drawer-open").count(), 0);
+    assert((await page.locator(".wb-track").innerText()).includes("间接关联"));
+    await shot("V2-single-tracking");
+    await page.getByRole("button", { name: "仅看关联项", exact: true }).click();
+    assert.equal(
+      await page
+        .getByRole("button", { name: "仅看关联项", exact: true })
+        .getAttribute("aria-pressed"),
+      "true",
+    );
+    await page.getByRole("button", { name: "清除焦点", exact: true }).click();
+    assert.equal(await page.locator(".wb-track").count(), 0);
+    pass(
+      "D1 single-view tracking docks, distinguishes paths, closes and clears manual filters; single click does not open a detail drawer",
+    );
+    await page
+      .getByRole("button", { name: "甘特 + 成员", exact: true })
+      .click();
+    const split = page.getByRole("separator", { name: "调整双视图比例" });
+    assert.equal(await split.getAttribute("aria-valuenow"), "55");
+    const splitBox = await split.boundingBox();
+    await page.mouse.move(splitBox.x + splitBox.width / 2, splitBox.y + 100);
+    await page.mouse.down();
+    await page.mouse.move(splitBox.x + 65, splitBox.y + 100, { steps: 8 });
+    await page.mouse.up();
+    assert(Number(await split.getAttribute("aria-valuenow")) > 55);
+    await split.focus();
+    await page.keyboard.press("ArrowLeft");
+    await page.getByLabel("工作台阶段").selectOption(stages.P2.id);
+    await page
+      .getByRole("button", { name: "展开关联任务", exact: true })
+      .click();
+    await page
+      .locator('.wb-task-row[data-focus-key="task:102"]')
+      .first()
+      .waitFor();
+    assert(
+      (await page.locator(".wb-task-timeline").first().innerText()).includes(
+        "未设置独立排期",
+      ),
+    );
+    await page
+      .locator('.wb-task-row[data-focus-key="task:102"] .wb-task-name')
+      .first()
+      .click();
+    await page
+      .locator('.graph-svg [data-focus-key="task:102"].selected')
+      .waitFor();
+    await page.getByRole("button", { name: "关联追踪", exact: true }).click();
+    await page.locator(".wb-track.wb-overlay").waitFor();
+    await shot("V2-dual-gantt-tasks");
+    const activeDates = await db.planItem.findMany({
+      where: { projectId: project.id },
+      select: { id: true, start: true, end: true, status: true },
+    });
+    await page
+      .getByRole("button", { name: "收起关联追踪", exact: true })
+      .click();
+    await page
+      .locator('.wb-task-row[data-focus-key="task:102"]')
+      .first()
+      .getByRole("button", { name: "定位任务 102 负责人" })
+      .click();
+    await page
+      .locator('.graph-svg [data-focus-key="member:' + developer.id + '"]')
+      .waitFor();
+    assert.deepEqual(
+      await db.planItem.findMany({
+        where: { projectId: project.id },
+        select: { id: true, start: true, end: true, status: true },
+      }),
+      activeDates,
+    );
+    pass(
+      "D2/D4 draggable 55/45 comparison, keyboard separator, temporary tracking overlay, native Gantt task children and bidirectional task/owner focus without date writes",
+    );
+    await page.getByRole("button", { name: "单视图", exact: true }).click();
+    await page.getByRole("tab", { name: "UML 图", exact: true }).click();
+    await page.getByRole("tab", { name: "时序图", exact: true }).click();
+    await page
+      .getByRole("button", { name: "新建时序场景", exact: true })
+      .click();
+    await page
+      .getByRole("textbox", { name: "场景名称", exact: true })
+      .fill("任务负责人分配流程");
+    await page
+      .getByRole("textbox", { name: "场景说明", exact: true })
+      .fill("描述经理、页面与服务之间的交互设计。");
+    await page
+      .getByRole("textbox", { name: "参与者 1 名称", exact: true })
+      .fill("项目经理");
+    await page
+      .getByRole("textbox", { name: "参与者 2 名称", exact: true })
+      .fill("任务服务");
+    await page
+      .getByRole("combobox", { name: "场景关联故事", exact: true })
+      .click();
+    await page.getByText(story.title, { exact: true }).last().click();
+    await page.getByRole("textbox", { name: "场景名称", exact: true }).click();
+    await page.getByRole("button", { name: "添加消息", exact: true }).click();
+    await page
+      .getByRole("textbox", { name: "消息 1 内容", exact: true })
+      .fill("提交负责人调整请求");
+    await page.getByRole("button", { name: "添加消息", exact: true }).click();
+    await page
+      .getByRole("textbox", { name: "消息 2 内容", exact: true })
+      .fill("返回最新任务");
+    await page
+      .getByRole("combobox", { name: "消息 2 发送方", exact: true })
+      .selectOption("system");
+    await page
+      .getByRole("combobox", { name: "消息 2 接收方", exact: true })
+      .selectOption("actor");
+    await page
+      .getByRole("combobox", { name: "消息 2 类型", exact: true })
+      .selectOption("return");
+    await page.getByRole("button", { name: "保存场景", exact: true }).click();
+    await page
+      .getByRole("img", { name: "任务负责人分配流程时序图", exact: true })
+      .waitFor();
+    const scenario = await db.umlSequence.findFirstOrThrow({
+      where: { projectId: project.id, name: "任务负责人分配流程" },
+      include: { storyLinks: true },
+    });
+    assert.equal(scenario.storyLinks[0].storyId, story.id);
+    assert.equal(scenario.messages.length, 2);
+    assert.deepEqual(
+      await db.planItem.findMany({
+        where: { projectId: project.id },
+        select: { id: true, start: true, end: true, status: true },
+      }),
+      activeDates,
+    );
+    await page
+      .getByRole("button", { name: "收起关联追踪", exact: true })
+      .click();
+    await shot("V2-sequence");
+    await page.getByRole("button", { name: "编辑场景", exact: true }).click();
+    await page
+      .getByRole("textbox", { name: "场景名称", exact: true })
+      .fill("已编辑的交互场景");
+    await page.getByRole("button", { name: "保存场景", exact: true }).click();
+    await page
+      .getByRole("img", { name: "已编辑的交互场景时序图", exact: true })
+      .waitFor();
+    await page.reload();
+    await page.getByRole("button", { name: project.name, exact: true }).click();
+    await nav("多视图工作台");
+    await page.getByRole("tab", { name: "UML 图", exact: true }).click();
+    await page.getByRole("tab", { name: "时序图", exact: true }).click();
+    await page
+      .getByRole("img", { name: "已编辑的交互场景时序图", exact: true })
+      .waitFor();
+    await page.getByRole("button", { name: "追踪此场景", exact: true }).click();
+    await page
+      .locator(".wb-track")
+      .getByRole("button", {
+        name: `用户故事 ${story.title}，直接关联，定位`,
+        exact: true,
+      })
+      .click();
+    await page.locator(".story-card.highlight").waitFor();
+    await page.setViewportSize({ width: 720, height: 900 });
+    await shot("V2-narrow-tracking");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    pass(
+      "UML sequences create/edit participants, ordered call/return messages and story links through the real API; reload persists data and links navigate back to stories; narrow view remains usable",
+    );
+
     await nav("项目文档");
     await page.getByText("文件目录", { exact: true }).waitFor();
     await shot("A05");

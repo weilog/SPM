@@ -50,3 +50,30 @@
 
 .a-plan-embedded .gv-left-fixed{width:350px}.a-plan-embedded .gv-left-head,.a-plan-embedded .gv-fixed-row{grid-template-columns:155px 67px 64px 64px}.a-plan-embedded .gv-grid-canvas{width:max-content!important}
 .a-plan-embedded .stageheading{padding:10px}.a-plan-embedded .bigstageicon{display:none}.a-plan-embedded .titlegroup h1{font-size:15px}.a-plan-embedded .headbuttons{flex-wrap:wrap;gap:4px}.a-plan-embedded .titledate{flex-wrap:wrap}.a-plan-embedded .titledate select{max-width:180px;border:1px solid #dce5ef;border-radius:5px;padding:4px;background:#fff;font:inherit}.a-plan-embedded .gv-toolbar{flex-wrap:wrap}.a-plan-embedded .gv-controls{flex-wrap:wrap}.a-plan-embedded .workbody{min-height:0}
+/* Approved UI corrections: progress, member overlays and shared Gantt interactions. */
+.a-plan-view .donut{border:0;width:58px;height:58px;border-radius:50%;position:relative}
+.a-plan-view .donut::after{content:"";position:absolute;inset:9px;width:auto;height:auto;border-radius:50%;background:white;transform:none}
+.a-plan-view .stagepane.gantt-ministage::after{content:none}
+.a-plan-view .stagepane.gantt-ministage::before{content:none}
+.a-plan-view .gantt-ministage>.stagetool{visibility:visible}
+.a-plan-view .gv-timeline{cursor:grab;touch-action:pan-y}
+.a-plan-view .gv-timeline:active{cursor:grabbing}
+.a-plan-view .gv-legend{color:#536780;gap:14px}
+.a-plan-view .gv-stagebar,.a-plan-view .gv-plan-swatch{background:#e4dcfb;border-color:#9270ce;color:#583990}
+.a-plan-view .gv-itembar.gv-todo,.a-plan-view .gv-todo-swatch{background:#e3e9f1;border-color:#a3afbf;color:#46576e}
+.a-plan-view .gv-itembar.gv-progress,.a-plan-view .gv-run-swatch{background:#c1d8ff;border-color:#4788ef;color:#184c9f}
+.a-plan-view .gv-itembar.gv-done,.a-plan-view .gv-done-swatch{background:#b8e7d7;border-color:#279572;color:#155e48}
+.a-plan-view .gv-itembar.gv-paused,.a-plan-view .gv-paused-swatch{background:#ffe6b0;border-color:#d89a28;color:#815209}
+.a-plan-view .gv-legend .gv-swatch{border:1px solid;box-sizing:border-box}
+.a-plan-view .gv-range.gv-stagebar{background:#e4dcfb;border-color:#9270ce;color:#583990}
+.a-members .mask{display:grid;place-items:center;padding:24px;box-sizing:border-box;background:rgba(18,37,67,.34)}
+.a-members .modal{width:min(520px,100%);background:#fff;border-radius:10px;box-shadow:0 16px 54px #1d314729;position:relative;box-sizing:border-box}
+.a-members .modal-head{padding:20px 24px;border-bottom:1px solid var(--stroke);display:flex;align-items:center;justify-content:space-between}
+.a-members .modal-head h2{font-size:18px;margin:0}
+.a-members .modal-body{padding:24px}
+.a-members .modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid var(--stroke)}
+.a-members .drawer-foot{padding:16px 24px;border-top:1px solid var(--stroke);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;background:#fff}
+.a-members .drawer .detail-row{align-items:start}
+.a-members .drawer .detail-row>.role{justify-self:start;align-self:start}
+.a-members .drawer .task-chip{align-items:center;gap:12px;white-space:normal}
+.v43-shell .account-logout{margin-left:8px;flex-shrink:0}

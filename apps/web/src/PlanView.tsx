@@ -238,16 +238,6 @@ export function PlanView({
   const toolbar = (
     <div className="work-toolbar">
       <div className="tool-group">
-        {can && (
-          <button
-            className="btn primary sm"
-            onClick={() => edit("item")}
-            disabled={!stage}
-          >
-            <Icon name="plus" />
-            创建计划项
-          </button>
-        )}
         <span className="work-count">
           计划项 <b>{work.length}</b>　里程碑 <b>{milestones.length}</b>
         </span>
@@ -314,6 +304,14 @@ export function PlanView({
   );
   const taskSet = [...new Set(work.flatMap((i) => i.taskIds || []))],
     people = [...new Set(work.map((i) => i.ownerUserId).filter(Boolean))];
+  const linkedTasks = [
+    ...new Map(
+      work.flatMap((i) => i.tasks || []).map((t) => [t.id, t]),
+    ).values(),
+  ];
+  const completedPeople = people.filter((id) =>
+    work.filter((i) => i.ownerUserId === id).every((i) => i.status === "DONE"),
+  ).length;
   const tracking = filtered.filter(
     (i) =>
       (!onlyLinked || (i.tasks || []).length > 0) &&
@@ -525,7 +523,6 @@ export function PlanView({
                 stage={stage}
                 items={items}
                 onOpen={open}
-                onCreate={() => edit("item")}
                 collapsed={collapsed}
                 onCollapse={() => setCollapsed((v) => !v)}
                 highlightIds={highlightIds}
@@ -544,18 +541,49 @@ export function PlanView({
               <>
                 <div className="metrics">
                   {[
-                    ["阶段计划项", work.length, "计划项"],
-                    ["关联任务", taskSet.length, "任务"],
-                    ["阶段里程碑", milestones.length, "里程碑"],
-                    ["覆盖负责人", people.length, "成员"],
-                  ].map(([label, count, unit]) => (
+                    {
+                      label: "阶段计划项",
+                      count: work.length,
+                      unit: "计划项",
+                      done: work.filter((i) => i.status === "DONE").length,
+                    },
+                    {
+                      label: "关联任务",
+                      count: taskSet.length,
+                      unit: "任务",
+                      done: linkedTasks.filter((t) => t.status === "DONE")
+                        .length,
+                    },
+                    {
+                      label: "阶段里程碑",
+                      count: milestones.length,
+                      unit: "里程碑",
+                      done: milestones.filter((i) => i.status === "DONE")
+                        .length,
+                    },
+                    {
+                      label: "覆盖负责人",
+                      count: people.length,
+                      unit: "成员",
+                      done: completedPeople,
+                    },
+                  ].map(({ label, count, unit, done }) => (
                     <div className="card metric" key={label}>
                       <div className="statname">{label}</div>
                       <div className="metricbody">
-                        <div className="donut" />
+                        <div
+                          className="donut"
+                          role="img"
+                          aria-label={`${label}已完成 ${done}/${count}`}
+                          style={{
+                            background: `conic-gradient(#3478f6 ${count ? (done / count) * 360 : 0}deg, #e8eef7 0deg)`,
+                          }}
+                        />
                         <div>
                           <div className="statnumber">{count}</div>
-                          <div className="statsub">{unit}</div>
+                          <div className="statsub">
+                            {unit} · 已完成 {done}/{count}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -860,15 +888,6 @@ export function PlanView({
                         <span className="col-counter">
                           {filtered.filter((i) => i.status === s).length}
                         </span>
-                        {can && (
-                          <button
-                            className="iconbutton"
-                            aria-label={`新建${stateLabels[s]}计划项`}
-                            onClick={() => edit("item")}
-                          >
-                            ＋
-                          </button>
-                        )}
                       </div>
                       <div className="kanban-card-list">
                         {filtered

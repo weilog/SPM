@@ -28,8 +28,8 @@ const dimensions = [
   ["MEMBER", "人员负载风险"],
 ];
 const statusNames: Record<string, string> = {
-  QUEUED: "诊断中",
-  RUNNING: "诊断中",
+  QUEUED: "生成中",
+  RUNNING: "生成中",
   COMPLETED: "已完成",
   PARTIAL: "部分成功",
   FAILED: "失败",
@@ -41,6 +41,7 @@ export function AiHealthSummary() {
   const ctx = useContext(C);
   if (!ctx) return null;
   const r = ctx.health;
+  const ready = r && ["COMPLETED", "PARTIAL"].includes(r.status);
   return (
     <section className="ai-health-summary">
       <div className="ai-row">
@@ -51,12 +52,12 @@ export function AiHealthSummary() {
       </div>
       <div className="ai-health-metrics">
         <div>
-          <b>{r?.summary?.uniqueEvents ?? "—"}</b>
+          <b>{ready ? r.summary?.uniqueEvents ?? "—" : "—"}</b>
           <span>同源风险总数</span>
         </div>
         {dimensions.map(([key, label]) => (
           <div key={key}>
-            <b>{r?.summary?.dimensions[key] ?? "—"}</b>
+            <b>{ready ? r.summary?.dimensions[key] ?? "—" : "—"}</b>
             <span>{label}</span>
           </div>
         ))}
@@ -267,19 +268,26 @@ export function AiWorkspaceProvider({
     setOpened(null);
     setPlanning({ kind, scope });
   };
-  const visible = (report?.findings || []).filter(
-    (f) =>
-      (tab === "all" ||
-        tab === "history" ||
-        tab === "advice" ||
-        tab === "scenarios" ||
-        tab === "evidence" ||
-        f.dimensions.includes(tab)) &&
-      (severity === "all" || f.severity === severity) &&
-      `${f.fact} ${f.ruleId} ${f.eventKey} ${JSON.stringify(f.evidence)}`
-        .toLowerCase()
-        .includes(filter.toLowerCase()),
-  );
+  const visible = (report?.findings || [])
+    .filter(
+      (f) =>
+        (tab === "all" ||
+          tab === "history" ||
+          tab === "advice" ||
+          tab === "scenarios" ||
+          tab === "evidence" ||
+          f.dimensions.includes(tab)) &&
+        (severity === "all" || f.severity === severity) &&
+        `${f.fact} ${f.ruleId} ${f.eventKey} ${JSON.stringify(f.evidence)}`
+          .toLowerCase()
+          .includes(filter.toLowerCase()),
+    )
+    .sort(
+      (a, b) =>
+        ["HIGH", "MEDIUM", "LOW", "INFO"].indexOf(a.severity) -
+        ["HIGH", "MEDIUM", "LOW", "INFO"].indexOf(b.severity),
+    );
+  const generating = !!report && ["QUEUED", "RUNNING"].includes(report.status);
   function risk(f: AiFinding) {
     return (
       <article className="ai-risk" key={f.id}>
@@ -293,7 +301,7 @@ export function AiWorkspaceProvider({
                   : "blue"
             }
           >
-            {severityNames[f.severity] || f.severity}
+            优先级：{severityNames[f.severity] || f.severity}
           </Tag>
           <strong title={f.ruleId}>
             {riskNames[f.ruleId] || "业务风险核查"}
@@ -321,18 +329,20 @@ export function AiWorkspaceProvider({
             </div>
           ))}
         </details>
-        <h4>AI 推断 · 待核查</h4>
-        <p>
-          {f.inference?.explanation ||
-            (store.project.canManage
-              ? "尚无有效模型解释，规则事实仍可复核。"
-              : "当前角色仅可查看授权事实。")}
-        </p>
+        <details className="ai-inference">
+          <summary>AI 推断 · 待核查</summary>
+          <p>
+            {f.inference?.explanation ||
+              (store.project.canManage
+                ? "尚无有效模型解释，规则事实仍可复核。"
+                : "当前角色仅可查看授权事实。")}
+          </p>
+        </details>
         {f.inference && (
-          <>
-            <h4>处理建议 · 人工执行</h4>
+          <details className="ai-recommendation">
+            <summary>处理建议 · 人工执行</summary>
             <p>{f.inference.recommendation}</p>
-          </>
+          </details>
         )}
         <div className="ai-row">
           {f.evidence.slice(0, 3).map((e) => (
@@ -427,6 +437,7 @@ export function AiWorkspaceProvider({
                 {store.project.canManage && (
                   <Button
                     type="primary"
+                    loading={generating}
                     disabled={
                       busy ||
                       (!!report &&
@@ -434,7 +445,7 @@ export function AiWorkspaceProvider({
                     }
                     onClick={() => safe(() => analyze())}
                   >
-                    {report ? "重新分析" : "开始分析"}
+                    {generating ? "生成中…" : report ? "重新分析" : "开始分析"}
                   </Button>
                 )}
               </div>
@@ -447,6 +458,24 @@ export function AiWorkspaceProvider({
                 />
               )}
               {busy && <Spin />}
+              {generating && (
+                <Alert
+                  type="info"
+                  showIcon
+                  title="AI 正在生成，请稍候。完成后会显示结果，请勿重复提交。"
+                />
+              )}
+              {report && ["FAILED", "CANCELLED"].includes(report.status) && (
+                <Alert
+                  type="warning"
+                  showIcon
+                  title={
+                    report.status === "CANCELLED"
+                      ? "本次生成已取消，未生成新的 AI 结果。"
+                      : "本次未能生成 AI 结果，请检查服务状态或稍后手动重试。"
+                  }
+                />
+              )}
               {report?.stale && (
                 <Alert
                   type="warning"
@@ -456,7 +485,7 @@ export function AiWorkspaceProvider({
               {report?.status === "PARTIAL" && (
                 <Alert
                   type="warning"
-                  title={`部分成功：${report.modelState || "仅显示授权规则结果"}，不代表完整AI分析。`}
+                  title="AI 未生成完整结果，已保留可复核的规则事实。请检查模型服务或稍后手动重试。"
                 />
               )}
               {report &&
@@ -684,7 +713,7 @@ export function AiWorkspaceProvider({
                     />
                   </div>
                   {visible.map(risk)}
-                  {!visible.length && !busy && (
+                  {!visible.length && !busy && !generating && (
                     <Empty
                       description={
                         report

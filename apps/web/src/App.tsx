@@ -195,6 +195,12 @@ export function App() {
         </span>
         <div className="avatar">{user.username.slice(0, 1)}</div>
         <span className="account-name">{user.username}</span>
+        <button
+          className="btn small account-logout"
+          onClick={() => void logout()}
+        >
+          退出登录
+        </button>
       </header>
       <div className="shell">
         <aside className={`sidebar ${collapsed ? "shrink" : ""}`}>
@@ -230,12 +236,6 @@ export function App() {
             </div>
           </div>
           <div className="side-bottom">
-            <button className="nav-btn" onClick={() => void logout()}>
-              <span className="nav-icon">
-                <Icon name="user" />
-              </span>
-              <span className="nav-label">退出登录</span>
-            </button>
             <button
               className="nav-btn"
               aria-label={collapsed ? "展开侧栏" : "折叠侧栏"}

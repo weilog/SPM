@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Button, Checkbox, Input, Modal, Select, Spin, Tag } from "antd";
+import { Alert, Button, Checkbox, Input, Modal, Select, Tag } from "antd";
 import { api } from "./api";
 import { useProjectData } from "./ProjectData";
 import { announceProject } from "./ui";
@@ -32,6 +32,7 @@ export function AiPlanning({
     [selected, setSelected] = useState(0),
     [dirty, setDirty] = useState(false),
     [busy, setBusy] = useState(false),
+    [generating, setGenerating] = useState(false),
     [error, setError] = useState(""),
     [saved, setSaved] = useState<AiDraft[] | null>(null),
     [run, setRun] = useState<AiReport | null>(null),
@@ -126,6 +127,7 @@ export function AiPlanning({
     return d;
   }
   async function generate() {
+    if (busy) return;
     if (
       dirty &&
       !window.confirm(
@@ -133,6 +135,7 @@ export function AiPlanning({
       )
     )
       return;
+    setGenerating(true);
     await perform(async () => {
       const created = await api<{ id: string }>(`${path}/analyses`, "POST", {
         kind,
@@ -174,6 +177,7 @@ export function AiPlanning({
       setSelected(0);
       setDirty(false);
     });
+    setGenerating(false);
   }
   const existing = (k: CandidateKind) =>
     k === "REQUIREMENT"
@@ -285,14 +289,15 @@ export function AiPlanning({
           <div className="ai-row ai-actions">
             <Button
               type="primary"
-              loading={busy}
+              loading={generating}
               disabled={
+                busy ||
                 (kind === "PLANNING" && !request.trim()) ||
                 (kind === "TASK_SPLIT" && !taskId)
               }
               onClick={() => void generate()}
             >
-              开始 AI 分析
+              {generating ? "生成中…" : "开始 AI 分析"}
             </Button>
             {run && (
               <Tag>
@@ -303,7 +308,13 @@ export function AiPlanning({
           </div>
         </details>
       </section>
-      {busy && <Spin description="正在处理，请勿重复提交" />}
+      {busy && (
+        <Alert
+          type="info"
+          showIcon
+          title="正在处理，请稍候。AI 生成可能需要一些时间，请勿重复提交。"
+        />
+      )}
       {draft && (
         <>
           <section className="ai-box ai-review-heading">

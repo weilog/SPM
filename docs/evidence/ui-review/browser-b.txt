@@ -1,0 +1,33 @@
+$ node scripts/s2-v43-browser.cjs
+17:24:13 [vite] (client) Re-optimizing dependencies because vite config has changed
+PASS Authorized project search, role filters, statistics, card/list switch and enter
+PASS Three-level requirement create/reparent, search collapse/expand and 640px detail drawer
+PASS Story same-epic reorder, cross-epic move, board/drawer status, search and failed-save rollback
+PASS Row-anchored floating menu, progress, reassignment, edit, history, archive/restore and full task creation
+PASS Actual member/task nodes and edges, zoom, filters, highlights and task detail
+PASS Five view navigation, two-way real relation focus, UML story drafts, drag persistence, include edge, editable boundary and multiple diagrams
+PASS A plan/Gantt and document pages read actual empty data, all confirmed controls retained without demo records
+PASS Two authenticated browsers synchronize persisted state through authorized SSE
+PASS Developer personal execution/percentage/DONE rules and read-only requirement/story permissions
+PASS 56/224/64px layout and zero browser runtime exceptions
+PASS Revoking membership closes the live project and blocks subsequent reads
+PASS Tester receives the same read-only requirement/story controls
+{
+  "result": "PASS",
+  "checks": [
+    "Authorized project search, role filters, statistics, card/list switch and enter",
+    "Three-level requirement create/reparent, search collapse/expand and 640px detail drawer",
+    "Story same-epic reorder, cross-epic move, board/drawer status, search and failed-save rollback",
+    "Row-anchored floating menu, progress, reassignment, edit, history, archive/restore and full task creation",
+    "Actual member/task nodes and edges, zoom, filters, highlights and task detail",
+    "Five view navigation, two-way real relation focus, UML story drafts, drag persistence, include edge, editable boundary and multiple diagrams",
+    "A plan/Gantt and document pages read actual empty data, all confirmed controls retained without demo records",
+    "Two authenticated browsers synchronize persisted state through authorized SSE",
+    "Developer personal execution/percentage/DONE rules and read-only requirement/story permissions",
+    "56/224/64px layout and zero browser runtime exceptions",
+    "Revoking membership closes the live project and blocks subsequent reads",
+    "Tester receives the same read-only requirement/story controls"
+  ],
+  "pageErrors": [],
+  "pending": []
+}

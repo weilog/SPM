@@ -851,7 +851,7 @@ const reference = require("./fixtures/v43-reference.json");
       "Two authenticated browsers synchronize persisted state through authorized SSE",
     );
     await page
-      .locator(".sidebar")
+      .locator(".topbar")
       .getByRole("button", { name: "退出登录", exact: true })
       .click();
     await login(page, "张三");

@@ -25,7 +25,12 @@ globalThis.fetch = (url, options) => {
   return realFetch(url, options);
 };
 const acceptance = process.env.SPM_AI_ACCEPTANCE === "p3";
-const dir = acceptance ? ".runtime/ai-p3-browser" : ".runtime/ai-p2-browser";
+const uiReview = process.env.SPM_UI_REVIEW === "1";
+const dir = uiReview
+  ? ".runtime/ui-review-browser"
+  : acceptance
+    ? ".runtime/ai-p3-browser"
+    : ".runtime/ai-p2-browser";
 fs.mkdirSync(dir, { recursive: true });
 const schema = "spm_ai_browser_" + randomBytes(8).toString("hex"),
   original = process.env.DATABASE_URL,
@@ -212,6 +217,7 @@ const pass = (s) => {
     for await (const chunk of req) chunks.push(chunk);
     const body = JSON.parse(Buffer.concat(chunks).toString());
     calls++;
+    if (uiReview) await new Promise((r) => setTimeout(r, 800));
     res.setHeader("Content-Type", "application/json");
     if (mode === "malformed") {
       res.end("{bad");
@@ -345,6 +351,10 @@ const pass = (s) => {
     await drawer()
       .getByRole("button", { name: "开始分析", exact: true })
       .click();
+    if (uiReview)
+      await drawer()
+        .getByRole("button", { name: /生成中/ })
+        .waitFor();
     await until(
       async () => (await drawer().locator(".ai-risk").count()) > 0,
       "AI rules rendered",
@@ -361,6 +371,39 @@ const pass = (s) => {
     );
   }
   await scan("✦ 查看诊断报告");
+  if (uiReview) {
+    assert.equal(
+      await page
+        .locator(".sidebar")
+        .getByRole("button", { name: "退出登录", exact: true })
+        .count(),
+      0,
+    );
+    assert.equal(
+      await page
+        .locator(".topbar")
+        .getByRole("button", { name: "退出登录", exact: true })
+        .count(),
+      1,
+    );
+    assert(
+      (await drawer()
+        .getByText(/优先级：/)
+        .count()) > 0,
+    );
+    assert.equal(
+      await drawer()
+        .locator(".ai-inference[open],.ai-recommendation[open]")
+        .count(),
+      0,
+    );
+    await drawer().locator(".ai-inference summary").first().click();
+    assert.equal(await drawer().locator(".ai-inference[open]").count(), 1);
+    await drawer().locator(".ai-inference summary").first().click();
+    pass(
+      "UI account logout is in topbar; AI generation indicator, priority and collapsed inference/recommendation respond",
+    );
+  }
   await shot("01-health");
   for (const dimension of [
     "进度风险",
@@ -617,7 +660,7 @@ const pass = (s) => {
     const editor = page.locator(".a-plan-view .modal");
     await editor.waitFor();
     assert.equal(
-      await editor.getByLabel(/开始日期/).inputValue(),
+      await editor.locator('input[type="date"]').first().inputValue(),
       proposed.start,
     );
     await editor.getByRole("button", { name: "保存", exact: true }).click();
@@ -631,13 +674,16 @@ const pass = (s) => {
     await page.getByRole("button", { name: p.name, exact: true }).click();
     await nav("项目计划");
     await page.locator(".a-plan-view").waitFor();
-    await page.locator(".stagecard").filter({hasText:stage.title}).waitFor();
+    await page.locator(".stagecard").filter({ hasText: stage.title }).waitFor();
     assert.equal(
       (await db.planItem.findUniqueOrThrow({ where: { id: proposed.id } })).end,
       proposed.end,
     );
     await page.getByRole("button", { name: "甘特图", exact: true }).click();
-    await page.locator(".gv-fixed-row").filter({hasText:proposed.title}).waitFor();
+    await page
+      .locator(".gv-fixed-row")
+      .filter({ hasText: proposed.title })
+      .waitFor();
     await page.screenshot({
       path: `${dir}/human-plan-save.png`,
       animations: "disabled",
@@ -721,6 +767,128 @@ const pass = (s) => {
   pass(
     "Ordinary members get filtered facts and no analyze controls; backend rejects member writes and outsider reads",
   );
+  if (uiReview) {
+    await nav("项目计划");
+    await page.locator(".stagecard").first().waitFor();
+    await db.planItem.update({
+      where: { id: plan.id },
+      data: { status: "DONE", revision: { increment: 1 } },
+    });
+    await page.reload();
+    await page.getByRole("button", { name: p.name, exact: true }).click();
+    await nav("项目计划");
+    await page.locator(".stagecard").first().waitFor();
+    const work = await db.planItem.findMany({
+      where: { stageId: stage.id, kind: "item" },
+    });
+    const complete = work.filter((i) => i.status === "DONE").length;
+    await page
+      .getByRole("img", {
+        name: `阶段计划项已完成 ${complete}/${work.length}`,
+        exact: true,
+      })
+      .waitFor();
+    await page.screenshot({
+      path: `${dir}/progress-rings.png`,
+      animations: "disabled",
+    });
+    for (const tab of ["列表", "看板", "甘特图"]) {
+      await page.getByRole("button", { name: tab, exact: true }).click();
+      assert.equal(
+        await page
+          .getByRole("button", { name: "添加计划项", exact: true })
+          .count(),
+        1,
+      );
+      assert.equal(
+        await page
+          .getByRole("button", {
+            name: /创建计划项|新建计划项|新建待处理计划项/,
+          })
+          .count(),
+        0,
+      );
+    }
+    await page.getByRole("button", { name: "收起信息栏", exact: true }).click();
+    assert.equal(await page.locator(".gv-left-fixed").isVisible(), false);
+    const grid = page.locator(".gv-scroller");
+    const timeline = page.locator(".gv-calendar");
+    await timeline.hover();
+    const startScroll = await grid.evaluate((e) => e.scrollLeft);
+    await page.mouse.wheel(0, 250);
+    await until(
+      async () => (await grid.evaluate((e) => e.scrollLeft)) > startScroll,
+      "direct wheel timeline pan",
+    );
+    const area = await timeline.boundingBox();
+    const priorPan = await grid.evaluate((e) => e.scrollLeft);
+    await page.mouse.move(1100, area.y + 20);
+    await page.mouse.down();
+    await page.mouse.move(950, area.y + 20, { steps: 8 });
+    await page.mouse.up();
+    assert((await grid.evaluate((e) => e.scrollLeft)) > priorPan);
+    await page.getByRole("button", { name: "展开信息栏", exact: true }).click();
+    assert.equal(await page.locator(".gv-left-fixed").isVisible(), true);
+    assert.equal(await page.locator(".gv-legend .gv-swatch").count(), 5);
+    await page.screenshot({
+      path: `${dir}/gantt-pan.png`,
+      animations: "disabled",
+    });
+    await nav("成员与角色");
+    await page
+      .getByRole("button", { name: "＋ 添加成员", exact: true })
+      .waitFor();
+    await page
+      .getByRole("button", { name: "调整角色", exact: true })
+      .first()
+      .click();
+    const modal = page.getByRole("dialog", {
+      name: "调整项目角色",
+      exact: true,
+    });
+    const box = await modal.boundingBox();
+    assert(Math.abs(box.x + box.width / 2 - 720) < 3);
+    assert(Math.abs(box.y + box.height / 2 - 450) < 3);
+    await page.screenshot({
+      path: `${dir}/member-role-centered.png`,
+      animations: "disabled",
+    });
+    await modal.getByRole("button", { name: "取消", exact: true }).click();
+    await page
+      .getByRole("button", { name: "查看", exact: true })
+      .first()
+      .click();
+    const member = page.getByRole("dialog", {
+      name: "项目成员详情",
+      exact: true,
+    });
+    assert.equal(Math.round((await member.boundingBox()).width), 640);
+    assert(
+      (await member.locator(".detail-row .role").boundingBox()).width < 160,
+    );
+    await page.screenshot({
+      path: `${dir}/member-detail.png`,
+      animations: "disabled",
+    });
+    await page
+      .getByRole("button", { name: "关闭成员详情", exact: true })
+      .click();
+    await nav("多视图工作台");
+    await page.getByRole("tab", { name: "甘特图", exact: true }).click();
+    assert.equal(
+      await page
+        .locator(".stagepane.gantt-ministage")
+        .evaluate((e) => getComputedStyle(e, "::before").content),
+      "none",
+    );
+    await page.screenshot({
+      path: `${dir}/workbench-gantt.png`,
+      animations: "disabled",
+    });
+    pass(
+      "UI completed rings, single creation entry, Gantt collapse/wheel/drag/colors, centered member modal, compact drawer and no stage pseudo-text",
+    );
+  }
   if (acceptance) {
     await page
       .getByRole("button", { name: "✦ AI 跨视图分析", exact: true })

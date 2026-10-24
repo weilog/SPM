@@ -520,8 +520,8 @@ const reference = require("./fixtures/v43-reference.json");
       "board status",
     );
     await page.locator(".story-board[aria-busy=false]").waitFor();
-    await page
-      .getByRole("button", { name: stories["US-002"].title, exact: true })
+    await card(stories["US-002"].id)
+      .getByRole("button", { name: /查看.*详情/ })
       .click();
     await page.getByRole("combobox", { name: "故事状态", exact: true }).click();
     await page
@@ -730,6 +730,10 @@ const reference = require("./fixtures/v43-reference.json");
     await page
       .locator(`.viewpane[aria-label="右侧视图"] [data-node-id="${useId}"]`)
       .click();
+    assert.equal(await page.locator(".ant-drawer-open").count(), 0);
+    await page
+      .getByRole("button", { name: "查看用例详情", exact: true })
+      .click();
     await page.locator(".ant-drawer-close:visible").click();
     await eventually(
       async () =>
@@ -745,9 +749,12 @@ const reference = require("./fixtures/v43-reference.json");
       .locator('.viewpane[aria-label="右侧视图"] .graph-svg')
       .getByRole("button", { name: /T-002/ })
       .click();
+    await page
+      .getByRole("button", { name: "查看选中任务详情", exact: true })
+      .click();
     await page.locator(".ant-drawer-close:visible").click();
     await page.getByRole("button", { name: "单视图", exact: true }).click();
-    await page.getByRole("tab", { name: "UML 用例图", exact: true }).click();
+    await page.getByRole("tab", { name: "UML 图", exact: true }).click();
     await shot("uml");
     const umlWidth = await page
       .locator(".uml-svg")

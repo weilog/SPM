@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import type { PlanItemView, PlanStageView } from "@spm/shared";
+import type {
+  ManagedTask,
+  ViewFocus,
+  PlanItemView,
+  PlanStageView,
+} from "@spm/shared";
 import { useProjectData } from "./ProjectData";
 import { AiEntry } from "./ai-events";
 import { AiHint } from "./ai-hints";
@@ -20,8 +25,20 @@ export function PlanGantt({
   highlightIds = [],
   onPlanFocus,
   showAi = true,
+  focus,
+  taskHighlightIds = [],
+  onlyRelated = false,
+  onTaskFocus,
+  onOpenTask,
+  onTaskLocate,
 }: {
   stage?: PlanStageView;
+  focus?: ViewFocus | null;
+  taskHighlightIds?: number[];
+  onlyRelated?: boolean;
+  onTaskFocus?: (id: number) => void;
+  onOpenTask?: (id: number) => void;
+  onTaskLocate?: (id: number) => void;
   items: PlanItemView[];
   onOpen(item: PlanStageView | PlanItemView): void;
   collapsed: boolean;
@@ -46,6 +63,7 @@ export function PlanGantt({
       startX: number;
       moved: boolean;
     } | null>(null);
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
   const [infoWidth, setInfoWidth] = useState(445);
   const [infoCollapsed, setInfoCollapsed] = useState(false);
   const pan = useRef<{ x: number; scroll: number } | null>(null);
@@ -137,13 +155,56 @@ export function PlanGantt({
         diff(target.start, base) * unit - 40,
       );
   }, [highlightIds.join(","), stage?.id, base, unit]);
-  const rows = [
+  useEffect(() => {
+    if (focus?.entityType !== "task") return;
+    const task = store.tasks.find((t) => t.id === focus.entityId);
+    if (task) setExpandedTasks((old) => new Set([...old, ...task.planIds]));
+  }, [focus?.entityType, focus?.entityId, store.tasks]);
+  type TaskRow = {
+    kind: "linkedTask";
+    id: string;
+    task: ManagedTask;
+    parentId: string;
+  };
+  const rows: (
+    | PlanItemView
+    | (PlanStageView & { kind: "plan"; status: "TODO" })
+    | TaskRow
+  )[] = [
     ...(stage
       ? [{ ...stage, kind: "plan" as const, status: "TODO" as const }]
       : []),
-    ...items,
+    ...items.flatMap((item): (PlanItemView | TaskRow)[] => [
+      item,
+      ...(expandedTasks.has(item.id)
+        ? store.tasks
+            .filter(
+              (t) =>
+                t.planIds.includes(item.id) &&
+                (!onlyRelated || taskHighlightIds.includes(t.id)),
+            )
+            .map((task) => ({
+              kind: "linkedTask" as const,
+              id: `task:${item.id}:${task.id}`,
+              parentId: item.id,
+              task,
+            }))
+        : []),
+    ]),
   ];
+  const toggleTasks = (id: string) =>
+    setExpandedTasks((old) => {
+      const next = new Set(old);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   function open(item: PlanStageView | PlanItemView) {
+    // The synthetic stage row has a display-only kind; focus the real stage.
+    if (stage && item.id === stage.id) {
+      onOpen(stage);
+      return;
+    }
     onOpen(item);
     if ("kind" in item) onPlanFocus?.(item.id);
   }
@@ -220,6 +281,24 @@ export function PlanGantt({
               scope={stage ? { stageId: stage.id } : {}}
             />
           )}
+          <button
+            className="gv-btn"
+            onClick={() =>
+              setExpandedTasks(
+                new Set(
+                  items.filter((i) => i.kind === "item").map((i) => i.id),
+                ),
+              )
+            }
+          >
+            展开关联任务
+          </button>
+          <button
+            className="gv-btn"
+            onClick={() => setExpandedTasks(new Set())}
+          >
+            收起关联任务
+          </button>
           <button className="gv-btn" onClick={() => onCollapse()}>
             {collapsed ? "显示" : "收起"}阶段栏
           </button>
@@ -346,32 +425,82 @@ export function PlanGantt({
               <div>预计开始</div>
               <div>预计结束</div>
             </div>
-            {rows.map((r) => (
-              <div
-                key={`${r.kind}-${r.id}`}
-                className={`gv-fixed-row ${r.kind === "plan" ? "gv-main-row" : ""}`}
-                style={{ gridTemplateColumns: "minmax(0,1fr) 80px 70px 70px" }}
-              >
+            {rows.map((r) =>
+              r.kind === "linkedTask" ? (
                 <div
-                  className="gv-fixed-name"
-                  style={{ paddingLeft: r.kind === "plan" ? 13 : 27 }}
+                  className={`gv-fixed-row wb-task-row ${taskHighlightIds.includes(r.task.id) ? "wb-task-selected" : ""}`}
+                  data-focus-key={`task:${r.task.id}`}
+                  key={r.id}
                 >
-                  <span
-                    className={`gv-icon ${r.kind === "milestone" ? "flag" : "task"}`}
+                  <button
+                    className="wb-task-name"
+                    onClick={() => onTaskFocus?.(r.task.id)}
+                    title={r.task.title}
                   >
-                    {r.kind === "milestone"
-                      ? "◆"
-                      : r.kind === "plan"
-                        ? "▣"
-                        : "▤"}
+                    └ T-{r.task.id} · {r.task.title}
+                  </button>
+                  <span>
+                    {store.members.find(
+                      (m) => m.userId === r.task.assigneeUserId,
+                    )?.user.username || "未分配"}
                   </span>
-                  <button onClick={() => open(r)}>{r.title}</button>
+                  <button
+                    className="link"
+                    aria-label={`查看任务 ${r.task.id} 详情`}
+                    onClick={() => onOpenTask?.(r.task.id)}
+                  >
+                    详情
+                  </button>
+                  {onTaskLocate && (
+                    <button
+                      className="link"
+                      aria-label={`定位任务 ${r.task.id} 负责人`}
+                      onClick={() => onTaskLocate(r.task.id)}
+                    >
+                      定位 ↗
+                    </button>
+                  )}
                 </div>
-                <div className="gv-fixed-owner">{r.owner || "未指派"}</div>
-                <div>{r.start.slice(5)}</div>
-                <div>{r.end.slice(5)}</div>
-              </div>
-            ))}
+              ) : (
+                <div
+                  key={`${r.kind}-${r.id}`}
+                  data-focus-key={`${r.kind === "plan" ? "stage" : "planItem"}:${r.id}`}
+                  className={`gv-fixed-row ${r.kind === "plan" ? "gv-main-row" : ""}`}
+                  style={{
+                    gridTemplateColumns: "minmax(0,1fr) 80px 70px 70px",
+                  }}
+                >
+                  <div
+                    className="gv-fixed-name"
+                    style={{ paddingLeft: r.kind === "plan" ? 13 : 27 }}
+                  >
+                    <span
+                      className={`gv-icon ${r.kind === "milestone" ? "flag" : "task"}`}
+                    >
+                      {r.kind === "milestone"
+                        ? "◆"
+                        : r.kind === "plan"
+                          ? "▣"
+                          : "▤"}
+                    </span>
+                    {r.kind === "item" && (
+                      <button
+                        className="wb-task-expand"
+                        aria-expanded={expandedTasks.has(r.id)}
+                        aria-label={`${expandedTasks.has(r.id) ? "收起" : "展开"} ${r.title} 关联任务`}
+                        onClick={() => toggleTasks(r.id)}
+                      >
+                        {expandedTasks.has(r.id) ? "⌄" : "›"}
+                      </button>
+                    )}
+                    <button onClick={() => open(r)}>{r.title}</button>
+                  </div>
+                  <div className="gv-fixed-owner">{r.owner || "未指派"}</div>
+                  <div>{r.start.slice(5)}</div>
+                  <div>{r.end.slice(5)}</div>
+                </div>
+              ),
+            )}
             <div
               className="gv-info-resizer"
               role="separator"
@@ -446,6 +575,29 @@ export function PlanGantt({
               </div>
             </div>
             {rows.map((r) => {
+              if (r.kind === "linkedTask")
+                return (
+                  <div
+                    className={`gv-time-row wb-task-timeline ${taskHighlightIds.includes(r.task.id) ? "wb-task-selected" : ""}`}
+                    key={r.id}
+                    style={{ width, backgroundSize: `${unit}px 100%` }}
+                  >
+                    <span>
+                      {
+                        {
+                          TODO: "待处理",
+                          IN_PROGRESS: "进行中",
+                          DONE: "已完成",
+                        }[r.task.status]
+                      }{" "}
+                      · {r.task.progress}%
+                    </span>
+                    <span className="wb-task-meter">
+                      <i style={{ width: `${r.task.progress}%` }} />
+                    </span>
+                    <small>未设置独立排期</small>
+                  </div>
+                );
               const left = diff(r.start, base) * unit,
                 w = Math.max(unit * 0.7, (diff(r.end, r.start) + 1) * unit),
                 d = draft?.id === r.id ? draft : null;

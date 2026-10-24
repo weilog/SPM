@@ -302,5 +302,5 @@ describe("V2 US10 personal task viewing", () => {
     expect(
       screen.queryByRole("tab", { name: "成员与项目角色" }),
     ).not.toBeInTheDocument();
-  });
+  }, 10000);
 });

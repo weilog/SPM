@@ -10,6 +10,7 @@ import { TasksModule } from "./tasks/tasks.module";
 import { RequirementsModule } from "./requirements/requirements.module";
 import { StoriesModule } from "./stories/stories.module";
 import { UmlModule } from "./uml/uml.module";
+import { SequencesModule } from "./uml/sequences.module";
 import { DocumentsModule } from "./documents/documents.module";
 import { WorkbenchModule } from "./workbench/workbench.module";
 import { AiModule } from "./ai/ai.module";
@@ -29,6 +30,7 @@ class HealthController {
     RequirementsModule,
     StoriesModule,
     UmlModule,
+    SequencesModule,
     WorkbenchModule,
     DocumentsModule,
     AiModule,

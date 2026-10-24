@@ -11,26 +11,139 @@ import {
   Sse,
 } from "@nestjs/common";
 import { Request } from "express";
-import { IsIn, IsString, Length } from "class-validator";
+import { IsIn, IsOptional, IsString, Length } from "class-validator";
 import { concatMap, interval, startWith, takeWhile } from "rxjs";
 import { createHash } from "node:crypto";
 import type { ResolvedRelations, User } from "@spm/shared";
+import { traceRelations, TraceNode } from "./trace";
 import { Actor, tokenHash } from "../common/security";
 import { DbService } from "../db/db.module";
 import { ProjectsModule, ProjectsService } from "../projects/projects.module";
 class FocusQuery {
-  @IsIn(["story", "task", "planItem", "umlUseCase", "requirement"])
-  entityType!: "story" | "task" | "planItem" | "umlUseCase" | "requirement";
+  @IsIn([
+    "story",
+    "task",
+    "planItem",
+    "umlUseCase",
+    "requirement",
+    "member",
+    "stage",
+    "sequence",
+  ])
+  entityType!: import("@spm/shared").ViewFocus["entityType"];
+  @IsOptional() @IsIn(["trace"]) mode?: "trace";
   // Requirement is also accepted as an authorized AI evidence focus.
   @IsString() @Length(1, 100) entityId!: string;
 }
 @Injectable()
-class WorkbenchService {
+export class WorkbenchService {
   constructor(
     private readonly db: DbService,
     private readonly projects: ProjectsService,
   ) {}
+  async trace(a: User, p: number, q: FocusQuery): Promise<ResolvedRelations> {
+    return this.db.atomic(async (tx) => {
+      const project = await this.projects.authorized(a, p, false, tx);
+      const [
+        tasks,
+        stories,
+        requirements,
+        plans,
+        stages,
+        members,
+        uses,
+        sequences,
+      ] = await Promise.all([
+        tx.task.findMany({
+          where: {
+            projectId: p,
+            archivedAt: null,
+            ...(!project.canManage ? { assigneeUserId: a.id } : {}),
+          },
+          include: { storyLinks: true, planLinks: true },
+        }),
+        tx.userStory.findMany({ where: { projectId: p } }),
+        tx.requirement.findMany({
+          where: { projectId: p },
+          include: { storyLinks: true },
+        }),
+        tx.planItem.findMany({ where: { projectId: p } }),
+        tx.planStage.findMany({ where: { projectId: p } }),
+        tx.projectMember.findMany({
+          where: {
+            projectId: p,
+            ...(!project.canManage ? { userId: a.id } : {}),
+          },
+          include: { user: { select: { username: true } } },
+        }),
+        tx.umlNode.findMany({
+          where: { projectId: p, kind: "USE_CASE" },
+          include: { storyLinks: true },
+        }),
+        tx.umlSequence.findMany({
+          where: { projectId: p },
+          include: { storyLinks: true, useCaseLinks: true },
+        }),
+      ]);
+      const nodes: TraceNode[] = [],
+        edges: [string, string][] = [];
+      const add = (
+        entityType: TraceNode["entityType"],
+        entityId: number | string,
+        label: string,
+      ) => nodes.push({ entityType, entityId, label });
+      const link = (a: string, b: string) => edges.push([a, b]);
+      for (const t of tasks) {
+        add("task", t.id, t.title);
+        if (t.assigneeUserId)
+          link(`task:${t.id}`, `member:${t.assigneeUserId}`);
+        for (const l of t.storyLinks)
+          link(`task:${t.id}`, `story:${l.storyId}`);
+        for (const l of t.planLinks)
+          link(`task:${t.id}`, `planItem:${l.planId}`);
+      }
+      for (const s of stories) add("story", s.id, s.title);
+      for (const r of requirements) {
+        add("requirement", r.id, r.title);
+        for (const l of r.storyLinks)
+          link(`requirement:${r.id}`, `story:${l.storyId}`);
+      }
+      for (const i of plans) {
+        add("planItem", i.id, i.title);
+        link(`planItem:${i.id}`, `stage:${i.stageId}`);
+      }
+      for (const s of stages) add("stage", s.id, s.title);
+      for (const m of members) add("member", m.userId, m.user.username);
+      for (const u of uses) {
+        add("umlUseCase", u.id, u.name);
+        for (const l of u.storyLinks)
+          link(`umlUseCase:${u.id}`, `story:${l.storyId}`);
+      }
+      for (const s of sequences) {
+        add("sequence", s.id, s.name);
+        for (const l of s.storyLinks)
+          link(`sequence:${s.id}`, `story:${l.storyId}`);
+        for (const l of s.useCaseLinks)
+          link(`sequence:${s.id}`, `umlUseCase:${l.nodeId}`);
+      }
+      const entityId = ["planItem", "stage"].includes(q.entityType)
+        ? q.entityId
+        : Number(q.entityId);
+      const result = traceRelations(nodes, edges, {
+        projectId: p,
+        entityType: q.entityType,
+        entityId,
+      });
+      if (!result) throw new NotFoundException("焦点不存在或无权访问");
+      return result;
+    });
+  }
   async resolve(a: User, p: number, q: FocusQuery): Promise<ResolvedRelations> {
+    if (
+      q.mode === "trace" ||
+      ["member", "stage", "sequence"].includes(q.entityType)
+    )
+      return this.trace(a, p, q);
     return this.db.atomic(async (tx) => {
       const project = await this.projects.authorized(a, p, false, tx);
       const tasks = await tx.task.findMany({
@@ -169,6 +282,10 @@ class WorkbenchService {
           where: { projectId: p },
           select: { id: true, revision: true },
         });
+        const sequences = await tx.umlSequence.findMany({
+          where: { projectId: p },
+          select: { id: true, revision: true },
+        });
         const documents = await tx.projectDocument.findMany({
           where: { projectId: p },
           select: { id: true, revision: true },
@@ -184,6 +301,7 @@ class WorkbenchService {
               plans,
               planItems,
               documents,
+              sequences,
               goals,
               epics,
             }),

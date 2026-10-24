@@ -59,6 +59,8 @@ interface Props {
   project: Project;
   onError: (error: unknown) => void;
   embeddedView?: "map" | "board";
+  focusOnly?: boolean;
+  onlyRelated?: boolean;
   focus?: ViewFocus | null;
   highlightIds?: number[];
   onFocusChange?: (focus: ViewFocus) => void;
@@ -72,6 +74,8 @@ function RequirementWorkspace({
   project,
   onError,
   embeddedView,
+  focusOnly = false,
+  onlyRelated = false,
   focus,
   highlightIds,
   onFocusChange,
@@ -142,6 +146,12 @@ function RequirementWorkspace({
   useProjectRefresh(project.id, () => {
     if (!busy.current) void reload().catch(report);
   });
+  useEffect(() => {
+    if (store && !busy.current) {
+      setData(store.stories);
+      setRequirements(store.requirements);
+    }
+  }, [store?.stories, store?.requirements]);
   const readOnly = !project.canManage;
   const story =
     viewing?.kind === "story"
@@ -326,6 +336,7 @@ function RequirementWorkspace({
   const query = search.trim().toLocaleLowerCase();
   const filteredStories = data.stories.filter(
     (s) =>
+      (!onlyRelated || highlightIds?.includes(s.id)) &&
       (!epic || s.epicId === epic) &&
       `${storyNumber(s.id)} ${s.title}`.toLocaleLowerCase().includes(query),
   );
@@ -335,8 +346,22 @@ function RequirementWorkspace({
       taskCounts[id] = (taskCounts[id] ?? 0) + 1;
     }),
   );
+  const relatedStories = data.stories.filter(
+    (s) => !onlyRelated || highlightIds?.includes(s.id),
+  );
+  const relatedEpics = data.epics.filter(
+    (e) => !onlyRelated || relatedStories.some((s) => s.epicId === e.id),
+  );
   const common = {
-    data,
+    data: {
+      ...data,
+      stories: relatedStories,
+      epics: relatedEpics,
+      goals: data.goals.filter(
+        (g) => !onlyRelated || relatedEpics.some((e) => e.goalId === g.id),
+      ),
+    },
+    focusOnly,
     readOnly,
     busy: saving,
     focus,

@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import type { PlanItemView, PlanStageView, ManagedTask } from "@spm/shared";
+import type {
+  PlanItemView,
+  PlanStageView,
+  ManagedTask,
+  ViewFocus,
+} from "@spm/shared";
 import { useProjectData } from "./ProjectData";
 import { useTaskActions } from "./TaskActions";
 import { PlanGantt } from "./PlanGantt";
@@ -52,8 +57,20 @@ export function PlanView({
   embedded = false,
   highlightIds = [],
   onPlanFocus,
+  focus,
+  focusOnly = false,
+  onlyRelated = false,
+  taskHighlightIds = [],
+  stageHighlightIds = [],
+  onFocusChange,
 }: {
   embedded?: boolean;
+  focus?: ViewFocus | null;
+  focusOnly?: boolean;
+  onlyRelated?: boolean;
+  taskHighlightIds?: number[];
+  stageHighlightIds?: string[];
+  onFocusChange?: (f: ViewFocus) => void;
   highlightIds?: string[];
   onPlanFocus?: (id: string) => void;
 }) {
@@ -90,9 +107,28 @@ export function PlanView({
     milestones = items.filter((i) => i.kind === "milestone"),
     detail = [...plans.stages, ...plans.items].find((i) => i.id === detailId);
   useEffect(() => {
-    const item = plans.items.find((i) => highlightIds.includes(i.id));
-    if (item) setSelected(item.stageId);
-  }, [highlightIds.join(","), plans.items]);
+    const item =
+      focus?.entityType === "planItem"
+        ? plans.items.find((i) => i.id === focus.entityId)
+        : focus?.entityType === "task"
+          ? plans.items.find((i) =>
+              store.tasks
+                .find((t) => t.id === focus.entityId)
+                ?.planIds.includes(i.id),
+            )
+          : plans.items.find((i) => highlightIds.includes(i.id));
+    if (focus?.entityType === "stage") setSelected(String(focus.entityId));
+    else if (item) setSelected(item.stageId);
+    else if (onlyRelated && stageHighlightIds.length)
+      setSelected(stageHighlightIds[0]);
+  }, [
+    highlightIds.join(","),
+    plans.items,
+    focus?.entityType,
+    focus?.entityId,
+    onlyRelated,
+    stageHighlightIds.join(","),
+  ]);
   useEffect(() => {
     const close = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !busy) {
@@ -105,6 +141,14 @@ export function PlanView({
     return () => window.removeEventListener("keydown", close);
   }, [busy]);
   function open(x: Entity) {
+    if (focusOnly) {
+      onFocusChange?.({
+        projectId: store.project.id,
+        entityType: "kind" in x ? "planItem" : "stage",
+        entityId: x.id,
+      });
+      return;
+    }
     setDetail(x.id);
     if ("kind" in x) onPlanFocus?.(x.id);
   }
@@ -137,9 +181,23 @@ export function PlanView({
         current ? { ...current, start: d.start, end: d.end } : current,
       );
     };
+    const details = (e: Event) => {
+      const f = (e as CustomEvent<ViewFocus>).detail;
+      if (
+        f.projectId !== store.project.id ||
+        !["stage", "planItem"].includes(f.entityType)
+      )
+        return;
+      const item = plans.items.find((i) => i.id === f.entityId);
+      if (item) setSelected(item.stageId);
+      else if (f.entityType === "stage") setSelected(String(f.entityId));
+      setDetail(String(f.entityId));
+    };
+    window.addEventListener("spm-workbench-details", details);
     window.addEventListener("spm-ai-locate", locate);
     window.addEventListener("spm-ai-edit-plan", candidate);
     return () => {
+      window.removeEventListener("spm-workbench-details", details);
       window.removeEventListener("spm-ai-locate", locate);
       window.removeEventListener("spm-ai-edit-plan", candidate);
     };
@@ -463,7 +521,7 @@ export function PlanView({
                 <button
                   className="btn sm"
                   disabled={!stage}
-                  onClick={() => stage && open(stage)}
+                  onClick={() => stage && setDetail(stage.id)}
                 >
                   <Icon name="info" size={15} />
                   详情
@@ -515,16 +573,59 @@ export function PlanView({
           </div>
           <main className="board">
             {view === "gantt" ? (
-              <PlanGantt
-                showAi={!embedded}
-                stage={stage}
-                items={items}
-                onOpen={open}
-                collapsed={collapsed}
-                onCollapse={() => setCollapsed((v) => !v)}
-                highlightIds={highlightIds}
-                onPlanFocus={onPlanFocus}
-              />
+              onlyRelated &&
+              !highlightIds.length &&
+              !stageHighlightIds.length ? (
+                <div className="empty">当前焦点没有关联计划项</div>
+              ) : (
+                <PlanGantt
+                  showAi={!embedded}
+                  stage={stage}
+                  items={
+                    onlyRelated
+                      ? items.filter((i) => highlightIds.includes(i.id))
+                      : items
+                  }
+                  focus={focus}
+                  taskHighlightIds={taskHighlightIds}
+                  onlyRelated={onlyRelated}
+                  onTaskFocus={(id) => {
+                    if (focusOnly)
+                      onFocusChange?.({
+                        projectId: store.project.id,
+                        entityType: "task",
+                        entityId: id,
+                      });
+                    else actions.open(id);
+                  }}
+                  onOpenTask={(id) => actions.open(id)}
+                  onTaskLocate={
+                    onFocusChange
+                      ? (id) => {
+                          onFocusChange?.({
+                            projectId: store.project.id,
+                            entityType: "task",
+                            entityId: id,
+                          });
+                          window.dispatchEvent(
+                            new CustomEvent("spm-workbench-task-members", {
+                              detail: {
+                                projectId: store.project.id,
+                                entityType: "task",
+                                entityId: id,
+                              },
+                            }),
+                          );
+                        }
+                      : undefined
+                  }
+                  onOpen={open}
+                  collapsed={collapsed}
+                  onCollapse={() => setCollapsed((v) => !v)}
+                  highlightIds={highlightIds}
+                  onPlanFocus={onPlanFocus}
+                />
+              )
             ) : !stage ? (
               <div className="blank plan-empty-state">
                 <span>暂无阶段计划</span>

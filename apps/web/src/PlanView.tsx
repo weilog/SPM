@@ -302,16 +302,13 @@ export function PlanView({
       </div>
     </div>
   );
-  const taskSet = [...new Set(work.flatMap((i) => i.taskIds || []))],
-    people = [...new Set(work.map((i) => i.ownerUserId).filter(Boolean))];
+  const taskSet = [...new Set(work.flatMap((i) => i.taskIds || []))];
   const linkedTasks = [
     ...new Map(
       work.flatMap((i) => i.tasks || []).map((t) => [t.id, t]),
     ).values(),
   ];
-  const completedPeople = people.filter((id) =>
-    work.filter((i) => i.ownerUserId === id).every((i) => i.status === "DONE"),
-  ).length;
+  const completedWork = work.filter((i) => i.status === "DONE").length;
   const tracking = filtered.filter(
     (i) =>
       (!onlyLinked || (i.tasks || []).length > 0) &&
@@ -544,30 +541,32 @@ export function PlanView({
                     {
                       label: "阶段计划项",
                       count: work.length,
-                      unit: "计划项",
-                      done: work.filter((i) => i.status === "DONE").length,
+                      value: work.length,
+                      done: completedWork,
                     },
                     {
                       label: "关联任务",
                       count: taskSet.length,
-                      unit: "任务",
+                      value: taskSet.length,
                       done: linkedTasks.filter((t) => t.status === "DONE")
                         .length,
                     },
                     {
                       label: "阶段里程碑",
                       count: milestones.length,
-                      unit: "里程碑",
+                      value: milestones.length,
                       done: milestones.filter((i) => i.status === "DONE")
                         .length,
                     },
                     {
-                      label: "覆盖负责人",
-                      count: people.length,
-                      unit: "成员",
-                      done: completedPeople,
+                      label: "阶段完成率",
+                      count: work.length,
+                      value: work.length
+                        ? `${Math.round((completedWork / work.length) * 100)}%`
+                        : "—",
+                      done: completedWork,
                     },
-                  ].map(({ label, count, unit, done }) => (
+                  ].map(({ label, count, value, done }) => (
                     <div className="card metric" key={label}>
                       <div className="statname">{label}</div>
                       <div className="metricbody">
@@ -580,9 +579,9 @@ export function PlanView({
                           }}
                         />
                         <div>
-                          <div className="statnumber">{count}</div>
+                          <div className="statnumber">{value}</div>
                           <div className="statsub">
-                            {unit} · 已完成 {done}/{count}
+                            {count ? `已完成 ${done} / ${count}` : "暂无数据"}
                           </div>
                         </div>
                       </div>

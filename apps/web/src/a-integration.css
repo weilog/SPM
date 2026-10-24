@@ -77,3 +77,7 @@
 .a-members .drawer .detail-row>.role{justify-self:start;align-self:start}
 .a-members .drawer .task-chip{align-items:center;gap:12px;white-space:normal}
 .v43-shell .account-logout{margin-left:8px;flex-shrink:0}
+.a-plan-view .metrics .metricbody{gap:12px;min-height:64px}
+.a-plan-view .metrics .metricbody>div:last-child{min-width:0}
+.a-plan-view .metrics .statnumber{font-variant-numeric:tabular-nums;line-height:1.15}
+.a-plan-view .metrics .statsub{white-space:nowrap;line-height:1.5}

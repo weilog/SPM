@@ -1,0 +1,2 @@
+{"viewport":"1440x900","cards":[{"text":"阶段计划项\n4\n已完成 2 / 4","overflow":false},{"text":"关联任务\n2\n已完成 2 / 2","overflow":false},{"text":"阶段里程碑\n1\n已完成 1 / 1","overflow":false},{"text":"阶段完成率\n50%\n已完成 2 / 4","overflow":false}]}
+{"viewport":"1280x900","cards":[{"text":"阶段计划项\n4\n已完成 2 / 4","overflow":false},{"text":"关联任务\n2\n已完成 2 / 2","overflow":false},{"text":"阶段里程碑\n1\n已完成 1 / 1","overflow":false},{"text":"阶段完成率\n50%\n已完成 2 / 4","overflow":false}]}

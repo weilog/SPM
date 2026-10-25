@@ -267,6 +267,16 @@ function RequirementWorkspace({
   async function move(id: number, epicId: number, position: number) {
     const current = data.stories.find((s) => s.id === id);
     if (!current || position < 0) return;
+    // Map drop positions refer to visible siblings, while the API uses all siblings.
+    const siblings = data.stories
+      .filter((s) => s.epicId === epicId && s.id !== id)
+      .sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id);
+    if (onlyRelated) {
+      const target = siblings.filter((s) => highlightIds?.includes(s.id))[position];
+      position = target
+        ? siblings.findIndex((s) => s.id === target.id)
+        : siblings.length;
+    }
     await mutate(() =>
       api(`${path}/stories/${id}/move`, "PATCH", {
         revision: current.revision,

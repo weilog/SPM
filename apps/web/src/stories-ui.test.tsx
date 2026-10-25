@@ -138,6 +138,39 @@ beforeEach(() => {
   });
 });
 afterEach(cleanup);
+it("maps a filtered story drop to its position among all destination siblings", async () => {
+  snapshot.stories = [
+    { ...story, id: 3, title: "隐藏 A", sortOrder: 0 },
+    { ...story, id: 4, title: "可见 B", sortOrder: 1 },
+    { ...story, id: 5, title: "可见 C", sortOrder: 2 },
+  ];
+  const { container, rerender } = render(
+    <Requirements project={project} onError={vi.fn()} embeddedView="map"
+      onlyRelated highlightIds={[4, 5]} />,
+  );
+  await screen.findByRole("button", { name: "可见 B" });
+  expect(screen.queryByRole("button", { name: "隐藏 A" })).not.toBeInTheDocument();
+  fireEvent.drop(container.querySelector('[data-story-id="4"]')!.parentElement!, {
+    dataTransfer: transfer(5),
+  });
+  await waitFor(() => expect(mocked).toHaveBeenCalledWith(
+    "/projects/1/stories/5/move", "PATCH", { epicId: 2, position: 1, revision: 4 },
+  ));
+  // Removing the filter restores the original full-list index behavior.
+  snapshot.stories = [
+    { ...story, id: 3, title: "隐藏 A", sortOrder: 0 },
+    { ...story, id: 4, title: "可见 B", sortOrder: 1 },
+    { ...story, id: 5, title: "可见 C", sortOrder: 2 },
+  ];
+  rerender(<Requirements key="unfiltered" project={project} onError={vi.fn()} embeddedView="map" />);
+  await screen.findByRole("button", { name: "隐藏 A" });
+  fireEvent.drop(container.querySelector('[data-story-id="3"]')!.parentElement!, {
+    dataTransfer: transfer(5),
+  });
+  await waitFor(() => expect(mocked).toHaveBeenCalledWith(
+    "/projects/1/stories/5/move", "PATCH", { epicId: 2, position: 0, revision: 4 },
+  ));
+});
 it("shares persisted status between board, drawer and map and supports story number search", async () => {
   render(<EmbeddedStoryViews project={project} onError={vi.fn()} />);
   await userEvent.click(await screen.findByRole("tab", { name: /故事看板/ }));

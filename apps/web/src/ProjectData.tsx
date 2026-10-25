@@ -116,16 +116,26 @@ export function ProjectProvider({
   useProjectRefresh(project.id, () => void refresh().catch(errorRef.current));
   useEffect(() => {
     // Revalidate after reconnect/tab activation even when a proxy interrupted SSE.
-    const revalidate = () => {
+    const isActive = () => document.visibilityState === "visible" && document.hasFocus();
+    let active = isActive();
+    const activate = () => {
+      const next = isActive();
+      if (next && !active) void refresh().catch(errorRef.current);
+      active = next;
+    };
+    const deactivate = () => { active = false; };
+    const reconnect = () => {
       if (document.visibilityState === "visible") void refresh().catch(errorRef.current);
     };
-    window.addEventListener("focus", revalidate);
-    window.addEventListener("online", revalidate);
-    document.addEventListener("visibilitychange", revalidate);
+    window.addEventListener("focus", activate);
+    window.addEventListener("blur", deactivate);
+    window.addEventListener("online", reconnect);
+    document.addEventListener("visibilitychange", activate);
     return () => {
-      window.removeEventListener("focus", revalidate);
-      window.removeEventListener("online", revalidate);
-      document.removeEventListener("visibilitychange", revalidate);
+      window.removeEventListener("focus", activate);
+      window.removeEventListener("blur", deactivate);
+      window.removeEventListener("online", reconnect);
+      document.removeEventListener("visibilitychange", activate);
     };
   }, [project.id]);
   useEffect(() => {

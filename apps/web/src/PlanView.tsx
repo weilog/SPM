@@ -61,6 +61,7 @@ export function PlanView({
   focus,
   focusOnly = false,
   onlyRelated = false,
+  relationsLoading = false,
   taskHighlightIds = [],
   stageHighlightIds = [],
   onFocusChange,
@@ -69,6 +70,7 @@ export function PlanView({
   focus?: ViewFocus | null;
   focusOnly?: boolean;
   onlyRelated?: boolean;
+  relationsLoading?: boolean;
   taskHighlightIds?: number[];
   stageHighlightIds?: string[];
   onFocusChange?: (f: ViewFocus) => void;
@@ -587,11 +589,14 @@ export function PlanView({
           </div>
           <main className="board">
             {view === "gantt" ? (
-              onlyRelated &&
+              <>
+              {relationsLoading && <p role="status">正在读取关联计划…</p>}
+              {onlyRelated && !relationsLoading &&
               !highlightIds.length &&
-              !stageHighlightIds.length ? (
+              !stageHighlightIds.length && (
                 <div className="empty">当前焦点没有关联计划项</div>
-              ) : (
+              )}
+              <div hidden={onlyRelated && !relationsLoading && !highlightIds.length && !stageHighlightIds.length} aria-busy={relationsLoading}>
                 <PlanGantt
                   showAi={!embedded}
                   stage={stage}
@@ -639,7 +644,8 @@ export function PlanView({
                   highlightIds={highlightIds}
                   onPlanFocus={onPlanFocus}
                 />
-              )
+              </div>
+              </>
             ) : !stage ? (
               <div className="blank plan-empty-state">
                 <span>暂无阶段计划</span>

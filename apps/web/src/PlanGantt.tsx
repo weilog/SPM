@@ -99,6 +99,8 @@ export function PlanGantt({
     const el = scroller.current;
     if (!el) return;
     const observer = new ResizeObserver(() => {
+      // A hidden empty-state pane has no measurable width; retain its last size.
+      if (!el.clientWidth) return;
       maxInfoWidth.current = Math.max(280, Math.min(720, el.clientWidth - 140));
       setInfoWidth((value) => Math.min(value, maxInfoWidth.current));
     });
@@ -156,11 +158,20 @@ export function PlanGantt({
         diff(target.start, base) * unit - 40,
       );
   }, [highlightIds.join(","), stage?.id, base, unit]);
+  const focusedPlanIdsKey = JSON.stringify(
+    [...new Set(
+      focus?.entityType === "task"
+        ? store.tasks.find((t) => t.id === focus.entityId)?.planIds ?? []
+        : [],
+    )].sort(),
+  );
   useEffect(() => {
     if (focus?.entityType !== "task") return;
-    const task = store.tasks.find((t) => t.id === focus.entityId);
-    if (task) setExpandedTasks((old) => new Set([...old, ...task.planIds]));
-  }, [focus?.entityType, focus?.entityId, store.tasks]);
+    const planIds: string[] = JSON.parse(focusedPlanIdsKey);
+    if (planIds.length)
+      setExpandedTasks((old) => new Set([...old, ...planIds]));
+    // Refreshes must preserve manual collapse; only focus/relation changes expand.
+  }, [focus?.entityType, focus?.entityId, focusedPlanIdsKey]);
   type TaskRow = {
     kind: "linkedTask";
     id: string;

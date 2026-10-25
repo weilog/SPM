@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import {
   cleanup,
+  act,
   fireEvent,
   render,
   screen,
@@ -281,6 +282,50 @@ it("retains the real Gantt and expands the same task under both associated plans
   await u.click(screen.getByRole("button", { name: "查看选中任务详情" }));
   expect(openTask).toHaveBeenCalledWith(7);
   expect(writes).toHaveLength(0);
+});
+it("keeps the Gantt mounted with its chosen scale, info width and expansion while focus relations load", async () => {
+  const { container } = mount();
+  await screen.findByRole("button", { name: "展开关联任务" });
+  fireEvent.click(screen.getAllByRole("button", { name: "计划1" })[0]);
+  await screen.findByRole("complementary", { name: "关联追踪面板" });
+  await waitFor(() => expect(screen.getByRole("button", { name: "仅看关联项" })).toBeEnabled());
+  fireEvent.click(screen.getByRole("button", { name: "仅看关联项" }));
+  const scale = screen.getByRole("combobox", { name: "甘特图时间尺度" });
+  fireEvent.change(scale, { target: { value: "day" } });
+  const resizer = screen.getByRole("separator", { name: "调整甘特图信息区宽度" });
+  fireEvent.keyDown(resizer, { key: "ArrowRight" });
+  const width = resizer.getAttribute("aria-valuenow");
+  fireEvent.click(screen.getByRole("button", { name: "展开关联任务" }));
+  expect(container.querySelectorAll(".wb-task-row")).toHaveLength(2);
+
+  const original = vi.mocked(api).getMockImplementation()!;
+  let finish!: (result: ReturnType<typeof trace>) => void;
+  vi.mocked(api).mockImplementation((path, ...args) =>
+    path.includes("/relations/resolve")
+      ? new Promise((resolve) => { finish = resolve as typeof finish; }) as never
+      : original(path, ...args),
+  );
+  fireEvent.click(screen.getAllByRole("button", { name: "计划2" })[0]);
+  await screen.findByText("正在读取关联计划…");
+  expect(screen.getByRole("combobox", { name: "甘特图时间尺度" })).toBe(scale);
+  expect(scale).toHaveValue("day");
+  expect(resizer).toHaveAttribute("aria-valuenow", width);
+  await act(async () => finish(trace("planItem", "p2")));
+  expect(screen.getByRole("combobox", { name: "甘特图时间尺度" })).toBe(scale);
+  expect(scale).toHaveValue("day");
+  expect(resizer).toHaveAttribute("aria-valuenow", width);
+  expect(container.querySelectorAll(".wb-task-row")).toHaveLength(2);
+
+  fireEvent.click(screen.getAllByRole("button", { name: "计划1" })[0]);
+  await screen.findByText("正在读取关联计划…");
+  await act(async () => finish({ ...trace("planItem", "p1"), planItems: [], stages: [] }));
+  expect(screen.getByText("当前焦点没有关联计划项")).toBeVisible();
+  expect(scale).toBeInTheDocument();
+  expect(scale).not.toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "清除焦点" }));
+  expect(screen.getByRole("combobox", { name: "甘特图时间尺度" })).toBe(scale);
+  expect(scale).toHaveValue("day");
+  expect(container.querySelectorAll(".wb-task-row")).toHaveLength(2);
 });
 it("focuses the actual stage rather than treating the stage display row as a plan item", async () => {
   mount();

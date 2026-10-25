@@ -299,6 +299,7 @@ export function Workbench({
               embedded
               focusOnly
               focus={focus}
+              relationsLoading={loadingRelations}
               onlyRelated={onlyRelated && !!focus}
               highlightIds={relations.planItems}
               taskHighlightIds={relations.tasks}

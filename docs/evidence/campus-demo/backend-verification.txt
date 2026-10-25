@@ -1,0 +1,4 @@
+PASS real DB: counts, hierarchy, relationships, task histories, document bytes, fixed first-import dates and idempotency
+PASS backend API: manager/member access, anonymous 401, outsider/admin isolation, write denial, own tasks, document download and completed/empty projects
+PASS deterministic AI rules (external model disabled): LEAF_REQUIREMENT_WITHOUT_STORY, MILESTONE_OVERDUE, PLAN_OVERDUE, SAME_OWNER_PLAN_OVERLAP, STORY_WITHOUT_REQUIREMENT, STORY_WITHOUT_UML, TASK_PRIORITY_CONCENTRATION, TASK_UNASSIGNED, TASK_WITHOUT_PLAN
+PASS same-name collision: import refused without overwriting

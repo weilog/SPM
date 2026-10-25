@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    "projects",
+    "overview",
+    "24 requirements",
+    "five stages",
+    "gantt",
+    "story map",
+    "members",
+    "documents"
+  ],
+  "browserErrors": [],
+  "aiCalls": 0
+}

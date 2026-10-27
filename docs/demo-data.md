@@ -24,7 +24,7 @@
 
 ## 导入
 
-在仓库根目录操作，先安装依赖，在后端 `.env` 中设置本地 `DATABASE_URL`。数据库须已启动。脚本仅允许 `localhost` 或 `127.0.0.1`，不会重置数据库。
+在仓库根目录操作，先安装依赖，在仓库根目录 `.env` 中设置本地 `DATABASE_URL`。数据库须已启动。脚本仅允许 `localhost` 或 `127.0.0.1`，不会重置数据库。
 
 ```powershell
 pnpm install --frozen-lockfile

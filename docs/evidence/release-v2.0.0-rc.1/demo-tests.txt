@@ -1,0 +1,4 @@
+$ node scripts/test-lifecycle-seed.cjs
+PASS: real PostgreSQL import, relationships, hierarchy, task history, document bytes and demo accounts
+PASS: idempotent import preserves user edits and unrelated existing records
+PASS: conflicting project import refuses safely without changing data

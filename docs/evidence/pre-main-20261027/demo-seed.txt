@@ -1,0 +1,91 @@
+$ node scripts/seed-lifecycle-demo.cjs
+{
+  "templateId": "spm-lifecycle-v1",
+  "projectId": 1,
+  "name": "爱管理协同平台建设 · 五阶段示例",
+  "snapshotDate": "2026-10-22",
+  "accounts": [
+    {
+      "username": "tpl_pm",
+      "name": "林知远",
+      "role": "MANAGER"
+    },
+    {
+      "username": "tpl_frontend",
+      "name": "陈思雨",
+      "role": "DEVELOPER"
+    },
+    {
+      "username": "tpl_backend",
+      "name": "周启明",
+      "role": "DEVELOPER"
+    },
+    {
+      "username": "tpl_qa",
+      "name": "赵可欣",
+      "role": "TESTER"
+    },
+    {
+      "username": "tpl_ops",
+      "name": "吴承安",
+      "role": "DEVELOPER"
+    },
+    {
+      "username": "tpl_observer",
+      "name": "未授权访客",
+      "role": "NO_MEMBERSHIP"
+    }
+  ],
+  "stageIds": {
+    "init": "3d81ff9a-7b70-4d4c-a54b-28179d96a48d",
+    "planning": "16b75313-58be-4319-b1b2-ef646353750a",
+    "execution": "a0db4978-f8f0-490b-a971-916877f5a815",
+    "acceptance": "0091ae1e-0c14-4c1f-9f41-7f29a691c094",
+    "maintenance": "e1d683fc-9005-4f77-b6b3-646df9c66464"
+  },
+  "taskIds": {
+    "charter": 1,
+    "team": 2,
+    "master": 3,
+    "collect": 4,
+    "define_scope": 5,
+    "wbs": 6,
+    "activities": 7,
+    "timeline": 8,
+    "estimate": 9,
+    "budget": 10,
+    "quality": 11,
+    "resources": 12,
+    "risk": 13,
+    "purchase": 14,
+    "visual_draft": 15,
+    "visual_iter": 16,
+    "visual_review": 17,
+    "tech_draft": 18,
+    "tech_iter": 19,
+    "tech_review": 20,
+    "early": 21,
+    "middle": 22,
+    "late": 23,
+    "internal_accept": 24,
+    "report": 25,
+    "handover": 26,
+    "ops": 27,
+    "maintenance_test": 28,
+    "environment": 29,
+    "mobile": 30,
+    "guide": 31,
+    "archive": 32
+  },
+  "counts": {
+    "requirements": 35,
+    "goals": 3,
+    "epics": 7,
+    "stories": 17,
+    "stages": 5,
+    "planItems": 40,
+    "tasks": 32,
+    "documents": 16,
+    "diagrams": 1
+  }
+}

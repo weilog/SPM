@@ -1,0 +1,246 @@
+[
+  {
+    "id": "P1",
+    "title": "项目启动阶段",
+    "start": "2026-10-01",
+    "end": "2026-10-12",
+    "owner": "项目经理",
+    "description": "完成团队组建、项目启动会议与开发环境准备，明确项目范围和协作方式。",
+    "goals": [
+      {
+        "id": "G1",
+        "title": "确定项目管理目标",
+        "done": true
+      },
+      {
+        "id": "G2",
+        "title": "完成启动会议",
+        "done": true
+      },
+      {
+        "id": "G3",
+        "title": "明确成员职责与分工",
+        "done": false
+      }
+    ],
+    "items": [
+      {
+        "id": "I1",
+        "status": "已完成",
+        "priority": "高",
+        "title": "整理项目范围与目标",
+        "start": "2026-10-01",
+        "end": "2026-10-05",
+        "owner": "项目经理",
+        "task": "T-101",
+        "description": "形成项目工作范围说明。"
+      },
+      {
+        "id": "I2",
+        "status": "进行中",
+        "priority": "中",
+        "title": "制定团队协作规范",
+        "start": "2026-10-06",
+        "end": "2026-10-12",
+        "owner": "项目经理",
+        "task": "",
+        "description": "确认成员分工和协作规则。"
+      }
+    ],
+    "milestones": [
+      {
+        "id": "M1",
+        "title": "启动会议完成",
+        "date": "2026-10-12",
+        "owner": "项目经理",
+        "description": "完成启动阶段关键节点。"
+      }
+    ]
+  },
+  {
+    "id": "P2",
+    "title": "需求分析与设计阶段",
+    "start": "2026-10-13",
+    "end": "2026-10-31",
+    "owner": "项目经理",
+    "description": "梳理业务需求、用户故事与原型设计，完成关键模块的页面规范。",
+    "goals": [
+      {
+        "id": "G4",
+        "title": "完成需求整理",
+        "done": false
+      },
+      {
+        "id": "G5",
+        "title": "确认 UI/UX 页面规范",
+        "done": false
+      },
+      {
+        "id": "G6",
+        "title": "完成用例图设计",
+        "done": false
+      }
+    ],
+    "items": [
+      {
+        "id": "I3",
+        "status": "已完成",
+        "priority": "高",
+        "title": "需求整理与故事映射",
+        "start": "2026-10-13",
+        "end": "2026-10-20",
+        "owner": "项目经理",
+        "task": "T-101",
+        "description": "整理正式需求和项目故事关系。"
+      },
+      {
+        "id": "I4",
+        "status": "进行中",
+        "priority": "高",
+        "title": "核心页面原型设计",
+        "start": "2026-10-19",
+        "end": "2026-10-29",
+        "owner": "开发人员",
+        "task": "T-102",
+        "description": "确认项目管理平台页面布局和交互。"
+      },
+      {
+        "id": "I9",
+        "status": "进行中",
+        "priority": "中",
+        "title": "原型数据接口联调",
+        "start": "2026-10-22",
+        "end": "2026-10-28",
+        "owner": "开发人员",
+        "task": "T-103",
+        "description": "确认原型页面与接口的数据契约。"
+      },
+      {
+        "id": "I10",
+        "status": "待处理",
+        "priority": "中",
+        "title": "整理验收测试用例",
+        "start": "2026-10-25",
+        "end": "2026-10-30",
+        "owner": "测试人员",
+        "task": "T-104",
+        "description": "梳理角色访问与视图联动验收场景。"
+      }
+    ],
+    "milestones": [
+      {
+        "id": "M2",
+        "title": "需求评审完成",
+        "date": "2026-10-31",
+        "owner": "项目经理",
+        "description": "阶段验收用里程碑。"
+      }
+    ]
+  },
+  {
+    "id": "P3",
+    "title": "功能开发阶段",
+    "start": "2026-11-01",
+    "end": "2026-11-22",
+    "owner": "开发人员",
+    "description": "实现已批准功能、接口与多视图基础组件。",
+    "goals": [
+      {
+        "id": "G7",
+        "title": "核心模块开发",
+        "done": false
+      },
+      {
+        "id": "G8",
+        "title": "接口联调完成",
+        "done": false
+      }
+    ],
+    "items": [
+      {
+        "id": "I5",
+        "status": "待处理",
+        "priority": "高",
+        "title": "主要管理模块开发",
+        "start": "2026-11-01",
+        "end": "2026-11-12",
+        "owner": "开发人员",
+        "task": "T-102",
+        "description": "按批准计划实现项目模块。"
+      },
+      {
+        "id": "I6",
+        "status": "待处理",
+        "priority": "中",
+        "title": "接口与页面联调",
+        "start": "2026-11-13",
+        "end": "2026-11-22",
+        "owner": "开发人员",
+        "task": "T-103",
+        "description": "验证数据与权限交互。"
+      }
+    ],
+    "milestones": [
+      {
+        "id": "M3",
+        "title": "开发阶段验收",
+        "date": "2026-11-22",
+        "owner": "项目经理",
+        "description": "完成开发阶段验收。"
+      }
+    ]
+  },
+  {
+    "id": "P4",
+    "title": "测试与交付阶段",
+    "start": "2026-11-23",
+    "end": "2026-12-07",
+    "owner": "测试人员",
+    "description": "执行角色权限测试、功能回归与交付文档整理。",
+    "goals": [
+      {
+        "id": "G9",
+        "title": "完成角色与权限回归",
+        "done": false
+      },
+      {
+        "id": "G10",
+        "title": "完成阶段交付",
+        "done": false
+      }
+    ],
+    "items": [
+      {
+        "id": "I7",
+        "status": "待处理",
+        "priority": "高",
+        "title": "核心功能回归测试",
+        "start": "2026-11-23",
+        "end": "2026-11-30",
+        "owner": "测试人员",
+        "task": "T-104",
+        "description": "按照验收用例检查。"
+      },
+      {
+        "id": "I8",
+        "status": "待处理",
+        "priority": "中",
+        "title": "整理交付材料",
+        "start": "2026-12-01",
+        "end": "2026-12-07",
+        "owner": "项目经理",
+        "task": "",
+        "description": "形成项目交付材料。"
+      }
+    ],
+    "milestones": [
+      {
+        "id": "M4",
+        "title": "项目验收",
+        "date": "2026-12-07",
+        "owner": "项目经理",
+        "description": "最终验收节点。"
+      }
+    ]
+  }
+]

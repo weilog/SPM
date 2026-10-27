@@ -1,0 +1,1 @@
+{"result":"PASS","checks":["two authenticated users","member writes own progress","manager receives SSE change","stale revision returns 409","plans unchanged","stories unchanged","outsider denied","member cannot reassign"],"taskId":7,"progress":37,"status":"IN_PROGRESS"}

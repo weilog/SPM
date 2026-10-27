@@ -1,0 +1,374 @@
+{
+  "project": {
+    "id": 1,
+    "name": "爱管理开发项目",
+    "description": "以项目规划、需求协作和任务追踪为核心的项目管理平台"
+  },
+  "goals": [
+    {
+      "id": "G-001",
+      "name": "提升项目协作透明度"
+    }
+  ],
+  "epics": [
+    {
+      "id": "EP-001",
+      "name": "用户与权限",
+      "goalId": "G-001",
+      "sort": 1
+    },
+    {
+      "id": "EP-002",
+      "name": "任务与协作",
+      "goalId": "G-001",
+      "sort": 2
+    }
+  ],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "title": "用户与权限管理",
+      "parentId": null,
+      "description": "统一管理账户访问、项目成员及角色权限。",
+      "updatedAt": "2026-10-18",
+      "storyIds": []
+    },
+    {
+      "id": "REQ-004",
+      "title": "用户登录与退出",
+      "parentId": "REQ-001",
+      "description": "用户登录验证、退出会话与访问授权。",
+      "updatedAt": "2026-10-18",
+      "storyIds": [
+        "US-001"
+      ]
+    },
+    {
+      "id": "REQ-005",
+      "title": "项目成员与角色管理",
+      "parentId": "REQ-001",
+      "description": "添加项目成员、维护项目角色与权限边界。",
+      "updatedAt": "2026-10-19",
+      "storyIds": [
+        "US-002"
+      ]
+    },
+    {
+      "id": "REQ-002",
+      "title": "任务与协作管理",
+      "parentId": null,
+      "description": "负责项目任务分配、执行过程及进度协作。",
+      "updatedAt": "2026-10-20",
+      "storyIds": []
+    },
+    {
+      "id": "REQ-006",
+      "title": "创建与分配项目任务",
+      "parentId": "REQ-002",
+      "description": "项目经理创建任务并指定项目成员负责。",
+      "updatedAt": "2026-10-20",
+      "storyIds": [
+        "US-003"
+      ]
+    },
+    {
+      "id": "REQ-007",
+      "title": "本人任务与进度更新",
+      "parentId": "REQ-002",
+      "description": "成员查看本人任务、更新状态和完成百分比。",
+      "updatedAt": "2026-10-20",
+      "storyIds": [
+        "US-004"
+      ]
+    },
+    {
+      "id": "REQ-003",
+      "title": "可视化需求与多视图协作",
+      "parentId": null,
+      "description": "支持故事地图、看板及五视图双向定位。",
+      "updatedAt": "2026-10-21",
+      "storyIds": [
+        "US-005"
+      ]
+    }
+  ],
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "用户登录与退出",
+      "epicId": "EP-001",
+      "status": "DONE",
+      "sort": 1,
+      "description": "作为系统用户，我希望安全登录和退出，以便使用获授权的功能。",
+      "acceptance": "正确凭据可登录，退出后会话失效。",
+      "reqIds": [
+        "REQ-004"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "管理项目成员权限",
+      "epicId": "EP-001",
+      "status": "IN_PROGRESS",
+      "sort": 2,
+      "description": "作为项目经理，我希望维护项目成员与项目内角色。",
+      "acceptance": "经理可维护成员，普通成员不可越权。",
+      "reqIds": [
+        "REQ-005"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "创建并分配项目任务",
+      "epicId": "EP-002",
+      "status": "IN_PROGRESS",
+      "sort": 1,
+      "description": "作为项目经理，我希望创建任务并指定负责人，以便组织工作。",
+      "acceptance": "任务保存成功、负责人必须为本项目有效成员。",
+      "reqIds": [
+        "REQ-006"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "查看和更新我的任务",
+      "epicId": "EP-002",
+      "status": "TODO",
+      "sort": 2,
+      "description": "作为开发或测试人员，我希望查看并更新本人的任务状态与进度。",
+      "acceptance": "只能操作本人任务，更新能跨视图同步。",
+      "reqIds": [
+        "REQ-007"
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "关联五种业务视图",
+      "epicId": "EP-002",
+      "status": "TODO",
+      "sort": 3,
+      "description": "作为项目经理，我希望在工作台中双向定位业务对象。",
+      "acceptance": "选中故事后，其他视图定位真实关联对象。",
+      "reqIds": [
+        "REQ-003"
+      ]
+    }
+  ],
+  "members": [
+    {
+      "id": "U-001",
+      "name": "张三",
+      "role": "DEVELOPER"
+    },
+    {
+      "id": "U-002",
+      "name": "李四",
+      "role": "DEVELOPER"
+    },
+    {
+      "id": "U-003",
+      "name": "王五",
+      "role": "TESTER"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "完善登录页面交互",
+      "desc": "完成登录表单校验、登录异常处理及页面交互。",
+      "member": "U-001",
+      "status": "DONE",
+      "priority": "HIGH",
+      "progress": 100,
+      "storyIds": [
+        "US-001"
+      ],
+      "planIds": [
+        "PL-001"
+      ],
+      "archived": false
+    },
+    {
+      "id": "T-002",
+      "title": "实现任务分配接口",
+      "desc": "完成后端任务创建和负责人校验。",
+      "member": "U-001",
+      "status": "IN_PROGRESS",
+      "priority": "URGENT",
+      "progress": 45,
+      "storyIds": [
+        "US-003"
+      ],
+      "planIds": [
+        "PL-002"
+      ],
+      "archived": false
+    },
+    {
+      "id": "T-003",
+      "title": "编写项目权限测试",
+      "desc": "测试项目角色授权和跨项目访问限制。",
+      "member": "U-003",
+      "status": "TODO",
+      "priority": "MEDIUM",
+      "progress": 0,
+      "storyIds": [
+        "US-004"
+      ],
+      "planIds": [
+        "PL-003"
+      ],
+      "archived": false
+    },
+    {
+      "id": "T-004",
+      "title": "完善用户故事地图",
+      "desc": "实现目标、Epic、故事三级层级及拖拽。",
+      "member": "U-002",
+      "status": "IN_PROGRESS",
+      "priority": "HIGH",
+      "progress": 70,
+      "storyIds": [
+        "US-005"
+      ],
+      "planIds": [
+        "PL-002"
+      ],
+      "archived": false
+    },
+    {
+      "id": "T-005",
+      "title": "完成任务列表交互",
+      "desc": "优化任务管理表格和详情抽屉。",
+      "member": "U-002",
+      "status": "TODO",
+      "priority": "MEDIUM",
+      "progress": 0,
+      "storyIds": [
+        "US-003"
+      ],
+      "planIds": [
+        "PL-002"
+      ],
+      "archived": false
+    },
+    {
+      "id": "T-006",
+      "title": "验证跨视图数据同步",
+      "desc": "检查故事、任务、计划和 UML 多视图联动。",
+      "member": "",
+      "status": "TODO",
+      "priority": "HIGH",
+      "progress": 0,
+      "storyIds": [
+        "US-005"
+      ],
+      "planIds": [
+        "PL-004"
+      ],
+      "archived": false
+    }
+  ],
+  "plans": [
+    {
+      "id": "PL-001",
+      "name": "用户与权限基础",
+      "start": 1,
+      "end": 2,
+      "description": "项目基础用户和权限能力"
+    },
+    {
+      "id": "PL-002",
+      "name": "需求与任务模块",
+      "start": 2,
+      "end": 4,
+      "description": "实现需求和任务模块"
+    },
+    {
+      "id": "PL-003",
+      "name": "权限与集成测试",
+      "start": 4,
+      "end": 5,
+      "description": "验证权限、任务和需求"
+    },
+    {
+      "id": "PL-004",
+      "name": "多视图联动验收",
+      "start": 5,
+      "end": 6,
+      "description": "完成五视图集成与验收"
+    }
+  ],
+  "uml": [
+    {
+      "id": "D-001",
+      "name": "项目总体用例图",
+      "actors": [
+        {
+          "id": "A-001",
+          "name": "项目经理",
+          "x": 104,
+          "y": 178
+        },
+        {
+          "id": "A-002",
+          "name": "项目成员",
+          "x": 104,
+          "y": 361
+        }
+      ],
+      "uses": [
+        {
+          "id": "UC-001",
+          "name": "用户登录",
+          "x": 475,
+          "y": 130,
+          "storyIds": [
+            "US-001"
+          ],
+          "desc": "系统用户登录并取得项目授权"
+        },
+        {
+          "id": "UC-002",
+          "name": "创建分配任务",
+          "x": 475,
+          "y": 236,
+          "storyIds": [
+            "US-003"
+          ],
+          "desc": "项目经理创建任务并设置负责人"
+        },
+        {
+          "id": "UC-003",
+          "name": "更新本人任务",
+          "x": 475,
+          "y": 352,
+          "storyIds": [
+            "US-004"
+          ],
+          "desc": "项目成员更新本人任务状态与进度"
+        }
+      ],
+      "edges": [
+        {
+          "id": "L-001",
+          "from": "A-001",
+          "to": "UC-002",
+          "kind": "association"
+        },
+        {
+          "id": "L-002",
+          "from": "A-002",
+          "to": "UC-001",
+          "kind": "association"
+        },
+        {
+          "id": "L-003",
+          "from": "A-002",
+          "to": "UC-003",
+          "kind": "association"
+        }
+      ]
+    }
+  ]
+}

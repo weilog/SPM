@@ -1,0 +1,55 @@
+[WARN] using --force I sure hope you know what you are doing
+Scope: all 4 workspace projects
+✓ Lockfile passes supply-chain policies (verified 23m ago)
+Progress: resolved 1, reused 0, downloaded 0, added 0
+
+   ╭────────────────────────────────────────────────────────────────────────╮
+   │                                                                        │
+   │                  Update available! 11.25.0 → 12.11.2.                  │
+   │                  Changelog: https://pnpm.io/v/12.11.2                  │
+   │   To update, run: Invoke-WebRequest https://get.pnpm.io/install.ps1    │
+   │                 -UseBasicParsing | Invoke-Expression                   │
+   │                                                                        │
+   ╰────────────────────────────────────────────────────────────────────────╯
+
+Progress: resolved 415, reused 299, downloaded 0, added 0
+Progress: resolved 429, reused 354, downloaded 3, added 0
+Progress: resolved 429, reused 354, downloaded 7, added 0
+Progress: resolved 429, reused 354, downloaded 10, added 0
+Progress: resolved 716, reused 620, downloaded 25, added 0
+Progress: resolved 716, reused 620, downloaded 26, added 0
+Progress: resolved 716, reused 620, downloaded 28, added 0
+Progress: resolved 803, reused 707, downloaded 33, added 0
+Progress: resolved 851, reused 755, downloaded 41, added 0
+[WARN] 3 deprecated subdependencies found: glob@7.2.3, inflight@1.0.6, whatwg-encoding@3.1.1
+Packages: +868 -5
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+Progress: resolved 868, reused 772, downloaded 46, added 12
+Progress: resolved 868, reused 772, downloaded 55, added 46
+Progress: resolved 868, reused 772, downloaded 67, added 77
+Progress: resolved 868, reused 772, downloaded 80, added 98
+Progress: resolved 868, reused 772, downloaded 96, added 123
+Progress: resolved 868, reused 772, downloaded 96, added 135
+Progress: resolved 868, reused 772, downloaded 96, added 185
+Progress: resolved 868, reused 772, downloaded 96, added 227
+Progress: resolved 868, reused 772, downloaded 96, added 272
+Progress: resolved 868, reused 772, downloaded 96, added 308
+Progress: resolved 868, reused 772, downloaded 96, added 360
+Progress: resolved 868, reused 772, downloaded 96, added 421
+Progress: resolved 868, reused 772, downloaded 96, added 488
+Progress: resolved 868, reused 772, downloaded 96, added 533
+Progress: resolved 868, reused 772, downloaded 96, added 578
+Progress: resolved 868, reused 772, downloaded 96, added 617
+Progress: resolved 868, reused 772, downloaded 96, added 629
+Progress: resolved 868, reused 772, downloaded 96, added 674
+Progress: resolved 868, reused 772, downloaded 96, added 704
+Progress: resolved 868, reused 772, downloaded 96, added 734
+Progress: resolved 868, reused 772, downloaded 96, added 756
+Progress: resolved 868, reused 772, downloaded 96, added 764
+Progress: resolved 868, reused 772, downloaded 96, added 769
+Progress: resolved 868, reused 772, downloaded 96, added 776
+Progress: resolved 868, reused 772, downloaded 96, added 783
+Progress: resolved 868, reused 772, downloaded 96, added 785
+Progress: resolved 868, reused 772, downloaded 96, added 799
+Progress: resolved 868, reused 772, downloaded 96, added 839
+[ERR_PNPM_EPERM] [symlinkAllModules] EPERM: operation not permitted, symlink 'D:\Work\shiyan\SPM-typescript\node_modules\.pnpm\@jest+core@30.2.0_supports-_5a2b197e9f2140a32766590904818e58\node_modules\@jest\core' -> 'D:\Work\shiyan\SPM-typescript\node_modules\.pnpm\jest@30.2.0_@types+node@24._3cba13c6c259f9c0275f4431b51e7da4\node_modules\@jest\core'

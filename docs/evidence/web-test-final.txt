@@ -1,0 +1,20 @@
+$ vitest run
+
+ RUN  v4.0.18 D:/Work/shiyan/SPM-typescript/apps/web
+
+ ✓ src/api.test.ts (2 tests) 6ms
+ ✓ src/ui.test.tsx (10 tests) 6789ms
+     ✓ requires credentials before submitting  626ms
+     ✓ shows the backend wrong-password error  492ms
+     ✓ passes a successful user to the app  466ms
+     ✓ calls server logout then discards the user context  481ms
+     ✓ ordinary users cannot see global management or creation controls  321ms
+     ✓ switches project by the selected id rather than a stale global project  360ms
+     ✓ view-only project members do not see member/task management tabs  548ms
+     ✓ validates title and sends only task creation contract fields  1641ms
+     ✓ clears a task assignee using its project-scoped endpoint  1595ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
+   Start at  22:00:22
+   Duration  10.01s (transform 188ms, setup 254ms, import 2.36s, tests 6.79s, environment 1.13s)

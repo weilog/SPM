@@ -1,0 +1,3 @@
+$ pnpm --filter @spm/api db:seed
+$ tsx prisma/seed.ts
+Seed complete: admin, manager, manager_b, member. Existing accounts unchanged. Password is the private SEED_PASSWORD.

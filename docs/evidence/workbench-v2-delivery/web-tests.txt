@@ -1,0 +1,47 @@
+$ vitest run "--maxWorkers=1"
+
+ RUN  v4.0.18 C:/Users/cdk/Desktop/SPM/apps/web
+
+ ✓ src/v2-ui.test.tsx (7 tests) 21371ms
+     ✓ creates an account without exposing or submitting global role assignment  1321ms
+     ✓ changes a member role through a project-scoped request  3143ms
+     ✓ lets a developer view details while hiding create/edit controls  1882ms
+     ✓ validates title and creates only a formal requirement, without task links  3382ms
+     ✓ edits requirement content using the current project and requirement id  2627ms
+     ✓ uses the server-owned personal list/detail routes without an arbitrary user id  1707ms
+     ✓ integrates formal requirements and personal tasks into an authorized developer project  7307ms
+ ✓ src/workbench-v2.test.tsx (8 tests) 12638ms
+   ✓ single click focuses without opening details, tracks paths and manually filters both story views  1639ms
+   ✓ opens dual on demand at 55/45, keyboard resizes and overlays tracking  1018ms
+   ✓ retains the real Gantt and expands the same task under both associated plans without invented task dates  1310ms
+   ✓ focuses the actual stage rather than treating the stage display row as a plan item  871ms
+   ✓ creates and reloads a real sequence through the canonical service without writing task or plan endpoints  3075ms
+   ✓ keeps sequence creation and editing unavailable to ordinary members  885ms
+   ✓ reverse-focuses a member without changing the chosen view combination  1476ms
+   ✓ previews a plan date change before writing only that plan with its revision  2361ms
+ ✓ src/ui.test.tsx (10 tests) 8737ms
+     ✓ shows the backend wrong-password error  414ms
+     ✓ passes a successful user to the app  467ms
+     ✓ calls server logout then discards the user context  706ms
+     ✓ ordinary users cannot see global management or creation controls  302ms
+     ✓ view-only project members do not see member/task management tabs  390ms
+     ✓ validates title and sends only task creation contract fields  2705ms
+     ✓ clears a task assignee using its project-scoped endpoint  3271ms
+ ✓ src/stories-ui.test.tsx (6 tests) 3184ms
+   ✓ shares persisted status between board, drawer and map and supports story number search  1378ms
+   ✓ persists a cross-epic map drop  353ms
+   ✓ keeps DEVELOPER map, board and drawer read-only  515ms
+   ✓ keeps TESTER map, board and drawer read-only  569ms
+ ✓ src/auth-ui.test.tsx (6 tests) 5448ms
+     ✓ opens the explicitly simulated mail link on the reset-password screen  779ms
+     ✓ validates registration confirmation before submitting only the confirmed registration fields  2351ms
+     ✓ shows disabled simulation errors without claiming a sent message  620ms
+     ✓ uses the reset email token and requires matching 12-character passwords  858ms
+     ✓ rejects direct resets without a token  634ms
+ ✓ src/api.test.ts (2 tests) 5ms
+
+ Test Files  6 passed (6)
+      Tests  39 passed (39)
+   Start at  01:10:08
+   Duration  72.03s (transform 1.23s, setup 805ms, import 13.03s, tests 51.38s, environment 4.87s)
+

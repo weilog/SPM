@@ -1,0 +1,37 @@
+$ vitest run
+
+ RUN  v4.0.18 D:/Work/shiyan/SPM-s2-b/apps/web
+
+ ✓ src/api.test.ts (2 tests) 4ms
+ ✓ src/auth-ui.test.tsx (6 tests) 4741ms
+     ✓ opens the explicitly simulated mail link on the reset-password screen  739ms
+     ✓ validates registration confirmation before submitting only the confirmed registration fields  1945ms
+     ✓ shows disabled simulation errors without claiming a sent message  549ms
+     ✓ uses the reset email token and requires matching 12-character passwords  686ms
+     ✓ rejects direct resets without a token  653ms
+ ✓ src/stories-ui.test.tsx (6 tests) 3238ms
+   ✓ shares persisted status between board, drawer and map and supports story number search  1195ms
+   ✓ persists a cross-epic map drop  387ms
+   ✓ rolls back an optimistic status change when the server rejects it  350ms
+   ✓ keeps DEVELOPER map, board and drawer read-only  592ms
+   ✓ keeps TESTER map, board and drawer read-only  579ms
+ ✓ src/ui.test.tsx (10 tests) 6118ms
+     ✓ shows the backend wrong-password error  328ms
+     ✓ passes a successful user to the app  487ms
+     ✓ calls server logout then discards the user context  308ms
+     ✓ view-only project members do not see member/task management tabs  348ms
+     ✓ validates title and sends only task creation contract fields  1963ms
+     ✓ clears a task assignee using its project-scoped endpoint  2077ms
+ ✓ src/v2-ui.test.tsx (7 tests) 15216ms
+     ✓ creates an account without exposing or submitting global role assignment  1315ms
+     ✓ changes a member role through a project-scoped request  2044ms
+     ✓ lets a developer view details while hiding create/edit controls  1087ms
+     ✓ validates title and creates only a formal requirement, without task links  2596ms
+     ✓ edits requirement content using the current project and requirement id  2113ms
+     ✓ uses the server-owned personal list/detail routes without an arbitrary user id  1272ms
+     ✓ integrates formal requirements and personal tasks into an authorized developer project  4787ms
+
+ Test Files  5 passed (5)
+      Tests  31 passed (31)
+   Start at  10:10:57
+   Duration  18.97s (transform 1.29s, setup 579ms, import 8.50s, tests 29.32s, environment 3.07s)

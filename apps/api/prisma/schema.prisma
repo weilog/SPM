@@ -1,0 +1,423 @@
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+datasource db {
+  provider = "postgresql"
+}
+enum Role {
+  ADMIN
+  MANAGER
+  MEMBER
+}
+enum ProjectRole {
+  MANAGER
+  DEVELOPER
+  TESTER
+}
+model User {
+  id Int @id @default(autoincrement())
+  username String @unique @db.VarChar(80)
+  displayName String? @db.VarChar(30)
+  createdAt DateTime? @default(now())
+  passwordHash String
+  email String? @unique @db.VarChar(254)
+  passwordResets PasswordReset[]
+  role Role @default(MEMBER)
+  active Boolean @default(true)
+  sessions Session[]
+  managedProjects Project[]
+  memberships ProjectMember[]
+  aiAnalyses AiAnalysisRun[]
+  aiDrafts AiDraft[]
+}
+model PasswordReset {
+  id String @id
+  userId Int
+  passwordHash String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt])
+  @@index([expiresAt])
+}
+model Session {
+  id String @id
+  userId Int
+  expiresAt DateTime
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([expiresAt])
+}
+model Project {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(200)
+  description String @default("")
+  managerId Int
+  manager User @relation(fields: [managerId], references: [id], onDelete: Restrict)
+  members ProjectMember[]
+  tasks Task[]
+  requirements Requirement[]
+  goals ProductGoal[]
+  epics Epic[]
+  stories UserStory[]
+  sequences UmlSequence[]
+  diagrams UmlDiagram[]
+  planStages PlanStage[]
+  planItems PlanItem[]
+  documents ProjectDocument[]
+  aiAnalyses AiAnalysisRun[]
+  aiDrafts AiDraft[]
+  createdAt DateTime @default(now())
+}
+model ProjectMember {
+  id Int @id @default(autoincrement())
+  projectId Int
+  userId Int
+  role ProjectRole @default(DEVELOPER)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ownedStages PlanStage[] @relation("StageOwner")
+  ownedItems PlanItem[] @relation("ItemOwner")
+  assignedTasks Task[]
+  @@unique([projectId, userId])
+}
+model Task {
+  id Int @id @default(autoincrement())
+  projectId Int
+  title String @db.VarChar(200)
+  description String @default("")
+  status String @default("TODO") @db.VarChar(16)
+  priority String @default("MEDIUM") @db.VarChar(10)
+  progress Int @default(0)
+  archivedAt DateTime?
+  updatedAt DateTime @default(now()) @updatedAt
+  revision Int @default(0)
+  assigneeUserId Int?
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assigneeMember ProjectMember? @relation(fields: [projectId, assigneeUserId], references: [projectId, userId], onDelete: NoAction, onUpdate: NoAction)
+  createdAt DateTime @default(now())
+  storyLinks StoryTask[]
+  history TaskHistory[]
+  planLinks TaskPlanReference[]
+  @@unique([projectId, id])
+}
+model Requirement {
+  id Int @id @default(autoincrement())
+  projectId Int
+  parentId Int?
+  parent Requirement? @relation("RequirementTree", fields: [projectId, parentId], references: [projectId, id], onDelete: NoAction, onUpdate: NoAction)
+  children Requirement[] @relation("RequirementTree")
+  title String @db.VarChar(200)
+  acceptanceCriteria String @default("") @db.VarChar(10000)
+  revision Int @default(0)
+  description String @default("") @db.VarChar(10000)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  storyLinks StoryRequirement[]
+  @@unique([projectId, id])
+  @@index([projectId])
+}
+
+enum StoryStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+model ProductGoal {
+  id Int @id @default(autoincrement())
+  projectId Int
+  title String @db.VarChar(200)
+  sortOrder Int @default(0)
+  revision Int @default(0)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  epics Epic[]
+  @@unique([projectId, id])
+  @@index([projectId, sortOrder])
+}
+model Epic {
+  id Int @id @default(autoincrement())
+  projectId Int
+  goalId Int
+  title String @db.VarChar(200)
+  sortOrder Int @default(0)
+  revision Int @default(0)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  goal ProductGoal @relation(fields: [projectId, goalId], references: [projectId, id], onDelete: Cascade)
+  stories UserStory[]
+  @@unique([projectId, id])
+  @@index([projectId, goalId, sortOrder])
+}
+model UserStory {
+  id Int @id @default(autoincrement())
+  projectId Int
+  epicId Int
+  title String @db.VarChar(200)
+  description String @default("") @db.VarChar(10000)
+  acceptanceCriteria String @default("") @db.VarChar(10000)
+  status StoryStatus @default(TODO)
+  sortOrder Int @default(0)
+  revision Int @default(0)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  epic Epic @relation(fields: [projectId, epicId], references: [projectId, id], onDelete: Cascade)
+  requirementLinks StoryRequirement[]
+  taskLinks StoryTask[]
+  sequenceLinks UmlSequenceStory[]
+  useCaseLinks UmlStory[]
+  @@unique([projectId, id])
+  @@index([projectId, epicId, sortOrder])
+}
+
+model TaskHistory {
+  id Int @id @default(autoincrement())
+  taskId Int
+  actorUserId Int
+  actorName String
+  action String
+  before Json
+  after Json
+  createdAt DateTime @default(now())
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  @@index([taskId, id])
+}
+// Shared task-to-plan relation; A plan items remain distinct from Task.
+model TaskPlanReference {
+  projectId Int
+  taskId Int
+  planId String @db.VarChar(100)
+  plan PlanItem @relation(fields: [projectId, planId], references: [projectId, id], onDelete: Cascade, onUpdate: NoAction)
+  task Task @relation(fields: [projectId, taskId], references: [projectId, id], onDelete: Cascade)
+  @@id([projectId, taskId, planId])
+}
+model UmlDiagram {
+  id Int @id @default(autoincrement())
+  projectId Int
+  name String @db.VarChar(200)
+  boundary Json @default("{\"x\":260,\"y\":52,\"width\":477,\"height\":397,\"name\":\"系统边界\"}")
+  revision Int @default(0)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  nodes UmlNode[]
+  edges UmlEdge[]
+  @@unique([projectId, id])
+}
+model UmlNode {
+  id Int @id @default(autoincrement())
+  projectId Int
+  diagramId Int
+  kind String @db.VarChar(10)
+  name String @db.VarChar(200)
+  description String @default("") @db.VarChar(10000)
+  x Float
+  y Float
+  revision Int @default(0)
+  diagram UmlDiagram @relation(fields: [projectId, diagramId], references: [projectId, id], onDelete: Cascade)
+  storyLinks UmlStory[]
+  sequenceLinks UmlSequenceUseCase[]
+  outgoing UmlEdge[] @relation("UmlFrom")
+  incoming UmlEdge[] @relation("UmlTo")
+  @@unique([projectId, diagramId, id])
+  @@unique([projectId, id])
+}
+model UmlEdge {
+  id Int @id @default(autoincrement())
+  projectId Int
+  diagramId Int
+  fromId Int
+  toId Int
+  kind String @db.VarChar(12)
+  diagram UmlDiagram @relation(fields: [projectId, diagramId], references: [projectId, id], onDelete: Cascade)
+  from UmlNode @relation("UmlFrom", fields: [projectId, diagramId, fromId], references: [projectId, diagramId, id], onDelete: NoAction, onUpdate: NoAction)
+  to UmlNode @relation("UmlTo", fields: [projectId, diagramId, toId], references: [projectId, diagramId, id], onDelete: NoAction, onUpdate: NoAction)
+  @@unique([diagramId, fromId, toId, kind])
+}
+model UmlStory {
+  projectId Int
+  nodeId Int
+  storyId Int
+  node UmlNode @relation(fields: [projectId, nodeId], references: [projectId, id], onDelete: Cascade)
+  story UserStory @relation(fields: [projectId, storyId], references: [projectId, id], onDelete: Cascade)
+  @@id([projectId, nodeId, storyId])
+}
+model StoryRequirement {
+  projectId Int
+  storyId Int
+  requirementId Int
+  story UserStory @relation(fields: [projectId, storyId], references: [projectId, id], onDelete: Cascade)
+  requirement Requirement @relation(fields: [projectId, requirementId], references: [projectId, id], onDelete: Cascade)
+  @@id([projectId, storyId, requirementId])
+  @@index([projectId, requirementId])
+}
+model StoryTask {
+  projectId Int
+  storyId Int
+  taskId Int
+  story UserStory @relation(fields: [projectId, storyId], references: [projectId, id], onDelete: Cascade)
+  task Task @relation(fields: [projectId, taskId], references: [projectId, id], onDelete: Cascade)
+  @@id([projectId, storyId, taskId])
+  @@index([projectId, taskId])
+}
+
+model PlanStage {
+  id String @id @default(uuid()) @db.VarChar(100)
+  projectId Int
+  title String @db.VarChar(200)
+  description String @default("") @db.VarChar(10000)
+  start String @db.VarChar(10)
+  end String @db.VarChar(10)
+  ownerUserId Int?
+  revision Int @default(0)
+  sortOrder Int @default(0)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner ProjectMember? @relation("StageOwner", fields: [projectId, ownerUserId], references: [projectId, userId], onDelete: NoAction, onUpdate: NoAction)
+  items PlanItem[]
+  goals PlanGoal[]
+  @@unique([projectId, id])
+}
+model PlanGoal {
+  id String @id @default(uuid()) @db.VarChar(100)
+  projectId Int
+  stageId String @db.VarChar(100)
+  title String @db.VarChar(200)
+  done Boolean @default(false)
+  sortOrder Int @default(0)
+  stage PlanStage @relation(fields: [projectId, stageId], references: [projectId, id], onDelete: Cascade)
+}
+model PlanItem {
+  id String @id @default(uuid()) @db.VarChar(100)
+  number Int @unique @default(autoincrement())
+  projectId Int
+  stageId String @db.VarChar(100)
+  kind String @default("item") @db.VarChar(12)
+  title String @db.VarChar(200)
+  description String @default("") @db.VarChar(10000)
+  start String @db.VarChar(10)
+  end String @db.VarChar(10)
+  ownerUserId Int?
+  status String @default("TODO") @db.VarChar(16)
+  priority String @default("NORMAL") @db.VarChar(10)
+  revision Int @default(0)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  stage PlanStage @relation(fields: [projectId, stageId], references: [projectId, id], onDelete: Cascade)
+  owner ProjectMember? @relation("ItemOwner", fields: [projectId, ownerUserId], references: [projectId, userId], onDelete: NoAction, onUpdate: NoAction)
+  taskLinks TaskPlanReference[]
+  @@unique([projectId, id])
+}
+model ProjectDocument {
+  id Int @id @default(autoincrement())
+  projectId Int
+  parentId Int?
+  kind String @db.VarChar(10)
+  name String @db.VarChar(200)
+  mime String @default("") @db.VarChar(100)
+  size Int @default(0)
+  content Bytes?
+  ownerUserId Int
+  ownerName String @db.VarChar(80)
+  revision Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent ProjectDocument? @relation("DocumentTree", fields: [projectId, parentId], references: [projectId, id], onDelete: NoAction, onUpdate: NoAction)
+  children ProjectDocument[] @relation("DocumentTree")
+  @@unique([projectId, id])
+  @@index([projectId, parentId])
+}
+
+// P1 reports only: no formal business entities or review/commit tables.
+model AiAnalysisRun {
+  id String @id @default(uuid())
+  projectId Int
+  requestedById Int?
+  kind String @db.VarChar(24)
+  scope Json
+  output Json?
+  requestKey String @db.VarChar(100)
+  requestHash String
+  status String @default("QUEUED") @db.VarChar(16)
+  sourceHash String?
+  sourceDate String? @db.VarChar(10)
+  rulesVersion String @db.VarChar(40)
+  modelState String @default("NOT_REQUESTED") @db.VarChar(32)
+  modelInfo Json?
+  errorCode String? @db.VarChar(40)
+  retryOf String?
+  retryDepth Int @default(0)
+  leaseToken String?
+  leaseExpiresAt DateTime?
+  modelAttemptedAt DateTime?
+  createdAt DateTime @default(now())
+  startedAt DateTime?
+  finishedAt DateTime?
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requestedBy User? @relation(fields: [requestedById], references: [id], onDelete: SetNull)
+  drafts AiDraft[]
+  findings AiRiskFinding[]
+  @@unique([projectId, requestedById, requestKey])
+  @@index([status, createdAt])
+  @@index([projectId, createdAt, id])
+  @@index([projectId, modelAttemptedAt])
+}
+model AiDraft {
+  id String @id @default(uuid())
+  projectId Int
+  authorId Int
+  title String @db.VarChar(200)
+  kind String @db.VarChar(24)
+  sourceRunId String?
+  baseline Json
+  items Json
+  revision Int @default(0)
+  status String @default("DRAFT") @db.VarChar(16)
+  result Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project Project @relation(fields:[projectId],references:[id],onDelete:Cascade,onUpdate:NoAction,map:"AiDraft_project_fk")
+  author User @relation(fields:[authorId],references:[id],onDelete:Cascade,onUpdate:NoAction,map:"AiDraft_author_fk")
+  source AiAnalysisRun? @relation(fields:[sourceRunId],references:[id],onDelete:SetNull,onUpdate:NoAction,map:"AiDraft_source_fk")
+  @@index([projectId, authorId, updatedAt])
+}
+model AiRiskFinding {
+  id String @id @default(uuid())
+  runId String
+  eventKey String
+  ruleId String @db.VarChar(48)
+  severity String @db.VarChar(10)
+  dimensions Json
+  fact String
+  evidence Json
+  inference Json?
+  run AiAnalysisRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  @@unique([runId, eventKey])
+}
+
+// Design scenarios are independent from use-case nodes and business task state.
+model UmlSequence {
+  id Int @id @default(autoincrement())
+  projectId Int
+  name String @db.VarChar(200)
+  description String @default("") @db.VarChar(10000)
+  participants Json @default("[]")
+  messages Json @default("[]")
+  revision Int @default(0)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  storyLinks UmlSequenceStory[]
+  useCaseLinks UmlSequenceUseCase[]
+  @@unique([projectId, id])
+}
+model UmlSequenceStory {
+  projectId Int
+  sequenceId Int
+  storyId Int
+  sequence UmlSequence @relation(fields: [projectId, sequenceId], references: [projectId, id], onDelete: Cascade)
+  story UserStory @relation(fields: [projectId, storyId], references: [projectId, id], onDelete: Cascade)
+  @@id([projectId, sequenceId, storyId])
+}
+model UmlSequenceUseCase {
+  projectId Int
+  sequenceId Int
+  nodeId Int
+  sequence UmlSequence @relation(fields: [projectId, sequenceId], references: [projectId, id], onDelete: Cascade)
+  node UmlNode @relation(fields: [projectId, nodeId], references: [projectId, id], onDelete: Cascade)
+  @@id([projectId, sequenceId, nodeId])
+}

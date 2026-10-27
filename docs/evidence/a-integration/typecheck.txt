@@ -1,0 +1,9 @@
+$ pnpm --filter @spm/shared build && pnpm -r typecheck
+$ tsc
+Scope: 3 of 4 workspace projects
+packages/shared typecheck$ tsc --noEmit
+packages/shared typecheck: Done
+apps/api typecheck$ tsc --noEmit
+apps/web typecheck$ tsc --noEmit
+apps/api typecheck: Done
+apps/web typecheck: Done

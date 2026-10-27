@@ -1,0 +1,59 @@
+{
+  "supplier": "DeepSeek",
+  "model": "deepseek-flash",
+  "approvedDataScope": "project-planning-v2",
+  "actualSupplierCalls": 2,
+  "projectId": 2,
+  "reports": [
+    {
+      "kind": "PLANNING",
+      "runId": "ac3fa8bc-4fe6-456a-89c6-da635d8b9cec",
+      "status": "COMPLETED",
+      "modelState": "SUCCEEDED",
+      "modelInfo": {
+        "model": "deepseek-flash",
+        "contract": "project-planning-v2",
+        "provider": "deepseek",
+        "supplier": "DeepSeek",
+        "actualModel": "deepseek-flash",
+        "total_tokens": 4988,
+        "prompt_tokens": 4682,
+        "rulesTruncated": false,
+        "completion_tokens": 306,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 4682
+      },
+      "candidates": 2,
+      "stale": false,
+      "draftId": "dd051274-1930-4c20-8003-b4a5f5a452fa",
+      "everyCandidateUnreviewed": true,
+      "draftStatus": "DRAFT"
+    },
+    {
+      "kind": "TASK_SPLIT",
+      "runId": "3b4f48f5-5166-403a-8de8-25c173de8a55",
+      "status": "COMPLETED",
+      "modelState": "SUCCEEDED",
+      "modelInfo": {
+        "model": "deepseek-flash",
+        "contract": "project-planning-v2",
+        "provider": "deepseek",
+        "supplier": "DeepSeek",
+        "actualModel": "deepseek-flash",
+        "total_tokens": 2696,
+        "prompt_tokens": 2363,
+        "rulesTruncated": false,
+        "completion_tokens": 333,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 2363
+      },
+      "candidates": 2,
+      "stale": false,
+      "draftId": "28b111bd-2542-4043-ac5a-9dbe2a1f8fdc",
+      "everyCandidateUnreviewed": true,
+      "draftStatus": "DRAFT"
+    }
+  ],
+  "formalBusinessDataUnchanged": true,
+  "finishedAt": "2026-10-24T02:07:45.424Z"
+}

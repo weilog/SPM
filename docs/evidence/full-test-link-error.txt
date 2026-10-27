@@ -1,0 +1,28 @@
+$ pnpm --filter @spm/web test && pnpm --filter @spm/api test
+$ vitest run
+
+ RUN  v4.0.18 D:/Work/shiyan/SPM-typescript/apps/web
+
+ ✓ src/api.test.ts (2 tests) 4ms
+ ✓ src/ui.test.tsx (10 tests) 6361ms
+     ✓ requires credentials before submitting  576ms
+     ✓ shows the backend wrong-password error  437ms
+     ✓ passes a successful user to the app  470ms
+     ✓ calls server logout then discards the user context  481ms
+     ✓ switches project by the selected id rather than a stale global project  363ms
+     ✓ view-only project members do not see member/task management tabs  517ms
+     ✓ validates title and sends only task creation contract fields  1497ms
+     ✓ clears a task assignee using its project-scoped endpoint  1511ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
+   Start at  21:53:33
+   Duration  9.35s (transform 176ms, setup 241ms, import 2.13s, tests 6.36s, environment 1.12s)
+
+$ jest --runInBand
+'jest' is not recognized as an internal or external command,
+operable program or batch file.
+D:\Work\shiyan\SPM-typescript\apps\api:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @spm/api@1.0.0 test: `jest --runInBand`
+Exit status 1
+[ELIFECYCLE] Test failed. See above for more details.

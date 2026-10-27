@@ -1,0 +1,26 @@
+{
+  "result": "PASS",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "provider": "EXPLICIT_LOCAL_TEST_FIXTURE_NOT_REAL_AI",
+  "paidModelCalls": 0,
+  "localFixtureCalls": 11,
+  "checks": [
+    "UI account logout is in topbar; AI generation indicator, priority and collapsed inference/recommendation respond",
+    "Overview manual health scan, four risk dimensions, unique-event summary and persisted history",
+    "Requirement AI input, persistent draft restore, failure preserves human edits, unsaved-leave guard, individual review/reuse and atomic three-level commit",
+    "Story map direct leaf coverage denominator, semantic inference and shared candidate-review entry retain original map",
+    "Task execution advice and independently reviewed TODO split candidates persist through real task/history APIs",
+    "P3 split draft list excludes planning drafts and restores the original source task",
+    "Gantt baseline/candidate comparison is read-only and opens the original centered editor; cancel leaves all dates unchanged",
+    "P3 human confirms candidate dates in the original editor; actual plan persists after browser reload",
+    "A member tracking retains its original grouping/filter table and reports actual Task-ID concentration without utilization claims",
+    "Cross-view evidence uses real object IDs, activates correct dual views and focuses actual related nodes",
+    "Ordinary members get filtered facts and no analyze controls; backend rejects member writes and outsider reads",
+    "UI completed rings, single creation entry, Gantt collapse/wheel/drag/colors, centered member modal, compact drawer and no stage pseudo-text",
+    "P3 live manager downgrade clears the full report via SSE and blocks drafts using the same session"
+  ],
+  "errors": []
+}

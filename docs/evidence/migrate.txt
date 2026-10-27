@@ -1,0 +1,21 @@
+$ pnpm --filter @spm/api db:migrate
+$ prisma migrate deploy --config prisma.config.ts
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "spm", schema "public" at "127.0.0.1:5433"
+
+2 migrations found in prisma/migrations
+
+Applying migration `202610130001_initial`
+Applying migration `202610130002_business_constraints`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 202610130001_initial/
+    └─ migration.sql
+  └─ 202610130002_business_constraints/
+    └─ migration.sql
+
+All migrations have been successfully applied.

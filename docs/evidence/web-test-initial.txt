@@ -1,0 +1,1417 @@
+$ vitest run
+
+ RUN  v4.0.18 D:/Work/shiyan/SPM-typescript/apps/web
+
+ ✓ src/api.test.ts (2 tests) 4ms
+stderr | src/ui.test.tsx > US01 login and session UI > shows login when no server session exists
+Warning: [antd: Spin] `tip` is deprecated. Please use `description` instead.
+
+stderr | src/ui.test.tsx > US01 login and session UI > calls server logout then discards the user context
+Warning: [antd: Spin] `tip` is deprecated. Please use `description` instead.
+
+stderr | src/ui.test.tsx > US02/03/06 project role boundaries > ordinary users cannot see global management or creation controls
+Warning: [antd: Spin] `tip` is deprecated. Please use `description` instead.
+
+stderr | src/ui.test.tsx > US02/03/06 project role boundaries > view-only project members do not see member/task management tabs
+Warning: [antd: Spin] `tip` is deprecated. Please use `description` instead.
+
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
+ ❯ src/ui.test.tsx (9 tests | 6 failed) 6449ms
+     × requires credentials before submitting 602ms
+     × shows the backend wrong-password error 571ms
+     × passes a successful user to the app 553ms
+     × shows login when no server session exists 1020ms
+     × calls server logout then discards the user context 1012ms
+     ✓ ordinary users cannot see global management or creation controls 246ms
+     ✓ switches project by the selected id rather than a stale global project  362ms
+     ✓ view-only project members do not see member/task management tabs  546ms
+     × validates title and sends only task creation contract fields 1533ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/ui.test.tsx > US01 login and session UI > requires credentials before submitting
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "登录"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "登录爱管理":
+  <h2
+    class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+  />
+
+  --------------------------------------------------
+  textbox:
+
+  Name "用户名":
+  <input
+    aria-required="true"
+    autocomplete="username"
+    class="ant-input css-dev-only-do-not-override-jdb7z4 ant-input-outlined css-var-root ant-input-css-var"
+    id="username"
+    type="text"
+    value=""
+  />
+
+  --------------------------------------------------
+  button:
+
+  Name "Show":
+  <span
+    aria-disabled="false"
+    aria-label="Show"
+    aria-pressed="false"
+    class="ant-input-password-icon"
+    role="button"
+    tabindex="0"
+  />
+
+  Name "登 录":
+  <button
+    class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-block"
+    type="submit"
+  />
+
+  --------------------------------------------------
+  img:
+
+  Name "eye-invisible":
+  <span
+    aria-label="eye-invisible"
+    class="anticon anticon-eye-invisible"
+    role="img"
+  />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="login"
+    >
+      <div
+        class="ant-card ant-card-bordered css-dev-only-do-not-override-jdb7z4 css-var-root"
+      >
+        <div
+          class="ant-card-body"
+        >
+          <h2
+            class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+          >
+            登录爱管理
+          </h2>
+          <div
+            class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+          >
+            项目与成员，清晰协作。
+          </div>
+          <form
+            class="ant-form ant-form-vertical css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4"
+          >
+            <div
+              class="ant-form-item css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4 ant-form-item-vertical"
+            >
+              <div
+                class="ant-row ant-form-item-row css-dev-only-do-not-override-jdb7z4 css-var-root"
+              >
+                <div
+                  class="ant-col ant-form-item-label css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <label
+                    class="ant-form-item-required"
+                    for="username"
+                    title="用户名"
+                  >
+                    用户名
+                  </label>
+                </div>
+                <div
+                  class="ant-col ant-form-item-control css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <div
+                    class="ant-form-item-control-input"
+                  >
+                    <div
+                      class="ant-form-item-control-input-content"
+                    >
+                      <input
+                        aria-required="true"
+                        autocomplete="username"
+                        class="ant-input css-dev-only-do-not-override-jdb7z4 ant-input-outlined css-var-root ant-input-css-var"
+                        id="username"
+                        type="text"
+                        value=""
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="ant-form-item css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4 ant-form-item-vertical"
+            >
+              <div
+                class="ant-row ant-form-item-row css-dev-only-do-not-override-jdb7z4 css-var-root"
+              >
+                <div
+                  class="ant-col ant-form-item-label css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <label
+                    class="ant-form-item-required"
+                    for="password"
+                    title="密码"
+                  >
+                    密码
+                  </label>
+                </div>
+                <div
+                  class="ant-col ant-form-item-control css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <div
+                    class="ant-form-item-control-input"
+                  >
+                    <div
+                      class="ant-form-item-control-input-content"
+                    >
+                      <span
+                        class="ant-input-affix-wrapper css-dev-only-do-not-override-jdb7z4 ant-input-outlined ant-input-password css-var-root ant-input-css-var"
+                      >
+                        <input
+                          aria-required="true"
+                          autocomplete="current-password"
+                          class="ant-input css-dev-only-do-not-override-jdb7z4"
+                          id="password"
+                          type="password"
+                          value=""
+                        />
+                        <span
+                          class="ant-input-suffix"
+                        >
+                          <span
+                            aria-disabled="false"
+                            aria-label="Show"
+                            aria-pressed="false"
+                            class="ant-input-password-icon"
+                            role="button"
+                            tabindex="0"
+                          >
+                            <span
+                              aria-label="eye-invisible"
+                              class="anticon anticon-eye-invisible"
+                              role="img"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                data-icon="eye-invisible"
+                                fill="currentColor"
+                                focusable="false"
+                                height="1em"
+                                viewBox="64 64 896 896"
+                                width="1em"
+                              >
+                                <path
+                                  d="M942.2 486.2Q889.47 375.11 816.7 305l-50.88 50.88C807.31 395.53 843.45 447.4 874.7 512 791.5 684.2 673.4 766 512 766q-72.67 0-133.87-22.38L323 798.75Q408 838 512 838q288.3 0 430.2-300.3a60.29 60.29 0 000-51.5zm-63.57-320.64L836 122.88a8 8 0 00-11.32 0L715.31 232.2Q624.86 186 512 186q-288.3 0-430.2 300.3a60.3 60.3 0 000 51.5q56.69 119.4 136.5 191.41L112.48 835a8 8 0 000 11.31L155.17 889a8 8 0 0011.31 0l712.15-712.12a8 8 0 000-11.32zM149.3 512C232.6 339.8 350.7 258 512 258c54.54 0 104.13 9.36 149.12 28.39l-70.3 70.3a176 176 0 00-238.13 238.13l-83.42 83.42C223.1 637.49 183.3 582.28 149.3 512zm246.7 0a112.11 112.11 0 01146.2-106.69L401.31 546.2A112 112 0 01396 512z"
+                                />
+                                <path
+                                  d="M508 624c-3.46 0-6.87-.16-10.25-.47l-52.82 52.82a176.09 176.09 0 00227.42-227.42l-52.82 52.82c.31 3.38.47 6.79.47 10.25a111.94 111.94 0 01-112 112z"
+                                />
+                              </svg>
+                            </span>
+                          </span>
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button
+              class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-block"
+              type="submit"
+            >
+              <span>
+                登 录
+              </span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/ui.test.tsx:21:34
+     19|   it('requires credentials before submitting', async () => {
+     20|     render(<Login onLogin={vi.fn()} />);
+     21|     await userEvent.click(screen.getByRole('button', { name: '登录' }));
+       |                                  ^
+     22|     expect(await screen.findByText('请输入用户名')).toBeInTheDocument();
+     23|     expect(mocked).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/ui.test.tsx > US01 login and session UI > shows the backend wrong-password error
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "登录"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "登录爱管理":
+  <h2
+    class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+  />
+
+  --------------------------------------------------
+  textbox:
+
+  Name "用户名":
+  <input
+    aria-required="true"
+    autocomplete="username"
+    class="ant-input css-dev-only-do-not-override-jdb7z4 ant-input-outlined ant-input-status-success css-var-root ant-input-css-var"
+    id="username"
+    type="text"
+    value="member"
+  />
+
+  --------------------------------------------------
+  button:
+
+  Name "Show":
+  <span
+    aria-disabled="false"
+    aria-label="Show"
+    aria-pressed="false"
+    class="ant-input-password-icon"
+    role="button"
+    tabindex="0"
+  />
+
+  Name "登 录":
+  <button
+    class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-block"
+    type="submit"
+  />
+
+  --------------------------------------------------
+  img:
+
+  Name "eye-invisible":
+  <span
+    aria-label="eye-invisible"
+    class="anticon anticon-eye-invisible"
+    role="img"
+  />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="login"
+    >
+      <div
+        class="ant-card ant-card-bordered css-dev-only-do-not-override-jdb7z4 css-var-root"
+      >
+        <div
+          class="ant-card-body"
+        >
+          <h2
+            class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+          >
+            登录爱管理
+          </h2>
+          <div
+            class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+          >
+            项目与成员，清晰协作。
+          </div>
+          <form
+            class="ant-form ant-form-vertical css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4"
+          >
+            <div
+              class="ant-form-item css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4 ant-form-item-has-success ant-form-item-vertical"
+            >
+              <div
+                class="ant-row ant-form-item-row css-dev-only-do-not-override-jdb7z4 css-var-root"
+              >
+                <div
+                  class="ant-col ant-form-item-label css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <label
+                    class="ant-form-item-required"
+                    for="username"
+                    title="用户名"
+                  >
+                    用户名
+                  </label>
+                </div>
+                <div
+                  class="ant-col ant-form-item-control css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <div
+                    class="ant-form-item-control-input"
+                  >
+                    <div
+                      class="ant-form-item-control-input-content"
+                    >
+                      <input
+                        aria-required="true"
+                        autocomplete="username"
+                        class="ant-input css-dev-only-do-not-override-jdb7z4 ant-input-outlined ant-input-status-success css-var-root ant-input-css-var"
+                        id="username"
+                        type="text"
+                        value="member"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="ant-form-item css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4 ant-form-item-has-success ant-form-item-vertical"
+            >
+              <div
+                class="ant-row ant-form-item-row css-dev-only-do-not-override-jdb7z4 css-var-root"
+              >
+                <div
+                  class="ant-col ant-form-item-label css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <label
+                    class="ant-form-item-required"
+                    for="password"
+                    title="密码"
+                  >
+                    密码
+                  </label>
+                </div>
+                <div
+                  class="ant-col ant-form-item-control css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <div
+                    class="ant-form-item-control-input"
+                  >
+                    <div
+                      class="ant-form-item-control-input-content"
+                    >
+                      <span
+                        class="ant-input-affix-wrapper ant-input-affix-wrapper-focused css-dev-only-do-not-override-jdb7z4 ant-input-outlined ant-input-status-success ant-input-password css-var-root ant-input-css-var"
+                      >
+                        <input
+                          aria-required="true"
+                          autocomplete="current-password"
+                          class="ant-input css-dev-only-do-not-override-jdb7z4"
+                          id="password"
+                          type="password"
+                        />
+                        <span
+                          class="ant-input-suffix"
+                        >
+                          <span
+                            aria-disabled="false"
+                            aria-label="Show"
+                            aria-pressed="false"
+                            class="ant-input-password-icon"
+                            role="button"
+                            tabindex="0"
+                          >
+                            <span
+                              aria-label="eye-invisible"
+                              class="anticon anticon-eye-invisible"
+                              role="img"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                data-icon="eye-invisible"
+                                fill="currentColor"
+                                focusable="false"
+                                height="1em"
+                                viewBox="64 64 896 896"
+                                width="1em"
+                              >
+                                <path
+                                  d="M942.2 486.2Q889.47 375.11 816.7 305l-50.88 50.88C807.31 395.53 843.45 447.4 874.7 512 791.5 684.2 673.4 766 512 766q-72.67 0-133.87-22.38L323 798.75Q408 838 512 838q288.3 0 430.2-300.3a60.29 60.29 0 000-51.5zm-63.57-320.64L836 122.88a8 8 0 00-11.32 0L715.31 232.2Q624.86 186 512 186q-288.3 0-430.2 300.3a60.3 60.3 0 000 51.5q56.69 119.4 136.5 191.41L112.48 835a8 8 0 000 11.31L155.17 889a8 8 0 0011.31 0l712.15-712.12a8 8 0 000-11.32zM149.3 512C232.6 339.8 350.7 258 512 258c54.54 0 104.13 9.36 149.12 28.39l-70.3 70.3a176 176 0 00-238.13 238.13l-83.42 83.42C223.1 637.49 183.3 582.28 149.3 512zm246.7 0a112.11 112.11 0 01146.2-106.69L401.31 546.2A112 112 0 01396 512z"
+                                />
+                                <path
+                                  d="M508 624c-3.46 0-6.87-.16-10.25-.47l-52.82 52.82a176.09 176.09 0 00227.42-227.42l-52.82 52.82c.31 3.38.47 6.79.47 10.25a111.94 111.94 0 01-112 112z"
+                                />
+                              </svg>
+                            </span>
+                          </span>
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button
+              class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-block"
+              type="submit"
+            >
+              <span>
+                登 录
+              </span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/ui.test.tsx:30:34
+     28|     await userEvent.type(screen.getByLabelText('用户名'), 'member');
+     29|     await userEvent.type(screen.getByLabelText('密码'), 'wrong');
+     30|     await userEvent.click(screen.getByRole('button', { name: '登录' }));
+       |                                  ^
+     31|     expect(await screen.findByRole('alert')).toHaveTextContent('用户名或密码…
+     32|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  src/ui.test.tsx > US01 login and session UI > shows the backend wrong-password error
+Error: 用户名或密码错误
+ ❯ src/ui.test.tsx:26:30
+     24|   });
+     25|   it('shows the backend wrong-password error', async () => {
+     26|     mocked.mockRejectedValue(new RequestError(401, '用户名或密码错误'));
+       |                              ^
+     27|     render(<Login onLogin={vi.fn()} />);
+     28|     await userEvent.type(screen.getByLabelText('用户名'), 'member');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  src/ui.test.tsx > US01 login and session UI > passes a successful user to the app
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "登录"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "登录爱管理":
+  <h2
+    class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+  />
+
+  --------------------------------------------------
+  textbox:
+
+  Name "用户名":
+  <input
+    aria-required="true"
+    autocomplete="username"
+    class="ant-input css-dev-only-do-not-override-jdb7z4 ant-input-outlined ant-input-status-success css-var-root ant-input-css-var"
+    id="username"
+    type="text"
+    value="member"
+  />
+
+  --------------------------------------------------
+  button:
+
+  Name "Show":
+  <span
+    aria-disabled="false"
+    aria-label="Show"
+    aria-pressed="false"
+    class="ant-input-password-icon"
+    role="button"
+    tabindex="0"
+  />
+
+  Name "登 录":
+  <button
+    class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-block"
+    type="submit"
+  />
+
+  --------------------------------------------------
+  img:
+
+  Name "eye-invisible":
+  <span
+    aria-label="eye-invisible"
+    class="anticon anticon-eye-invisible"
+    role="img"
+  />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="login"
+    >
+      <div
+        class="ant-card ant-card-bordered css-dev-only-do-not-override-jdb7z4 css-var-root"
+      >
+        <div
+          class="ant-card-body"
+        >
+          <h2
+            class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+          >
+            登录爱管理
+          </h2>
+          <div
+            class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+          >
+            项目与成员，清晰协作。
+          </div>
+          <form
+            class="ant-form ant-form-vertical css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4"
+          >
+            <div
+              class="ant-form-item css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4 ant-form-item-has-success ant-form-item-vertical"
+            >
+              <div
+                class="ant-row ant-form-item-row css-dev-only-do-not-override-jdb7z4 css-var-root"
+              >
+                <div
+                  class="ant-col ant-form-item-label css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <label
+                    class="ant-form-item-required"
+                    for="username"
+                    title="用户名"
+                  >
+                    用户名
+                  </label>
+                </div>
+                <div
+                  class="ant-col ant-form-item-control css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <div
+                    class="ant-form-item-control-input"
+                  >
+                    <div
+                      class="ant-form-item-control-input-content"
+                    >
+                      <input
+                        aria-required="true"
+                        autocomplete="username"
+                        class="ant-input css-dev-only-do-not-override-jdb7z4 ant-input-outlined ant-input-status-success css-var-root ant-input-css-var"
+                        id="username"
+                        type="text"
+                        value="member"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="ant-form-item css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4 ant-form-item-has-success ant-form-item-vertical"
+            >
+              <div
+                class="ant-row ant-form-item-row css-dev-only-do-not-override-jdb7z4 css-var-root"
+              >
+                <div
+                  class="ant-col ant-form-item-label css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <label
+                    class="ant-form-item-required"
+                    for="password"
+                    title="密码"
+                  >
+                    密码
+                  </label>
+                </div>
+                <div
+                  class="ant-col ant-form-item-control css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <div
+                    class="ant-form-item-control-input"
+                  >
+                    <div
+                      class="ant-form-item-control-input-content"
+                    >
+                      <span
+                        class="ant-input-affix-wrapper ant-input-affix-wrapper-focused css-dev-only-do-not-override-jdb7z4 ant-input-outlined ant-input-status-success ant-input-password css-var-root ant-input-css-var"
+                      >
+                        <input
+                          aria-required="true"
+                          autocomplete="current-password"
+                          class="ant-input css-dev-only-do-not-override-jdb7z4"
+                          id="password"
+                          type="password"
+                        />
+                        <span
+                          class="ant-input-suffix"
+                        >
+                          <span
+                            aria-disabled="false"
+                            aria-label="Show"
+                            aria-pressed="false"
+                            class="ant-input-password-icon"
+                            role="button"
+                            tabindex="0"
+                          >
+                            <span
+                              aria-label="eye-invisible"
+                              class="anticon anticon-eye-invisible"
+                              role="img"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                data-icon="eye-invisible"
+                                fill="currentColor"
+                                focusable="false"
+                                height="1em"
+                                viewBox="64 64 896 896"
+                                width="1em"
+                              >
+                                <path
+                                  d="M942.2 486.2Q889.47 375.11 816.7 305l-50.88 50.88C807.31 395.53 843.45 447.4 874.7 512 791.5 684.2 673.4 766 512 766q-72.67 0-133.87-22.38L323 798.75Q408 838 512 838q288.3 0 430.2-300.3a60.29 60.29 0 000-51.5zm-63.57-320.64L836 122.88a8 8 0 00-11.32 0L715.31 232.2Q624.86 186 512 186q-288.3 0-430.2 300.3a60.3 60.3 0 000 51.5q56.69 119.4 136.5 191.41L112.48 835a8 8 0 000 11.31L155.17 889a8 8 0 0011.31 0l712.15-712.12a8 8 0 000-11.32zM149.3 512C232.6 339.8 350.7 258 512 258c54.54 0 104.13 9.36 149.12 28.39l-70.3 70.3a176 176 0 00-238.13 238.13l-83.42 83.42C223.1 637.49 183.3 582.28 149.3 512zm246.7 0a112.11 112.11 0 01146.2-106.69L401.31 546.2A112 112 0 01396 512z"
+                                />
+                                <path
+                                  d="M508 624c-3.46 0-6.87-.16-10.25-.47l-52.82 52.82a176.09 176.09 0 00227.42-227.42l-52.82 52.82c.31 3.38.47 6.79.47 10.25a111.94 111.94 0 01-112 112z"
+                                />
+                              </svg>
+                            </span>
+                          </span>
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button
+              class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-block"
+              type="submit"
+            >
+              <span>
+                登 录
+              </span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/ui.test.tsx:38:34
+     36|     await userEvent.type(screen.getByLabelText('用户名'), 'member');
+     37|     await userEvent.type(screen.getByLabelText('密码'), 'strong-password…
+     38|     await userEvent.click(screen.getByRole('button', { name: '登录' }));
+       |                                  ^
+     39|     await waitFor(() => expect(onLogin).toHaveBeenCalledWith(member));
+     40|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  src/ui.test.tsx > US01 login and session UI > shows login when no server session exists
+TestingLibraryElementError: Unable to find role="button" and name "登录"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="login"
+    >
+      <div
+        class="ant-card ant-card-bordered css-dev-only-do-not-override-jdb7z4 css-var-root"
+      >
+        <div
+          class="ant-card-body"
+        >
+          <h2
+            class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+          >
+            登录爱管理
+          </h2>
+          <div
+            class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+          >
+            项目与成员，清晰协作。
+          </div>
+          <form
+            class="ant-form ant-form-vertical css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4"
+          >
+            <div
+              class="ant-form-item css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4 ant-form-item-vertical"
+            >
+              <div
+                class="ant-row ant-form-item-row css-dev-only-do-not-override-jdb7z4 css-var-root"
+              >
+                <div
+                  class="ant-col ant-form-item-label css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <label
+                    class="ant-form-item-required"
+                    for="username"
+                    title="用户名"
+                  >
+                    用户名
+                  </label>
+                </div>
+                <div
+                  class="ant-col ant-form-item-control css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <div
+                    class="ant-form-item-control-input"
+                  >
+                    <div
+                      class="ant-form-item-control-input-content"
+                    >
+                      <input
+                        aria-required="true"
+                        autocomplete="username"
+                        class="ant-input css-dev-only-do-not-override-jdb7z4 ant-input-outlined css-var-root ant-input-css-var"
+                        id="username"
+                        type="text"
+                        value=""
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="ant-form-item css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4 ant-form-item-vertical"
+            >
+              <div
+                class="ant-row ant-form-item-row css-dev-only-do-not-override-jdb7z4 css-var-root"
+              >
+                <div
+                  class="ant-col ant-form-item-label css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <label
+                    class="ant-form-item-required"
+                    for="password"
+                    title="密码"
+                  >
+                    密码
+                  </label>
+                </div>
+                <div
+                  class="ant-col ant-form-item-control css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <div
+                    class="ant-form-item-control-input"
+                  >
+                    <div
+                      class="ant-form-item-control-input-content"
+                    >
+                      <span
+                        class="ant-input-affix-wrapper css-dev-only-do-not-override-jdb7z4 ant-input-outlined ant-input-password css-var-root ant-input-css-var"
+                      >
+                        <input
+                          aria-required="true"
+                          autocomplete="current-password"
+                          class="ant-input css-dev-only-do-not-override-jdb7z4"
+                          id="password"
+                          type="password"
+                        />
+                        <span
+                          class="ant-input-suffix"
+                        >
+                          <span
+                            aria-disabled="false"
+                            aria-label="Show"
+                            aria-pressed="false"
+                            class="ant-input-password-icon"
+                            role="button"
+                            tabindex="0"
+                          >
+                            <span
+                              aria-label="eye-invisible"
+                              class="anticon anticon-eye-invisible"
+                              role="img"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                data-icon="eye-invisible"
+                                fill="currentColor"
+                                focusable="false"
+                                height="1em"
+                                viewBox="64 64 896 896"
+                                width="1em"
+                              >
+                                <path
+                                  d="M942.2 486.2Q889.47 375.11 816.7 305l-50.88 50.88C807.31 395.53 843.45 447.4 874.7 512 791.5 684.2 673.4 766 512 766q-72.67 0-133.87-22.38L323 798.75Q408 838 512 838q288.3 0 430.2-300.3a60.29 60.29 0 000-51.5zm-63.57-320.64L836 122.88a8 8 0 00-11.32 0L715.31 232.2Q624.86 186 512 186q-288.3 0-430.2 300.3a60.3 60.3 0 000 51.5q56.69 119.4 136.5 191.41L112.48 835a8 8 0 000 11.31L155.17 889a8 8 0 0011.31 0l712.15-712.12a8 8 0 000-11.32zM149.3 512C232.6 339.8 350.7 258 512 258c54.54 0 104.13 9.36 149.12 28.39l-70.3 70.3a176 176 0 00-238.13 238.13l-83.42 83.42C223.1 637.49 183.3 582.28 149.3 512zm246.7 0a112.11 112.11 0 01146.2-106.69L401.31 546.2A112 112 0 01396 512z"
+                                />
+                                <path
+                                  d="M508 624c-3.46 0-6.87-.16-10.25-.47l-52.82 52.82a176.09 176.09 0 00227.42-227.42l-52.82 52.82c.31 3.38.47 6.79.47 10.25a111.94 111.94 0 01-112 112z"
+                                />
+                              </svg>
+                            </span>
+                          </span>
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button
+              class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-block"
+              type="submit"
+            >
+              <span>
+                登 录
+              </span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="login"
+    >
+      <div
+        class="ant-card ant-card-bordered css-dev-only-do-not-override-jdb7z4 css-var-root"
+      >
+        <div
+          class="ant-card-body"
+        >
+          <h2
+            class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+          >
+            登录爱管理
+          </h2>
+          <div
+            class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+          >
+            项目与成员，清晰协作。
+          </div>
+          <form
+            class="ant-form ant-form-vertical css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4"
+          >
+            <div
+              class="ant-form-item css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4 ant-form-item-vertical"
+            >
+              <div
+                class="ant-row ant-form-item-row css-dev-only-do-not-override-jdb7z4 css-var-root"
+              >
+                <div
+                  class="ant-col ant-form-item-label css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <label
+                    class="ant-form-item-required"
+                    for="username"
+                    title="用户名"
+                  >
+                    用户名
+                  </label>
+                </div>
+                <div
+                  class="ant-col ant-form-item-control css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <div
+                    class="ant-form-item-control-input"
+                  >
+                    <div
+                      class="ant-form-item-control-input-content"
+                    >
+                      <input
+                        aria-required="true"
+                        autocomplete="username"
+                        class="ant-input css-dev-only-do-not-override-jdb7z4 ant-input-outlined css-var-root ant-input-css-var"
+                        id="username"
+                        type="text"
+                        value=""
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="ant-form-item css-var-root ant-form-css-var css-dev-only-do-not-override-jdb7z4 ant-form-item-vertical"
+            >
+              <div
+                class="ant-row ant-form-item-row css-dev-only-do-not-override-jdb7z4 css-var-root"
+              >
+                <div
+                  class="ant-col ant-form-item-label css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <label
+                    class="ant-form-item-required"
+                    for="password"
+                    title="密码"
+                  >
+                    密码
+                  </label>
+                </div>
+                <div
+                  class="ant-col ant-form-item-control css-dev-only-do-not-override-jdb7z4 css-var-root"
+                >
+                  <div
+                    class="ant-form-item-control-input"
+                  >
+                    <div
+                      class="ant-form-item-control-input-content"
+                    >
+                      <span
+                        class="ant-input-affix-wrapper css-dev-only-do-not-override-jdb7z4 ant-input-outlined ant-input-password css-var-root ant-input-css-var"
+                      >
+                        <input
+                          aria-required="true"
+                          autocomplete="current-password"
+                          class="ant-input css-dev-only-do-not-override-jdb7z4"
+                          id="password"
+                          type="password"
+                        />
+                        <span
+                          class="ant-input-suffix"
+                        >
+                          <span
+                            aria-disabled="false"
+                            aria-label="Show"
+                            aria-pressed="false"
+                            class="ant-input-password-icon"
+                            role="button"
+                            tabindex="0"
+                          >
+                            <span
+                              aria-label="eye-invisible"
+                              class="anticon anticon-eye-invisible"
+                              role="img"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                data-icon="eye-invisible"
+                                fill="currentColor"
+                                focusable="false"
+                                height="1em"
+                                viewBox="64 64 896 896"
+                                width="1em"
+                              >
+                                <path
+                                  d="M942.2 486.2Q889.47 375.11 816.7 305l-50.88 50.88C807.31 395.53 843.45 447.4 874.7 512 791.5 684.2 673.4 766 512 766q-72.67 0-133.87-22.38L323 798.75Q408 838 512 838q288.3 0 430.2-300.3a60.29 60.29 0 000-51.5zm-63.57-320.64L836 122.88a8 8 0 00-11.32 0L715.31 232.2Q624.86 186 512 186q-288.3 0-430.2 300.3a60.3 60.3 0 000 51.5q56.69 119.4 136.5 191.41L112.48 835a8 8 0 000 11.31L155.17 889a8 8 0 0011.31 0l712.15-712.12a8 8 0 000-11.32zM149.3 512C232.6 339.8 350.7 258 512 258c54.54 0 104.13 9.36 149.12 28.39l-70.3 70.3a176 176 0 00-238.13 238.13l-83.42 83.42C223.1 637.49 183.3 582.28 149.3 512zm246.7 0a112.11 112.11 0 01146.2-106.69L401.31 546.2A112 112 0 01396 512z"
+                                />
+                                <path
+                                  d="M508 624c-3.46 0-6.87-.16-10.25-.47l-52.82 52.82a176.09 176.09 0 00227.42-227.42l-52.82 52.82c.31 3.38.47 6.79.47 10.25a111.94 111.94 0 01-112 112z"
+                                />
+                              </svg>
+                            </span>
+                          </span>
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button
+              class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-block"
+              type="submit"
+            >
+              <span>
+                登 录
+              </span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/ui.test.tsx:44:25
+     42|     mocked.mockRejectedValue(new RequestError(401, '请先登录'));
+     43|     render(<App />);
+     44|     expect(await screen.findByRole('button', { name: '登录' })).toBeInTh…
+       |                         ^
+     45|     expect(screen.queryByRole('button', { name: '用户管理' })).not.toBeInT…
+     46|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  src/ui.test.tsx > US01 login and session UI > shows login when no server session exists
+Error: 请先登录
+ ❯ src/ui.test.tsx:42:30
+     40|   });
+     41|   it('shows login when no server session exists', async () => {
+     42|     mocked.mockRejectedValue(new RequestError(401, '请先登录'));
+       |                              ^
+     43|     render(<App />);
+     44|     expect(await screen.findByRole('button', { name: '登录' })).toBeInTh…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  src/ui.test.tsx > US01 login and session UI > calls server logout then discards the user context
+TestingLibraryElementError: Unable to find role="button" and name "退出"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="ant-layout app-shell css-dev-only-do-not-override-jdb7z4 css-var-root"
+    >
+      <header
+        class="ant-layout-header header css-dev-only-do-not-override-jdb7z4 css-var-root"
+      >
+        <h3
+          class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+        >
+          爱管理
+        </h3>
+        <div
+          class="ant-space css-dev-only-do-not-override-jdb7z4 ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+          style="flex-wrap: wrap;"
+        >
+          <div
+            class="ant-space-item"
+          >
+            <span>
+              member
+            </span>
+          </div>
+          <div
+            class="ant-space-item"
+          >
+            <span
+              class="ant-tag ant-tag-filled css-dev-only-do-not-override-jdb7z4 css-var-root"
+            >
+              普通成员
+            </span>
+          </div>
+          <div
+            class="ant-space-item"
+          >
+            <button
+              class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-default ant-btn-color-default ant-btn-variant-outlined"
+              type="button"
+            >
+              <span>
+                我的项目 / 切换项目
+              </span>
+            </button>
+          </div>
+          <div
+            class="ant-space-item"
+          >
+            <button
+              class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-default ant-btn-color-default ant-btn-variant-outlined"
+              type="button"
+            >
+              <span>
+                退 出
+              </span>
+            </button>
+          </div>
+        </div>
+      </header>
+      <main
+        class="ant-layout-content content css-dev-only-do-not-override-jdb7z4 css-var-root"
+      >
+        <div
+          class="ant-space css-dev-only-do-not-override-jdb7z4 ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small section-heading css-var-root"
+        >
+          <div
+            class="ant-space-item"
+          >
+            <h2
+              class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+            >
+              我的项目
+            </h2>
+          </div>
+          <div
+            class="ant-space-item"
+          >
+            <button
+              class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-default ant-btn-color-default ant-btn-variant-outlined"
+              type="button"
+            >
+              <span>
+                刷新项目
+              </span>
+            </button>
+          </div>
+        </div>
+        <div
+          class="css-dev-only-do-not-override-jdb7z4 css-var-root ant-empty"
+        >
+          <div
+            class="ant-empty-image"
+          >
+            <svg
+              height="152"
+              viewBox="0 0 184 152"
+              width="184"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <title>
+                No data
+              </title>
+              <g
+                fill="none"
+                fill-rule="evenodd"
+              >
+                <g
+                  transform="translate(24 31.7)"
+                >
+                  <ellipse
+                    cx="67.8"
+                    cy="106.9"
+                    fill="#f0f0f0"
+                    fill-opacity=".8"
+                    rx="67.8"
+                    ry="12.7"
+                  />
+                  <path
+                    d="M122 69.7 98.1 40.2a6 6 0 0 0-4.6-2.2H42.1a6 6 0 0 0-4.6 2.2l-24 29.5V85H122z"
+                    fill="#bfbfbf"
+                  />
+                  <path
+                    d="M33.8 0h68a4 4 0 0 1 4 4v93.3a4 4 0 0 1-4 4h-68a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4"
+                    fill="#f5f5f5"
+                  />
+                  <path
+                    d="M42.7 10h50.2a2 2 0 0 1 2 2v25a2 2 0 0 1-2 2H42.7a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2m.2 39.8h49.8a2.3 2.3 0 1 1 0 4.5H42.9a2.3 2.3 0 0 1 0-4.5m0 11.7h49.8a2.3 2.3 0 1 1 0 4.6H42.9a2.3 2.3 0 0 1 0-4.6m79 43.5a7 7 0 0 1-6.8 5.4H20.5a7 7 0 0 1-6.7-5.4l-.2-1.8V69.7h26.3c2.9 0 5.2 2.4 5.2 5.4s2.4 5.4 5.3 5.4h34.8c2.9 0 5.3-2.4 5.3-5.4s2.3-5.4 5.2-5.4H122v33.5q0 1-.2 1.8"
+                    fill="#d9d9d9"
+                  />
+                </g>
+                <path
+                  d="m149.1 33.3-6.8 2.6a1 1 0 0 1-1.3-1.2l2-6.2q-4.1-4.5-4.2-10.4c0-10 10.1-18.1 22.6-18.1S184 8.1 184 18.1s-10.1 18-22.6 18q-6.8 0-12.3-2.8"
+                  fill="#d9d9d9"
+                />
+                <g
+                  fill="#ffffff"
+                  transform="translate(149.7 15.4)"
+                >
+                  <circle
+                    cx="20.7"
+                    cy="3.2"
+                    r="2.8"
+                  />
+                  <path
+                    d="M5.7 5.6H0L2.9.7zM9.3.7h5v5h-5z"
+                  />
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div
+            class="ant-empty-description"
+          >
+            暂无有权访问的项目
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="ant-layout app-shell css-dev-only-do-not-override-jdb7z4 css-var-root"
+    >
+      <header
+        class="ant-layout-header header css-dev-only-do-not-override-jdb7z4 css-var-root"
+      >
+        <h3
+          class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+        >
+          爱管理
+        </h3>
+        <div
+          class="ant-space css-dev-only-do-not-override-jdb7z4 ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+          style="flex-wrap: wrap;"
+        >
+          <div
+            class="ant-space-item"
+          >
+            <span>
+              member
+            </span>
+          </div>
+          <div
+            class="ant-space-item"
+          >
+            <span
+              class="ant-tag ant-tag-filled css-dev-only-do-not-override-jdb7z4 css-var-root"
+            >
+              普通成员
+            </span>
+          </div>
+          <div
+            class="ant-space-item"
+          >
+            <button
+              class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-default ant-btn-color-default ant-btn-variant-outlined"
+              type="button"
+            >
+              <span>
+                我的项目 / 切换项目
+              </span>
+            </button>
+          </div>
+          <div
+            class="ant-space-item"
+          >
+            <button
+              class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-default ant-btn-color-default ant-btn-variant-outlined"
+              type="button"
+            >
+              <span>
+                退 出
+              </span>
+            </button>
+          </div>
+        </div>
+      </header>
+      <main
+        class="ant-layout-content content css-dev-only-do-not-override-jdb7z4 css-var-root"
+      >
+        <div
+          class="ant-space css-dev-only-do-not-override-jdb7z4 ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small section-heading css-var-root"
+        >
+          <div
+            class="ant-space-item"
+          >
+            <h2
+              class="ant-typography css-dev-only-do-not-override-jdb7z4 css-var-root"
+            >
+              我的项目
+            </h2>
+          </div>
+          <div
+            class="ant-space-item"
+          >
+            <button
+              class="ant-btn css-dev-only-do-not-override-jdb7z4 css-var-root ant-btn-default ant-btn-color-default ant-btn-variant-outlined"
+              type="button"
+            >
+              <span>
+                刷新项目
+              </span>
+            </button>
+          </div>
+        </div>
+        <div
+          class="css-dev-only-do-not-override-jdb7z4 css-var-root ant-empty"
+        >
+          <div
+            class="ant-empty-image"
+          >
+            <svg
+              height="152"
+              viewBox="0 0 184 152"
+              width="184"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <title>
+                No data
+              </title>
+              <g
+                fill="none"
+                fill-rule="evenodd"
+              >
+                <g
+                  transform="translate(24 31.7)"
+                >
+                  <ellipse
+                    cx="67.8"
+                    cy="106.9"
+                    fill="#f0f0f0"
+                    fill-opacity=".8"
+                    rx="67.8"
+                    ry="12.7"
+                  />
+                  <path
+                    d="M122 69.7 98.1 40.2a6 6 0 0 0-4.6-2.2H42.1a6 6 0 0 0-4.6 2.2l-24 29.5V85H122z"
+                    fill="#bfbfbf"
+                  />
+                  <path
+                    d="M33.8 0h68a4 4 0 0 1 4 4v93.3a4 4 0 0 1-4 4h-68a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4"
+                    fill="#f5f5f5"
+                  />
+                  <path
+                    d="M42.7 10h50.2a2 2 0 0 1 2 2v25a2 2 0 0 1-2 2H42.7a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2m.2 39.8h49.8a2.3 2.3 0 1 1 0 4.5H42.9a2.3 2.3 0 0 1 0-4.5m0 11.7h49.8a2.3 2.3 0 1 1 0 4.6H42.9a2.3 2.3 0 0 1 0-4.6m79 43.5a7 7 0 0 1-6.8 5.4H20.5a7 7 0 0 1-6.7-5.4l-.2-1.8V69.7h26.3c2.9 0 5.2 2.4 5.2 5.4s2.4 5.4 5.3 5.4h34.8c2.9 0 5.3-2.4 5.3-5.4s2.3-5.4 5.2-5.4H122v33.5q0 1-.2 1.8"
+                    fill="#d9d9d9"
+                  />
+                </g>
+                <path
+                  d="m149.1 33.3-6.8 2.6a1 1 0 0 1-1.3-1.2l2-6.2q-4.1-4.5-4.2-10.4c0-10 10.1-18.1 22.6-18.1S184 8.1 184 18.1s-10.1 18-22.6 18q-6.8 0-12.3-2.8"
+                  fill="#d9d9d9"
+                />
+                <g
+                  fill="#ffffff"
+                  transform="translate(149.7 15.4)"
+                >
+                  <circle
+                    cx="20.7"
+                    cy="3.2"
+                    r="2.8"
+                  />
+                  <path
+                    d="M5.7 5.6H0L2.9.7zM9.3.7h5v5h-5z"
+                  />
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div
+            class="ant-empty-description"
+          >
+            暂无有权访问的项目
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/ui.test.tsx:50:40
+     48|     mocked.mockImplementation(async path => path === '/auth/me' ? memb…
+     49|     render(<App />);
+     50|     await userEvent.click(await screen.findByRole('button', { name: '退…
+       |                                        ^
+     51|     expect(await screen.findByRole('button', { name: '登录' })).toBeInTh…
+     52|     expect(mocked).toHaveBeenCalledWith('/auth/logout', 'POST');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  src/ui.test.tsx > US07/09 task creation UI > validates title and sends only task creation contract fields
+TypeError: Cannot read properties of undefined (reading 'endsWith')
+ ❯ src/ui.test.tsx:80:92
+     78| describe('US07/09 task creation UI', () => {
+     79|   it('validates title and sends only task creation contract fields', a…
+     80|     mocked.mockImplementation(async (path, method) => method === 'POST…
+       |                                                                                            ^
+     81|     render(<Tasks project={project} revision={0} onError={vi.fn()} />);
+     82|     await userEvent.click(screen.getByRole('button', { name: '创建任务' })…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  6 failed | 5 passed (11)
+   Start at  21:45:37
+   Duration  9.46s (transform 153ms, setup 241ms, import 2.13s, tests 6.45s, environment 1.14s)
+
+D:\Work\shiyan\SPM-typescript\apps\web:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @spm/web@1.0.0 test: `vitest run`
+Exit status 1

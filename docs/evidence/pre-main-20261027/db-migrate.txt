@@ -1,0 +1,58 @@
+$ pnpm --filter @spm/api db:migrate
+$ prisma migrate deploy --config prisma.config.ts
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "spm", schema "public" at "127.0.0.1:15433"
+
+11 migrations found in prisma/migrations
+
+Applying migration `202610130001_initial`
+Applying migration `202610130002_business_constraints`
+Applying migration `202610130003_v2_project_roles_requirements`
+Applying migration `202610210001_story_management`
+Applying migration `202610220001_v43_alignment`
+Applying migration `202610220002_auth_pages`
+Applying migration `202610220003_owner_a`
+Applying migration `202610220004_system_user_profile`
+Applying migration `202610230001_ai_foundation`
+Applying migration `202610240001_ai_planning`
+Applying migration `202610240002_workbench_sequences`
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 7.10.0 -> 8.0.0-rc.27                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+The following migration(s) have been applied:
+
+migrations/
+  └─ 202610130001_initial/
+    └─ migration.sql
+  └─ 202610130002_business_constraints/
+    └─ migration.sql
+  └─ 202610130003_v2_project_roles_requirements/
+    └─ migration.sql
+  └─ 202610210001_story_management/
+    └─ migration.sql
+  └─ 202610220001_v43_alignment/
+    └─ migration.sql
+  └─ 202610220002_auth_pages/
+    └─ migration.sql
+  └─ 202610220003_owner_a/
+    └─ migration.sql
+  └─ 202610220004_system_user_profile/
+    └─ migration.sql
+  └─ 202610230001_ai_foundation/
+    └─ migration.sql
+  └─ 202610240001_ai_planning/
+    └─ migration.sql
+  └─ 202610240002_workbench_sequences/
+    └─ migration.sql
+
+All migrations have been successfully applied.

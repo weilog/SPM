@@ -1,0 +1,44 @@
+Scope: all 4 workspace projects
+✓ Lockfile passes supply-chain policies (verified 29m ago)
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +753
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   ╭────────────────────────────────────────────────────────────────────────╮
+   │                                                                        │
+   │                  Update available! 11.25.0 → 12.11.2.                  │
+   │                  Changelog: https://pnpm.io/v/12.11.2                  │
+   │   To update, run: Invoke-WebRequest https://get.pnpm.io/install.ps1    │
+   │                 -UseBasicParsing | Invoke-Expression                   │
+   │                                                                        │
+   ╰────────────────────────────────────────────────────────────────────────╯
+
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: D:\.pnpm-store\v11
+  Virtual store is at:             node_modules/.pnpm
+Progress: resolved 753, reused 753, downloaded 0, added 4
+Progress: resolved 753, reused 753, downloaded 0, added 33
+Progress: resolved 753, reused 753, downloaded 0, added 73
+Progress: resolved 753, reused 753, downloaded 0, added 108
+Progress: resolved 753, reused 753, downloaded 0, added 126
+Progress: resolved 753, reused 753, downloaded 0, added 148
+Progress: resolved 753, reused 753, downloaded 0, added 304
+Progress: resolved 753, reused 753, downloaded 0, added 327
+Progress: resolved 753, reused 753, downloaded 0, added 374
+Progress: resolved 753, reused 753, downloaded 0, added 444
+Progress: resolved 753, reused 753, downloaded 0, added 535
+Progress: resolved 753, reused 753, downloaded 0, added 596
+Progress: resolved 753, reused 753, downloaded 0, added 751
+Progress: resolved 753, reused 753, downloaded 0, added 753, done
+.../node_modules/unrs-resolver postinstall$ node postinstall.js
+.../esbuild@0.27.7/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.28.2/node_modules/esbuild postinstall$ node install.js
+.../node_modules/unrs-resolver postinstall: Done
+.../esbuild@0.27.7/node_modules/esbuild postinstall: Done
+.../esbuild@0.28.2/node_modules/esbuild postinstall: Done
+
+devDependencies:
++ typescript 5.9.3
+
+Done in 15.6s using pnpm v11.25.0

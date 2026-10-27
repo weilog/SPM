@@ -2,7 +2,7 @@
 
 面向项目经理与项目成员的协作工作台，使用 React / TypeScript / Vite / Ant Design、NestJS REST、PostgreSQL / Prisma 和 pnpm workspaces。
 
-本次交付编号为 **`v2.0.0-rc.1`**，是本地演示与课程验收的候选版本。功能基线为 `e1b80c3`，标签还包含本轮发布文档与验证记录；不是各 workspace 的 npm 版本号。交付分支为 `feat/workbench-v2-delivery`，不合并 main。正式发布与课程验收仍需团队人工确认。
+本次交付编号为 **`v2.0.0-rc.1`**，是本地演示与课程验收的候选版本。功能基线为 `e1b80c3`，标签还包含发布文档与验证记录；不是各 workspace 的 npm 版本号。候选标签来自 `feat/workbench-v2-delivery`，负责人现已授权将该交付分支通过 PR 集成到 main；标签快照保持不变。[合并前验证和已接受的显示限制](docs/releases/v2.0.0-rc.1-pre-main-validation.md)单独记录。课程最终验收仍需团队人工确认。
 
 ## 已有能力
 

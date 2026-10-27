@@ -1,0 +1,58 @@
+Scope: all 4 workspace projects
+? Verifying lockfile against supply-chain policies (857 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +755
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: C:\Users\cdk\AppData\Local\pnpm\store\v11
+  Virtual store is at:             node_modules/.pnpm
+Progress: resolved 755, reused 0, downloaded 27, added 26
+
+   ╭────────────────────────────────────────────────────────────────────────╮
+   │                                                                        │
+   │                  Update available! 11.25.0 → 12.15.0.                  │
+   │                  Changelog: https://pnpm.io/v/12.15.0                  │
+   │   To update, run: Invoke-WebRequest https://get.pnpm.io/install.ps1    │
+   │                 -UseBasicParsing | Invoke-Expression                   │
+   │                                                                        │
+   ╰────────────────────────────────────────────────────────────────────────╯
+
+Progress: resolved 755, reused 0, downloaded 111, added 89
+Progress: resolved 755, reused 0, downloaded 179, added 130
+Progress: resolved 755, reused 0, downloaded 267, added 228
+Progress: resolved 755, reused 0, downloaded 326, added 324
+Progress: resolved 755, reused 0, downloaded 389, added 387
+Progress: resolved 755, reused 0, downloaded 442, added 441
+Progress: resolved 755, reused 0, downloaded 522, added 521
+Progress: resolved 755, reused 0, downloaded 613, added 610
+Progress: resolved 755, reused 0, downloaded 718, added 681
+Progress: resolved 755, reused 0, downloaded 745, added 718
+Progress: resolved 755, reused 0, downloaded 747, added 742
+[WARN] Request took 11290ms: https://registry.npmjs.org/@prisma%2Fclient
+Progress: resolved 755, reused 0, downloaded 748, added 747
+Progress: resolved 755, reused 0, downloaded 750, added 748
+Progress: resolved 755, reused 0, downloaded 750, added 749
+Progress: resolved 755, reused 0, downloaded 753, added 751
+✓ Lockfile passes supply-chain policies (857 entries in 16.9s)
+Progress: resolved 755, reused 0, downloaded 754, added 751
+Progress: resolved 755, reused 0, downloaded 754, added 754
+Progress: resolved 755, reused 0, downloaded 755, added 754
+Progress: resolved 755, reused 0, downloaded 755, added 755
+Progress: resolved 755, reused 0, downloaded 755, added 755, done
+.../node_modules/@prisma/engines postinstall$ node scripts/postinstall.js
+.../node_modules/unrs-resolver postinstall$ node postinstall.js
+.../esbuild@0.27.7/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.28.2/node_modules/esbuild postinstall$ node install.js
+.../node_modules/unrs-resolver postinstall: Done
+.../esbuild@0.28.2/node_modules/esbuild postinstall: Done
+.../esbuild@0.27.7/node_modules/esbuild postinstall: Done
+.../node_modules/@prisma/engines postinstall: Done
+.../node_modules/prisma preinstall$ node scripts/preinstall-entry.js
+.../node_modules/prisma preinstall: Done
+
+devDependencies:
++ playwright 1.62.1
++ typescript 5.9.3
+
+Done in 27.2s using pnpm v11.25.0

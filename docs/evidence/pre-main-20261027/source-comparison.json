@@ -1,0 +1,7 @@
+{
+  "result": "PASS",
+  "checkedTextFiles": 152,
+  "comparison": "tracked app/package/script/infra source and lockfiles, normalizing line endings",
+  "archiveTag": "v2.0.0-rc.1",
+  "commit": "2f63611f8e15068c95545f84871b272f194d6a16"
+}
